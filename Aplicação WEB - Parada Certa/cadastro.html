@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro - Parada Certa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#071426] text-white flex items-center justify-center px-4">
+
+  <div class="w-full max-w-md bg-[#0d1b31] border border-slate-800 rounded-3xl p-8 shadow-2xl">
+    
+    <div class="flex flex-col items-center mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-green-400 flex items-center justify-center shadow-lg">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+
+        <h1 class="text-3xl font-bold">
+          Parada<span class="text-green-400">Certa</span>
+        </h1>
+      </div>
+
+      <h2 class="text-2xl font-bold mb-2">Cadastro</h2>
+      <p class="text-slate-400 text-center">
+        Crie sua conta para acessar o sistema
+      </p>
+    </div>
+
+    <form class="space-y-5">
+      <div>
+        <label class="block mb-2 text-sm font-medium">Nome completo</label>
+        <input
+          type="text"
+          placeholder="Digite seu nome"
+          class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-blue-500"
+        >
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium">E-mail</label>
+        <input
+          type="email"
+          placeholder="Digite seu e-mail"
+          class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-blue-500"
+        >
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium">Senha</label>
+        <input
+          type="password"
+          placeholder="Crie uma senha"
+          class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-blue-500"
+        >
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium">Confirmar senha</label>
+        <input
+          type="password"
+          placeholder="Confirme sua senha"
+          class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-blue-500"
+        >
+      </div>
+
+      <button
+        type="button"
+        onclick="window.location.href='login.html'"
+        class="w-full bg-green-500 hover:bg-green-400 text-slate-950 font-bold py-3 rounded-xl transition"
+      >
+        Cadastrar
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-slate-400 mt-6">
+      Já tem conta?
+      <a href="login.html" class="text-green-400 hover:underline">Entrar</a>
+    </p>
+
+  </div>
+
+</body>
+</html>

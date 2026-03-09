@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Vagas - Parada Certa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#071426] text-white min-h-screen">
+
+  <div class="flex min-h-screen">
+
+    <!-- Menu lateral -->
+    <aside class="w-64 bg-[#0d1b31] border-r border-slate-800 p-6">
+      <div class="mb-10">
+        <h1 class="text-2xl font-bold">
+          Parada<span class="text-green-400">Certa</span>
+        </h1>
+        <p class="text-slate-400 text-sm mt-2">Painel Administrativo</p>
+      </div>
+
+      <nav class="space-y-3">
+        <a href="admin-dashboard.html" class="block px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition">
+          Dashboard
+        </a>
+
+        <a href="admin-vagas.html" class="block px-4 py-3 rounded-xl bg-blue-600 text-white font-medium">
+          Gerenciar Vagas
+        </a>
+
+        <a href="admin-precos.html" class="block px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition">
+          Tabela de Preços
+        </a>
+
+        <a href="index.html" class="block px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition">
+          Voltar ao site
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Conteúdo -->
+    <main class="flex-1 p-8">
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold">Gerenciamento de Vagas</h2>
+        <p class="text-slate-400 mt-2">Controle o status das vagas do estacionamento</p>
+      </div>
+
+      <!-- Filtros -->
+      <div class="flex flex-wrap gap-4 mb-6">
+        <button class="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium">Todas</button>
+        <button class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition">Livres</button>
+        <button class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition">Ocupadas</button>
+        <button class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition">Reservadas</button>
+      </div>
+
+      <!-- Tabela -->
+      <div class="bg-[#0d1b31] border border-slate-800 rounded-2xl p-6 overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-slate-700 text-slate-400 text-sm">
+              <th class="pb-3">Vaga</th>
+              <th class="pb-3">Tipo</th>
+              <th class="pb-3">Status</th>
+              <th class="pb-3">Última Atualização</th>
+              <th class="pb-3">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            <tr class="border-b border-slate-800">
+              <td class="py-4">A-01</td>
+              <td class="py-4">Comum</td>
+              <td class="py-4 text-green-400 font-semibold">Livre</td>
+              <td class="py-4 text-slate-400">20:15</td>
+              <td class="py-4">
+                <div class="flex gap-2">
+                  <button class="px-3 py-1 rounded bg-green-500 text-slate-950 font-semibold">Livre</button>
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-red-500 transition">Ocupada</button>
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-yellow-500 transition">Reservada</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-slate-800">
+              <td class="py-4">A-02</td>
+              <td class="py-4">Comum</td>
+              <td class="py-4 text-red-400 font-semibold">Ocupada</td>
+              <td class="py-4 text-slate-400">20:10</td>
+              <td class="py-4">
+                <div class="flex gap-2">
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-green-500 transition">Livre</button>
+                  <button class="px-3 py-1 rounded bg-red-500 text-white font-semibold">Ocupada</button>
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-yellow-500 transition">Reservada</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-slate-800">
+              <td class="py-4">B-01</td>
+              <td class="py-4">Coberta</td>
+              <td class="py-4 text-yellow-400 font-semibold">Reservada</td>
+              <td class="py-4 text-slate-400">20:05</td>
+              <td class="py-4">
+                <div class="flex gap-2">
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-green-500 transition">Livre</button>
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-red-500 transition">Ocupada</button>
+                  <button class="px-3 py-1 rounded bg-yellow-500 text-slate-950 font-semibold">Reservada</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="py-4">C-03</td>
+              <td class="py-4">Elétrica</td>
+              <td class="py-4 text-green-400 font-semibold">Livre</td>
+              <td class="py-4 text-slate-400">19:58</td>
+              <td class="py-4">
+                <div class="flex gap-2">
+                  <button class="px-3 py-1 rounded bg-green-500 text-slate-950 font-semibold">Livre</button>
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-red-500 transition">Ocupada</button>
+                  <button class="px-3 py-1 rounded bg-slate-700 hover:bg-yellow-500 transition">Reservada</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+
+</body>
+</html>

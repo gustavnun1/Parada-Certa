@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento - Parada Certa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#071426] text-white min-h-screen">
+
+  <!-- Topo -->
+  <header class="border-b border-slate-800 bg-[#0d1b31]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold">
+        Parada<span class="text-green-400">Certa</span>
+      </h1>
+
+      <nav class="flex gap-6 text-sm">
+        <a href="index.html" class="text-slate-300 hover:text-white">Início</a>
+        <a href="reserva.html" class="text-slate-300 hover:text-white">Reserva</a>
+        <a href="pagamento.html" class="text-green-400 font-semibold">Pagamento</a>
+        <a href="avaliacoes.html" class="text-slate-300 hover:text-white">Avaliações</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Conteúdo -->
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <div class="grid lg:grid-cols-2 gap-8">
+
+      <!-- Formas de pagamento -->
+      <section class="bg-[#0d1b31] border border-slate-800 rounded-2xl p-6">
+        <h2 class="text-3xl font-bold mb-4">Pagamento</h2>
+        <p class="text-slate-400 mb-8">
+          Escolha como deseja pagar sua reserva.
+        </p>
+
+        <div class="space-y-4">
+          <label class="flex items-center justify-between p-4 rounded-xl border border-blue-500 bg-slate-800 cursor-pointer">
+            <div>
+              <p class="font-semibold">Pix</p>
+              <p class="text-sm text-slate-400">Pagamento instantâneo</p>
+            </div>
+            <input type="radio" name="pagamento" checked class="w-5 h-5 accent-blue-500">
+          </label>
+
+          <label class="flex items-center justify-between p-4 rounded-xl border border-slate-700 bg-slate-800 cursor-pointer">
+            <div>
+              <p class="font-semibold">Cartão de Crédito / Débito</p>
+              <p class="text-sm text-slate-400">Final **** 4242</p>
+            </div>
+            <input type="radio" name="pagamento" class="w-5 h-5 accent-blue-500">
+          </label>
+
+          <label class="flex items-center justify-between p-4 rounded-xl border border-slate-700 bg-slate-800 cursor-pointer">
+            <div>
+              <p class="font-semibold">QR Code</p>
+              <p class="text-sm text-slate-400">Pague pelo app do seu banco</p>
+            </div>
+            <input type="radio" name="pagamento" class="w-5 h-5 accent-blue-500">
+          </label>
+        </div>
+
+        <div class="mt-6">
+          <button class="text-blue-400 hover:underline text-sm">
+            + Adicionar novo cartão
+          </button>
+        </div>
+
+        <button
+          onclick="alert('Pagamento confirmado com sucesso!')"
+          class="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition"
+        >
+          Confirmar Pagamento
+        </button>
+      </section>
+
+      <!-- Resumo -->
+      <aside class="bg-[#0d1b31] border border-slate-800 rounded-2xl p-6">
+        <h3 class="text-2xl font-bold mb-6">Resumo do Pagamento</h3>
+
+        <div class="space-y-4 text-sm">
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Estacionamento</span>
+            <span class="font-medium">Estacionamento Central</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Endereço</span>
+            <span class="font-medium text-right">Av. Paulista, 1000</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Tempo estimado</span>
+            <span class="font-medium">2 horas</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Preço por hora</span>
+            <span class="font-medium text-green-400">R$ 12,00</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Taxa de reserva</span>
+            <span class="font-medium">R$ 3,00</span>
+          </div>
+
+          <div class="flex justify-between pt-2 text-lg font-bold">
+            <span>Total</span>
+            <span class="text-yellow-400">R$ 27,00</span>
+          </div>
+        </div>
+
+        <div class="mt-8 p-4 rounded-xl bg-slate-800 border border-slate-700">
+          <p class="text-sm text-slate-300 mb-2">Observação</p>
+          <p class="text-sm text-slate-400">
+            Após a confirmação, sua reserva será registrada no sistema e o acesso poderá ser liberado via QR Code.
+          </p>
+        </div>
+
+        <button
+          onclick="window.location.href='avaliacoes.html'"
+          class="w-full mt-6 bg-green-500 hover:bg-green-400 text-slate-950 font-bold py-3 rounded-xl transition"
+        >
+          Ir para Avaliações
+        </button>
+      </aside>
+
+    </div>
+  </main>
+
+</body>
+</html>
