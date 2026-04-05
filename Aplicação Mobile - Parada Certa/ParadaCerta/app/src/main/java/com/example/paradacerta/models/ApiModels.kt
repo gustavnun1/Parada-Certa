@@ -2,8 +2,8 @@ package com.example.paradacerta.models
 
 import com.google.gson.annotations.SerializedName
 
-// Body enviado no POST /api/cadastro
-data class CadastroRequest(
+// Body enviado no POST
+data class ClientRequest(
     val nome: String,
     val email: String,
     val senha: String,

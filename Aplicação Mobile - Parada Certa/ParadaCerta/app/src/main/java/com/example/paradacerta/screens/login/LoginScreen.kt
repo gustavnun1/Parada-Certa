@@ -11,13 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.viewmodel.LoginViewModel
 import com.example.paradacerta.ui.theme.CinzaMedio
-import com.example.paradacerta.viewmodel.RegisterViewModel
+import com.example.paradacerta.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,14 +24,24 @@ fun LoginScreen(
     onLogin: () -> Unit = {},
     onRegister: () -> Unit = {},
     onForgotPassword: () -> Unit = {},
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(),
+    userViewModel: UserViewModel  // ← Recebe do NavGraph
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val loginState by viewModel.loginState.collectAsState()
 
+    // Observa quando o login for bem-sucedido
     LaunchedEffect(loginState.isSuccess) {
-        if (loginState.isSuccess) {
+        if (loginState.isSuccess && loginState.userData != null) {
+            // Salva os dados do usuário no UserViewModel (global)
+            loginState.userData?.let { userData ->
+                userViewModel.setUser(
+                    cliente = userData.cliente,
+                    veiculo = userData.veiculo,
+                    endereco = userData.endereco
+                )
+            }
             onLogin()
             viewModel.resetLoginState()
         }
@@ -125,11 +134,19 @@ fun LoginScreen(
             }
 
             loginState.errorMessage?.let { erro ->
-                Text(
-                    text = erro,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = erro,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(12.dp),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))

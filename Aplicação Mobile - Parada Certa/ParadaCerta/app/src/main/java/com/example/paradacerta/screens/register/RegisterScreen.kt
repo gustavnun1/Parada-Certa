@@ -55,6 +55,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.viewmodel.RegisterViewModel
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,8 +71,9 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var cpf by remember { mutableStateOf("") }
-    var dtnascimento by remember { mutableStateOf("") }
+    var cpf by remember { mutableStateOf(TextFieldValue("")) }
+    var dtnascimento by remember { mutableStateOf(TextFieldValue("")) }
+    var numCelular by remember { mutableStateOf(TextFieldValue("")) }
 
     // Dados do Veículo
     var plate by remember { mutableStateOf("") }
@@ -253,37 +256,132 @@ fun RegisterScreen(
 
                     OutlinedTextField(
                         value = cpf,
-                        onValueChange = { cpf = it },
-                            //onValueChange = {
+                        onValueChange = { newValue ->
+                            // Pega apenas os dígitos (máximo 11)
+                            val digits = newValue.text.filter { it.isDigit() }.take(11)
+
                             // Formata CPF: 000.000.000-00
-                            //val digits = it.filter { char -> char.isDigit() }.take(11)
-                                 
-                            //cpf = when {
-                            //    digits.length <= 3 -> digits
-                            //    digits.length <= 6 -> "${digits.substring(0, 3)}.${digits.substring(3)}"
-                            //    digits.length <= 9 -> "${digits.substring(0, 3)}.${digits.substring(3, 6)}.${digits.substring(6)}"
-                            //    else -> "${digits.substring(0, 3)}.${digits.substring(3, 6)}.${digits.substring(6, 9)}-${digits.substring(9)}"
-                            //}
-                            //},
+                            val formatted = when {
+                                digits.length <= 3 -> digits
+                                digits.length <= 6 -> "${digits.substring(0, 3)}.${digits.substring(3)}"
+                                digits.length <= 9 -> "${digits.substring(0, 3)}.${digits.substring(3, 6)}.${digits.substring(6)}"
+                                else -> "${digits.substring(0, 3)}.${digits.substring(3, 6)}.${digits.substring(6, 9)}-${digits.substring(9)}"
+                            }
+
+                            // Calcula a nova posição do cursor
+                            val oldDigitsBeforeCursor = newValue.text.take(newValue.selection.start).count { it.isDigit() }
+                            var newCursorPosition = 0
+                            var digitsCount = 0
+
+                            for (i in formatted.indices) {
+                                if (formatted[i].isDigit()) {
+                                    digitsCount++
+                                }
+                                if (digitsCount >= oldDigitsBeforeCursor) {
+                                    newCursorPosition = i + 1
+                                    break
+                                }
+                            }
+
+                            if (newCursorPosition > formatted.length) {
+                                newCursorPosition = formatted.length
+                            }
+
+                            cpf = TextFieldValue(
+                                text = formatted,
+                                selection = TextRange(newCursorPosition)
+                            )
+                        },
                         label = { Text("CPF") },
+                        placeholder = { Text("000.000.000-00") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     OutlinedTextField(
                         value = dtnascimento,
-                        onValueChange = { dtnascimento = it },
-                        //onValueChange = {
-                        //    // Formata data: DD/MM/AAAA
-                        //    val digits = it.filter { char -> char.isDigit() }.take(8)
-                        //    dtnascimento = when {
-                        //        digits.length <= 2 -> digits
-                        //        digits.length <= 4 -> "${digits.substring(0, 2)}/${digits.substring(2)}"
-                        //        else -> "${digits.substring(0, 2)}/${digits.substring(2, 4)}/${digits.substring(4)}"
-                        //    }
-                        //},
+                        onValueChange = { newValue ->
+                            // Pega apenas os dígitos
+                            val digits = newValue.text.filter { it.isDigit() }.take(8)
+
+                            // Formata a data
+                            val formatted = when {
+                                digits.length <= 2 -> digits
+                                digits.length <= 4 -> "${digits.substring(0, 2)}/${digits.substring(2)}"
+                                else -> "${digits.substring(0, 2)}/${digits.substring(2, 4)}/${digits.substring(4)}"
+                            }
+
+                            // Calcula a nova posição do cursor
+                            val oldDigitsBeforeCursor = newValue.text.take(newValue.selection.start).count { it.isDigit() }
+                            var newCursorPosition = 0
+                            var digitsCount = 0
+
+                            for (i in formatted.indices) {
+                                if (formatted[i].isDigit()) {
+                                    digitsCount++
+                                }
+                                if (digitsCount >= oldDigitsBeforeCursor) {
+                                    newCursorPosition = i + 1
+                                    break
+                                }
+                            }
+
+                            // Se passou do tamanho, coloca no final
+                            if (newCursorPosition > formatted.length) {
+                                newCursorPosition = formatted.length
+                            }
+
+                            dtnascimento = TextFieldValue(
+                                text = formatted,
+                                selection = TextRange(newCursorPosition)
+                            )
+                        },
                         label = { Text("Data de Nascimento") },
+                        placeholder = { Text("DD/MM/AAAA") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = numCelular,
+                        onValueChange = { newValue ->
+                            // Pega apenas os dígitos (máximo 11: DDD + 9 dígitos)
+                            val digits = newValue.text.filter { it.isDigit() }.take(11)
+
+                            // Formata celular: (00) 00000-0000
+                            val formatted = when {
+                                digits.length <= 2 -> digits
+                                digits.length <= 7 -> "(${digits.substring(0, 2)}) ${digits.substring(2)}"
+                                else -> "(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}"
+                            }
+
+                            // Calcula a nova posição do cursor
+                            val oldDigitsBeforeCursor = newValue.text.take(newValue.selection.start).count { it.isDigit() }
+                            var newCursorPosition = 0
+                            var digitsCount = 0
+
+                            for (i in formatted.indices) {
+                                if (formatted[i].isDigit()) {
+                                    digitsCount++
+                                }
+                                if (digitsCount >= oldDigitsBeforeCursor) {
+                                    newCursorPosition = i + 1
+                                    break
+                                }
+                            }
+
+                            if (newCursorPosition > formatted.length) {
+                                newCursorPosition = formatted.length
+                            }
+
+                            numCelular = TextFieldValue(
+                                text = formatted,
+                                selection = TextRange(newCursorPosition)
+                            )
+                        },
+                        label = { Text("Número do Telefone") },
+                        placeholder = { Text("(00) 00000-0000") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -562,8 +660,8 @@ fun RegisterScreen(
                             // Validação básica step 1
                             if (name.isBlank() || email.isBlank() ||
                                 password.length < 6 || password != confirmPassword ||
-                                cpf.replace("[^0-9]".toRegex(), "").length != 11 ||
-                                !dtnascimento.matches(Regex("\\d{2}/\\d{2}/\\d{4}"))) {
+                                cpf.text.replace("[^0-9]".toRegex(), "").length != 11 ||
+                                !dtnascimento.text.matches(Regex("\\d{2}/\\d{2}/\\d{4}"))) {
                                 showError = true
                             } else {
                                 showError = false
@@ -597,8 +695,8 @@ fun RegisterScreen(
                                     nome = name,
                                     email = email,
                                     senha = password,
-                                    cpf = cpf,
-                                    dataNascimento = dtnascimento,
+                                    cpf = cpf.text,
+                                    dataNascimento = dtnascimento.text,
                                     placa = plate,
                                     modeloVeiculo = model,
                                     corVeiculo = selectedVehicleColor,
@@ -608,7 +706,8 @@ fun RegisterScreen(
                                     complemento = complemento,
                                     bairro = bairro,
                                     cidade = cidade,
-                                    estado = estado
+                                    estado = estado,
+                                    numeroCelular = numCelular.text
                                 )
                             } else {
                                 showError = true

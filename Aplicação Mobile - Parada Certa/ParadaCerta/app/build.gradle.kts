@@ -71,4 +71,16 @@ dependencies {
 
     // Security (para criptografia de senha - RECOMENDADO em produção)
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Google Maps
+    implementation("com.google.maps.android:maps-compose:4.3.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    implementation(libs.play.services.maps)
+
+    //Tests
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    testImplementation("junit:junit:4.13.2")
 }
