@@ -1,5 +1,6 @@
 package com.paradacerta.api.service;
 
+import com.paradacerta.api.exception.UsuarioNaoEncontradoException;
 import com.paradacerta.api.model.*;
 import com.paradacerta.api.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -16,38 +17,26 @@ public class DeleteService {
     private final VeiculoRepository  veiculoRepository;
     private final EnderecoRepository enderecoRepository;
 
-    /**
-     * Deleta a conta do cliente e todos os dados relacionados
-     */
     @Transactional
     public ApiResponse deletarConta(String cpf) {
 
-        // 1. Verifica se o cliente existe
-        Optional<Cliente> clienteOpt = clienteRepository.findById(cpf);
+        Cliente cliente = clienteRepository.findById(cpf)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Cliente não encontrado"));
 
-        if (clienteOpt.isEmpty()) {
-            return ApiResponse.erro("Cliente não encontrado");
-        }
-
-        Cliente cliente = clienteOpt.get();
         String placa = cliente.getPlaca();
 
-        // 2. Remove a FK do cliente para o veículo (seta como null)
+        // Remove a FK do cliente para o veículo antes de deletar o veículo
         cliente.setPlaca(null);
         cliente.setVeiculo(null);
         clienteRepository.save(cliente);
 
-        // 3. Deleta o Endereço
         Optional<Endereco> enderecoOpt = enderecoRepository.findByCpfCliente(cpf);
         enderecoOpt.ifPresent(enderecoRepository::delete);
 
-        // 4. Deleta o Veículo
         if (placa != null && !placa.isEmpty()) {
-            Optional<Veiculo> veiculoOpt = veiculoRepository.findById(placa);
-            veiculoOpt.ifPresent(veiculoRepository::delete);
+            veiculoRepository.findById(placa).ifPresent(veiculoRepository::delete);
         }
 
-        // 5. Deleta o Cliente por último
         clienteRepository.delete(cliente);
 
         return ApiResponse.ok("Conta excluída com sucesso!");

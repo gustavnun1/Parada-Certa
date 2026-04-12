@@ -21,7 +21,9 @@ data class ClientRequest(
     val complemento: String = "",
     val bairro: String,
     val cidade: String,
-    val estado: String
+    val estado: String,
+
+    val premium: Boolean = false
 )
 
 // Resposta padrão de todos os endpoints

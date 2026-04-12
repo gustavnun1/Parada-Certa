@@ -59,4 +59,6 @@ public class CadastroRequest {
     @NotBlank(message = "Estado é obrigatório")
     @Size(min = 2, max = 2, message = "Estado deve ter 2 caracteres (UF)")
     private String estado;
+
+    private boolean premium = false;
 }

@@ -46,4 +46,7 @@ public class Cliente {
 
     @Column(name = "veiculo")
     private String veiculo;
+
+    @Column(name = "premium", nullable = false)
+    private boolean premium = false;
 }

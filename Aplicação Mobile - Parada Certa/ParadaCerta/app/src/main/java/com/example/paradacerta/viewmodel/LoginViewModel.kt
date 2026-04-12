@@ -22,30 +22,46 @@ class LoginViewModel : ViewModel() {
     private val _loginState = MutableStateFlow(LoginState())
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
-    fun loginUser(email: String, senha: String) {
+    /**
+     * Realiza login com e-mail ou CPF.
+     * @param login  Valor digitado (e-mail ou CPF formatado)
+     * @param senha  Senha do usuário
+     * @param isCpf  true quando o usuário escolheu login por CPF
+     */
+    fun loginUser(login: String, senha: String, isCpf: Boolean = false) {
         viewModelScope.launch {
             try {
                 _loginState.value = LoginState(isLoading = true)
 
-                val request = LoginRequest(email, senha)
+                val request = if (isCpf) {
+                    LoginRequest(cpf = login, senha = senha)
+                } else {
+                    LoginRequest(email = login, senha = senha)
+                }
+
                 val response = ParadaCertaClient.service.login(request)
                 val body = response.body()
 
                 when {
                     response.isSuccessful && body?.sucesso == true -> {
-                        // Login bem-sucedido, busca dados completos
-                        fetchUserCompleteData(email)
+                        fetchUserCompleteData(login, isCpf)
                     }
 
                     response.code() == 401 || response.code() == 403 -> {
                         _loginState.value = LoginState(
-                            errorMessage = "E-mail ou senha incorretos. Verifique suas credenciais e tente novamente"
+                            errorMessage = if (isCpf)
+                                "CPF ou senha incorretos. Verifique suas credenciais e tente novamente"
+                            else
+                                "E-mail ou senha incorretos. Verifique suas credenciais e tente novamente"
                         )
                     }
 
                     response.code() == 404 -> {
                         _loginState.value = LoginState(
-                            errorMessage = "Usuário não encontrado. Verifique se o e-mail está correto ou crie uma conta"
+                            errorMessage = if (isCpf)
+                                "Usuário não encontrado. Verifique se o CPF está correto ou crie uma conta"
+                            else
+                                "Usuário não encontrado. Verifique se o e-mail está correto ou crie uma conta"
                         )
                     }
 
@@ -56,9 +72,7 @@ class LoginViewModel : ViewModel() {
                     }
 
                     body != null -> {
-                        _loginState.value = LoginState(
-                            errorMessage = "Falha no login: ${body.mensagem}"
-                        )
+                        _loginState.value = LoginState(errorMessage = "Falha no login: ${body.mensagem}")
                     }
 
                     else -> {
@@ -87,9 +101,13 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    private suspend fun fetchUserCompleteData(email: String) {
+    private suspend fun fetchUserCompleteData(login: String, isCpf: Boolean) {
         try {
-            val userResponse = ParadaCertaClient.service.getUserByEmail(email)
+            val userResponse = if (isCpf) {
+                ParadaCertaClient.service.getUserByCpf(login)
+            } else {
+                ParadaCertaClient.service.getUserByEmail(login)
+            }
 
             when {
                 userResponse.isSuccessful && userResponse.body() != null -> {

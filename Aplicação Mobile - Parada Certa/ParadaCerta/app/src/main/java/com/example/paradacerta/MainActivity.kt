@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -46,7 +46,7 @@ fun ParadaCertaApp() {
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
         Screen.Map.route,
-        Screen.Favorites.route,
+        Screen.Scanner.route,
         Screen.Profile.route
     )
 
@@ -139,9 +139,9 @@ private val bottomNavItems = listOf(
         title = "Mapa"
     ),
     BottomNavItem(
-        route = Screen.Favorites.route,
-        icon = Icons.Default.Favorite,
-        title = "Favoritos"
+        route = Screen.Scanner.route,
+        icon = Icons.Default.QrCodeScanner,
+        title = "Scanner"
     ),
     BottomNavItem(
         route = Screen.Profile.route,

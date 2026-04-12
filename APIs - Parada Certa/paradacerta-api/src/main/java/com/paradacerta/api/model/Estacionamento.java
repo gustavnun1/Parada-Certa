@@ -1,7 +1,10 @@
 package com.paradacerta.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalTime;
 
 @Data
@@ -13,7 +16,7 @@ public class Estacionamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String nome;
 
     @Column(nullable = false)
@@ -22,31 +25,35 @@ public class Estacionamento {
     @Column(nullable = false)
     private Integer qtdVagasDisponiveis;
 
-    @Column(nullable = false)
-    private Double avaliacaoMedia;
+    @Column(nullable = false, precision = 3, scale = 2)
+    private BigDecimal avaliacaoMedia;
 
-    @Column(nullable = false)
-    private Double latitude;
+    @Column(nullable = false, precision = 10, scale = 8)
+    private BigDecimal  latitude;
 
-    @Column(nullable = false)
-    private Double longitude;
+    @Column(nullable = false, precision = 11, scale = 8)
+    private BigDecimal  longitude;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 300)
     private String endereco;
 
-    @Column(nullable = false)
-    private Double precoHora;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal  precoHora;
 
     private LocalTime horarioAbertura;
 
     private LocalTime horarioFechamento;
 
     @Column(length = 500)
-    private String fotoPrincipal; // URL ou base64 da foto
+    private String fotoPrincipal;
 
     @Column(length = 1000)
     private String descricao;
 
     @Column(nullable = false)
     private Boolean ativo = true;
+
+    @JsonIgnore
+    @Column(length = 200)
+    private String pixKey;
 }

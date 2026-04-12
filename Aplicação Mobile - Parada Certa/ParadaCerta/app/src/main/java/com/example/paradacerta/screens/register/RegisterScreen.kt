@@ -33,6 +33,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -49,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -57,6 +59,46 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.viewmodel.RegisterViewModel
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
+
+// ---------- Marcas de veículos ----------
+private val VEHICLE_BRANDS = listOf(
+    "Audi", "BYD", "BMW", "Caoa Chery", "Chevrolet", "Citroën",
+    "Dodge", "Ducati", "Fiat", "Ford", "GWM", "Harley-Davidson",
+    "Honda", "Hyundai", "Jeep", "Kawasaki", "Kia", "Land Rover",
+    "Mercedes-Benz", "Mitsubishi", "Nissan", "Peugeot", "RAM",
+    "Renault", "Subaru", "Suzuki", "Toyota", "Triumph",
+    "Volkswagen", "Volvo", "Yamaha"
+).sorted()
+
+// ---------- Força da senha ----------
+private data class PasswordStrength(val label: String, val color: Color, val progress: Float)
+
+private fun evaluatePasswordStrength(password: String): PasswordStrength {
+    if (password.isEmpty()) return PasswordStrength("", Color.Transparent, 0f)
+
+    var score = 0
+    if (password.length >= 8) score++
+    if (password.any { it.isUpperCase() }) score++
+    if (password.any { it.isLowerCase() }) score++
+    if (password.any { it.isDigit() }) score++
+    if (password.any { !it.isLetterOrDigit() }) score++
+
+    return when (score) {
+        1 -> PasswordStrength("Muito fraca", Color(0xFFD32F2F), 0.2f)
+        2 -> PasswordStrength("Fraca", Color(0xFFFF5722), 0.4f)
+        3 -> PasswordStrength("Média", Color(0xFFFFA000), 0.6f)
+        4 -> PasswordStrength("Forte", Color(0xFF388E3C), 0.8f)
+        else -> PasswordStrength("Muito forte", Color(0xFF1B5E20), 1f)
+    }
+}
+
+private fun isPasswordStrong(password: String): Boolean {
+    return password.length >= 8 &&
+            password.any { it.isUpperCase() } &&
+            password.any { it.isLowerCase() } &&
+            password.any { it.isDigit() } &&
+            password.any { !it.isLetterOrDigit() }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +119,8 @@ fun RegisterScreen(
 
     // Dados do Veículo
     var plate by remember { mutableStateOf("") }
-    var model by remember { mutableStateOf("") }
+    var selectedVehicleBrand by remember { mutableStateOf("") }
+    var expandedVehicleBrand by remember { mutableStateOf(false) }
 
     val vehicleTypes = listOf("Carro", "Moto", "Caminhão", "Van")
     val colors = listOf(
@@ -104,6 +147,8 @@ fun RegisterScreen(
 
     var isLoadingCep by remember { mutableStateOf(false) }
     var cepError by remember { mutableStateOf<String?>(null) }
+    var showCidadeDialog by remember { mutableStateOf(false) }
+    var cidadeForaCobertura by remember { mutableStateOf("") }
 
     // Termos de Uso e Política de Privacidade
     var acceptedTerms by remember { mutableStateOf(false) }
@@ -112,29 +157,40 @@ fun RegisterScreen(
     var showTermsDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
 
-    // Atualiza os campos de endereço quando o CEP é buscado
+    // Filtragem de marcas de veículo
+    val filteredBrands = remember(selectedVehicleBrand) {
+        if (selectedVehicleBrand.isBlank()) VEHICLE_BRANDS
+        else VEHICLE_BRANDS.filter { it.contains(selectedVehicleBrand, ignoreCase = true) }
+    }
+
+    // Força da senha
+    val passwordStrength = evaluatePasswordStrength(password)
+
     LaunchedEffect(addressState) {
         isLoadingCep = false
         cepError = addressState.error
-
         if (addressState.error == null) {
             logradouro = addressState.logradouro
             bairro = addressState.bairro
             cidade = addressState.cidade
             estado = addressState.estado
+            // Bloqueia cidades fora da cobertura
+            if (addressState.cidade.isNotBlank() &&
+                !addressState.cidade.trim().equals("São Paulo", ignoreCase = true)
+            ) {
+                cidadeForaCobertura = addressState.cidade
+                showCidadeDialog = true
+            }
         }
     }
 
-    // Observa o estado de registro
     LaunchedEffect(registerState) {
         if (registerState.isSuccess) {
-            // Cadastro realizado com sucesso
             onFinishRegister()
             viewModel.resetRegisterState()
         }
     }
 
-    // Dialog de loading durante cadastro
     if (registerState.isLoading) {
         AlertDialog(
             onDismissRequest = { },
@@ -143,24 +199,19 @@ fun RegisterScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                ) { CircularProgressIndicator() }
             },
             confirmButton = { }
         )
     }
 
-    // Dialog de erro
     registerState.errorMessage?.let { errorMsg ->
         AlertDialog(
             onDismissRequest = { viewModel.resetRegisterState() },
             title = { Text("Erro no Cadastro") },
             text = { Text(errorMsg) },
             confirmButton = {
-                TextButton(onClick = { viewModel.resetRegisterState() }) {
-                    Text("OK")
-                }
+                TextButton(onClick = { viewModel.resetRegisterState() }) { Text("OK") }
             }
         )
     }
@@ -202,20 +253,15 @@ fun RegisterScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
-                // STEP 1 - Dados Pessoais
+                // ── STEP 1 – Dados Pessoais ───────────────────────────────
                 if (step == 1) {
-                    Text(
-                        text = "Dados Pessoais",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
+                    Text("Dados Pessoais", style = MaterialTheme.typography.headlineSmall)
 
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
                         label = { Text("Nome completo") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Person, contentDescription = null)
-                        },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -223,19 +269,39 @@ fun RegisterScreen(
                         value = email,
                         onValueChange = { email = it },
                         label = { Text("E-mail") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email
-                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    // Senha com indicador de força
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Senha (mín. 6 caracteres)") },
+                        label = { Text("Senha") },
                         visualTransformation = PasswordVisualTransformation(),
+                        isError = password.isNotEmpty() && !isPasswordStrong(password),
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    if (password.isNotEmpty()) {
+                        LinearProgressIndicator(
+                            progress = passwordStrength.progress,
+                            color = passwordStrength.color,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text(
+                            text = "Força da senha: ${passwordStrength.label}",
+                            color = passwordStrength.color,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        if (!isPasswordStrong(password)) {
+                            Text(
+                                text = "Use ao menos 8 caracteres, maiúscula, minúscula, número e símbolo",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
 
                     OutlinedTextField(
                         value = confirmPassword,
@@ -257,40 +323,25 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = cpf,
                         onValueChange = { newValue ->
-                            // Pega apenas os dígitos (máximo 11)
                             val digits = newValue.text.filter { it.isDigit() }.take(11)
-
-                            // Formata CPF: 000.000.000-00
                             val formatted = when {
                                 digits.length <= 3 -> digits
                                 digits.length <= 6 -> "${digits.substring(0, 3)}.${digits.substring(3)}"
                                 digits.length <= 9 -> "${digits.substring(0, 3)}.${digits.substring(3, 6)}.${digits.substring(6)}"
                                 else -> "${digits.substring(0, 3)}.${digits.substring(3, 6)}.${digits.substring(6, 9)}-${digits.substring(9)}"
                             }
-
-                            // Calcula a nova posição do cursor
                             val oldDigitsBeforeCursor = newValue.text.take(newValue.selection.start).count { it.isDigit() }
                             var newCursorPosition = 0
                             var digitsCount = 0
-
                             for (i in formatted.indices) {
-                                if (formatted[i].isDigit()) {
-                                    digitsCount++
-                                }
+                                if (formatted[i].isDigit()) digitsCount++
                                 if (digitsCount >= oldDigitsBeforeCursor) {
                                     newCursorPosition = i + 1
                                     break
                                 }
                             }
-
-                            if (newCursorPosition > formatted.length) {
-                                newCursorPosition = formatted.length
-                            }
-
-                            cpf = TextFieldValue(
-                                text = formatted,
-                                selection = TextRange(newCursorPosition)
-                            )
+                            if (newCursorPosition > formatted.length) newCursorPosition = formatted.length
+                            cpf = TextFieldValue(text = formatted, selection = TextRange(newCursorPosition))
                         },
                         label = { Text("CPF") },
                         placeholder = { Text("000.000.000-00") },
@@ -301,40 +352,24 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = dtnascimento,
                         onValueChange = { newValue ->
-                            // Pega apenas os dígitos
                             val digits = newValue.text.filter { it.isDigit() }.take(8)
-
-                            // Formata a data
                             val formatted = when {
                                 digits.length <= 2 -> digits
                                 digits.length <= 4 -> "${digits.substring(0, 2)}/${digits.substring(2)}"
                                 else -> "${digits.substring(0, 2)}/${digits.substring(2, 4)}/${digits.substring(4)}"
                             }
-
-                            // Calcula a nova posição do cursor
                             val oldDigitsBeforeCursor = newValue.text.take(newValue.selection.start).count { it.isDigit() }
                             var newCursorPosition = 0
                             var digitsCount = 0
-
                             for (i in formatted.indices) {
-                                if (formatted[i].isDigit()) {
-                                    digitsCount++
-                                }
+                                if (formatted[i].isDigit()) digitsCount++
                                 if (digitsCount >= oldDigitsBeforeCursor) {
                                     newCursorPosition = i + 1
                                     break
                                 }
                             }
-
-                            // Se passou do tamanho, coloca no final
-                            if (newCursorPosition > formatted.length) {
-                                newCursorPosition = formatted.length
-                            }
-
-                            dtnascimento = TextFieldValue(
-                                text = formatted,
-                                selection = TextRange(newCursorPosition)
-                            )
+                            if (newCursorPosition > formatted.length) newCursorPosition = formatted.length
+                            dtnascimento = TextFieldValue(text = formatted, selection = TextRange(newCursorPosition))
                         },
                         label = { Text("Data de Nascimento") },
                         placeholder = { Text("DD/MM/AAAA") },
@@ -345,39 +380,24 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = numCelular,
                         onValueChange = { newValue ->
-                            // Pega apenas os dígitos (máximo 11: DDD + 9 dígitos)
                             val digits = newValue.text.filter { it.isDigit() }.take(11)
-
-                            // Formata celular: (00) 00000-0000
                             val formatted = when {
                                 digits.length <= 2 -> digits
                                 digits.length <= 7 -> "(${digits.substring(0, 2)}) ${digits.substring(2)}"
                                 else -> "(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}"
                             }
-
-                            // Calcula a nova posição do cursor
                             val oldDigitsBeforeCursor = newValue.text.take(newValue.selection.start).count { it.isDigit() }
                             var newCursorPosition = 0
                             var digitsCount = 0
-
                             for (i in formatted.indices) {
-                                if (formatted[i].isDigit()) {
-                                    digitsCount++
-                                }
+                                if (formatted[i].isDigit()) digitsCount++
                                 if (digitsCount >= oldDigitsBeforeCursor) {
                                     newCursorPosition = i + 1
                                     break
                                 }
                             }
-
-                            if (newCursorPosition > formatted.length) {
-                                newCursorPosition = formatted.length
-                            }
-
-                            numCelular = TextFieldValue(
-                                text = formatted,
-                                selection = TextRange(newCursorPosition)
-                            )
+                            if (newCursorPosition > formatted.length) newCursorPosition = formatted.length
+                            numCelular = TextFieldValue(text = formatted, selection = TextRange(newCursorPosition))
                         },
                         label = { Text("Número do Telefone") },
                         placeholder = { Text("(00) 00000-0000") },
@@ -386,23 +406,19 @@ fun RegisterScreen(
                     )
                 }
 
-                // STEP 2 - Dados do Veículo
+                // ── STEP 2 – Dados do Veículo ─────────────────────────────
                 if (step == 2) {
-                    Text(
-                        text = "Dados do Veículo",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
+                    Text("Dados do Veículo", style = MaterialTheme.typography.headlineSmall)
 
                     OutlinedTextField(
                         value = plate,
-                        onValueChange = {
-                            plate = it.uppercase().take(7)
-                        },
+                        onValueChange = { plate = it.uppercase().take(7) },
                         label = { Text("Placa") },
                         placeholder = { Text("ABC1234") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    // Tipo de veículo
                     ExposedDropdownMenuBox(
                         expanded = expandedVehicleType,
                         onExpandedChange = { expandedVehicleType = it },
@@ -419,35 +435,67 @@ fun RegisterScreen(
                             },
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                         )
-
                         ExposedDropdownMenu(
                             expanded = expandedVehicleType,
                             onDismissRequest = { expandedVehicleType = false }
                         ) {
-                            vehicleTypes.forEach { selectionOption ->
+                            vehicleTypes.forEach { option ->
                                 DropdownMenuItem(
-                                    text = { Text(selectionOption) },
+                                    text = { Text(option) },
                                     onClick = {
-                                        selectedVehicleType = selectionOption
+                                        selectedVehicleType = option
                                         expandedVehicleType = false
                                     },
-                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                                 )
                             }
                         }
                     }
 
-                    OutlinedTextField(
-                        value = model,
-                        onValueChange = { model = it },
-                        label = { Text("Modelo do veículo") },
-                        placeholder = { Text("Ex: Civic, PCX, Hilux") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Build, contentDescription = null)
-                        },
+                    // Marca do veículo — combobox pesquisável
+                    ExposedDropdownMenuBox(
+                        expanded = expandedVehicleBrand && filteredBrands.isNotEmpty(),
+                        onExpandedChange = { expandedVehicleBrand = it },
                         modifier = Modifier.fillMaxWidth()
-                    )
+                    ) {
+                        OutlinedTextField(
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            value = selectedVehicleBrand,
+                            onValueChange = {
+                                selectedVehicleBrand = it
+                                expandedVehicleBrand = true
+                            },
+                            label = { Text("Marca do Veículo") },
+                            placeholder = { Text("Ex: Volkswagen, Fiat, BYD...") },
+                            leadingIcon = { Icon(Icons.Default.Build, contentDescription = null) },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = expandedVehicleBrand && filteredBrands.isNotEmpty()
+                                )
+                            },
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                        )
+                        if (filteredBrands.isNotEmpty()) {
+                            ExposedDropdownMenu(
+                                expanded = expandedVehicleBrand,
+                                onDismissRequest = { expandedVehicleBrand = false },
+                                modifier = Modifier.heightIn(max = 240.dp)
+                            ) {
+                                filteredBrands.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            selectedVehicleBrand = option
+                                            expandedVehicleBrand = false
+                                        },
+                                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                                    )
+                                }
+                            }
+                        }
+                    }
 
+                    // Cor do veículo
                     ExposedDropdownMenuBox(
                         expanded = expandedVehicleColor,
                         onExpandedChange = { expandedVehicleColor = it },
@@ -464,37 +512,32 @@ fun RegisterScreen(
                             },
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                         )
-
                         ExposedDropdownMenu(
                             expanded = expandedVehicleColor,
                             onDismissRequest = { expandedVehicleColor = false }
                         ) {
-                            colors.forEach { selectionOption ->
+                            colors.forEach { option ->
                                 DropdownMenuItem(
-                                    text = { Text(selectionOption) },
+                                    text = { Text(option) },
                                     onClick = {
-                                        selectedVehicleColor = selectionOption
+                                        selectedVehicleColor = option
                                         expandedVehicleColor = false
                                     },
-                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                                 )
                             }
                         }
                     }
                 }
 
-                // STEP 3 - Endereço
+                // ── STEP 3 – Endereço ─────────────────────────────────────
                 if (step == 3) {
-                    Text(
-                        text = "Endereço",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
+                    Text("Endereço", style = MaterialTheme.typography.headlineSmall)
 
                     OutlinedTextField(
                         value = cep,
                         onValueChange = {
                             cep = it.filter { char -> char.isDigit() }.take(8)
-
                             if (cep.length == 8) {
                                 isLoadingCep = true
                                 cepError = null
@@ -562,14 +605,31 @@ fun RegisterScreen(
                         placeholder = { Text("SP") },
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    // Aviso visível quando cidade não é São Paulo
+                    if (cidade.isNotBlank() &&
+                        !cidade.trim().equals("São Paulo", ignoreCase = true)
+                    ) {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "O Parada Certa ainda não está disponível em $cidade. " +
+                                       "Em breve chegaremos à sua cidade!",
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(12.dp),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
                 }
 
-                // STEP 4 - Termos e Política
+                // ── STEP 4 – Termos e Política ────────────────────────────
                 if (step == 4) {
-                    Text(
-                        text = "Termos e Política",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
+                    Text("Termos e Política", style = MaterialTheme.typography.headlineSmall)
 
                     Text(
                         text = "Para finalizar seu cadastro, é necessário aceitar nossos Termos de Uso e Política de Privacidade.",
@@ -577,7 +637,6 @@ fun RegisterScreen(
                         modifier = Modifier.padding(vertical = 16.dp)
                     )
 
-                    // Checkbox Termos de Uso com link
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -596,15 +655,11 @@ fun RegisterScreen(
                                 contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier.offset(y = (-8).dp)
                             ) {
-                                Text(
-                                    text = "Termos de Uso",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                                Text("Termos de Uso", style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }
 
-                    // Checkbox Política de Privacidade com link
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -623,15 +678,11 @@ fun RegisterScreen(
                                 contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier.offset(y = (-8).dp)
                             ) {
-                                Text(
-                                    text = "Política de Privacidade",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                                Text("Política de Privacidade", style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }
 
-                    // Mensagem de erro
                     if (showError) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Card(
@@ -640,7 +691,7 @@ fun RegisterScreen(
                             )
                         ) {
                             Text(
-                                text = "⚠️ Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar",
+                                text = "Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar",
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 modifier = Modifier.padding(12.dp),
                                 style = MaterialTheme.typography.bodySmall
@@ -652,14 +703,13 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão de navegação
             Button(
                 onClick = {
                     when (step) {
                         1 -> {
-                            // Validação básica step 1
                             if (name.isBlank() || email.isBlank() ||
-                                password.length < 6 || password != confirmPassword ||
+                                !isPasswordStrong(password) ||
+                                password != confirmPassword ||
                                 cpf.text.replace("[^0-9]".toRegex(), "").length != 11 ||
                                 !dtnascimento.text.matches(Regex("\\d{2}/\\d{2}/\\d{4}"))) {
                                 showError = true
@@ -669,8 +719,7 @@ fun RegisterScreen(
                             }
                         }
                         2 -> {
-                            // Validação básica step 2
-                            if (plate.isBlank() || model.isBlank()) {
+                            if (plate.isBlank() || selectedVehicleBrand.isBlank()) {
                                 showError = true
                             } else {
                                 showError = false
@@ -678,27 +727,29 @@ fun RegisterScreen(
                             }
                         }
                         3 -> {
-                            // Validação básica step 3
+                            val cidadeValida = cidade.trim().equals("São Paulo", ignoreCase = true)
                             if (cep.length != 8 || logradouro.isBlank() ||
                                 numero.isBlank() || bairro.isBlank() ||
                                 cidade.isBlank() || estado.length != 2) {
                                 showError = true
+                            } else if (!cidadeValida) {
+                                cidadeForaCobertura = cidade
+                                showCidadeDialog = true
                             } else {
                                 showError = false
                                 step++
                             }
                         }
                         4 -> {
-                            // Validação e envio ao banco
                             if (acceptedTerms && acceptedPrivacy) {
                                 viewModel.registerUser(
                                     nome = name,
                                     email = email,
                                     senha = password,
-                                    cpf = cpf.text,
+                                    cpf = cpf.text.filter { it.isDigit() },
                                     dataNascimento = dtnascimento.text,
                                     placa = plate,
-                                    modeloVeiculo = model,
+                                    modeloVeiculo = selectedVehicleBrand,
                                     corVeiculo = selectedVehicleColor,
                                     cep = cep,
                                     logradouro = logradouro,
@@ -718,9 +769,7 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !registerState.isLoading
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(if (step < 4) "Próximo" else "Finalizar Cadastro")
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(Icons.Default.ArrowForward, contentDescription = null)
@@ -729,7 +778,27 @@ fun RegisterScreen(
         }
     }
 
-    // Dialogs dos Termos e Política (mantidos do código original)
+    // ── Dialog: cidade fora de cobertura ─────────────────────────────────
+    if (showCidadeDialog) {
+        AlertDialog(
+            onDismissRequest = { showCidadeDialog = false },
+            title = { Text("Cidade não disponível") },
+            text = {
+                Text(
+                    "O Parada Certa ainda não está disponível em $cidadeForaCobertura.\n\n" +
+                    "Em breve chegaremos à sua cidade! Por enquanto, o aplicativo " +
+                    "atende apenas a cidade de São Paulo."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showCidadeDialog = false }) {
+                    Text("Entendi")
+                }
+            }
+        )
+    }
+
+    // ── Dialogs de Termos e Política ──────────────────────────────────────
     if (showTermsDialog) {
         AlertDialog(
             onDismissRequest = { showTermsDialog = false },
@@ -798,9 +867,7 @@ Para dúvidas: atendimento@paradacerta.com
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showTermsDialog = false }) {
-                    Text("Fechar")
-                }
+                TextButton(onClick = { showTermsDialog = false }) { Text("Fechar") }
             }
         )
     }
@@ -896,9 +963,7 @@ Contato: atendimento@paradacerta.com
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showPrivacyDialog = false }) {
-                    Text("Fechar")
-                }
+                TextButton(onClick = { showPrivacyDialog = false }) { Text("Fechar") }
             }
         )
     }

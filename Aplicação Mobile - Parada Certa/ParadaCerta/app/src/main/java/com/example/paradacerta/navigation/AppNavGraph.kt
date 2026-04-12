@@ -11,11 +11,17 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.paradacerta.screens.favorites.FavoritesScreen
 import com.example.paradacerta.screens.home.HomeScreen
+import com.example.paradacerta.screens.scanner.QrScannerScreen
+import com.example.paradacerta.screens.payment.PaymentScreen
 import com.example.paradacerta.screens.config.ConfigScreen
 import com.example.paradacerta.screens.map.MapScreen
 import com.example.paradacerta.screens.parking.ParkingDetailsScreen
+import com.example.paradacerta.screens.premium.PremiumPaymentScreen
+import com.example.paradacerta.screens.premium.PremiumScreen
+import com.example.paradacerta.screens.profile.PaymentMethodsScreen
+import com.example.paradacerta.viewmodel.PremiumPaymentViewModel
+import com.example.paradacerta.viewmodel.CancelPremiumViewModel
 import com.example.paradacerta.screens.profile.ProfileScreen
 import com.example.paradacerta.screens.register.RegisterScreen
 import com.example.paradacerta.screens.login.LoginScreen
@@ -30,15 +36,28 @@ import java.util.Date
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Map : Screen("map")
-    object Favorites : Screen("favorites")
+    object Scanner : Screen("scanner")
     object Profile : Screen("profile")
     object Register : Screen(route = "register")
     object Login : Screen(route = "login")
     object Config : Screen(route = "config")
-        object ParkingDetails : Screen("parking_details/{parkingId}") {
+    object Premium : Screen(route = "premium")
+    object PremiumPayment : Screen("premium_payment/{planType}/{planPrice}") {
+        fun createRoute(planType: String, planPrice: Double) =
+            "premium_payment/$planType/$planPrice"
+    }
+    object PaymentMethods : Screen(route = "payment_methods")
+    object Payment : Screen("payment/{sessaoId}/{valor}/{nome}/{pixKey}") {
+        fun createRoute(sessaoId: String, valor: Double, nome: String, pixKey: String): String {
+            val safeId = sessaoId.ifBlank { "-" }
+            val safeNome = java.net.URLEncoder.encode(nome, "UTF-8")
+            val safePixKey = java.net.URLEncoder.encode(pixKey.ifBlank { "-" }, "UTF-8")
+            return "payment/$safeId/$valor/$safeNome/$safePixKey"
+        }
+    }
+    object ParkingDetails : Screen("parking_details/{parkingId}") {
         fun createRoute(parkingId: Int) = "parking_details/$parkingId"
     }
-
 }
 
 @Composable
@@ -47,7 +66,6 @@ fun AppNavGraph(
     modifier: Modifier = Modifier,
     startDestination: String = Screen.Login.route,
     userViewModel: UserViewModel = viewModel()
-
 ) {
     val userData by userViewModel.userData.collectAsState()
     val veiculoData by userViewModel.veiculoData.collectAsState()
@@ -84,8 +102,17 @@ fun AppNavGraph(
 
         composable(Screen.Home.route) {
             HomeScreen(
-                onParkingClick = { parkingId ->
-                    navController.navigate(Screen.ParkingDetails.createRoute(parkingId))
+                userViewModel = userViewModel,
+                isPremium = userData?.premium ?: false,
+                onScannerClick = {
+                    navController.navigate(Screen.Scanner.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                onPagarEstacionamento = { sessaoId, valor, nome, pixKey ->
+                    navController.navigate(Screen.Payment.createRoute(sessaoId, valor, nome, pixKey))
                 }
             )
         }
@@ -98,28 +125,69 @@ fun AppNavGraph(
             )
         }
 
-        composable(Screen.Favorites.route) {
-            FavoritesScreen(
-                onParkingClick = { parkingId ->
-                    navController.navigate(Screen.ParkingDetails.createRoute(parkingId))
+        // Aba de scanner (substituiu Favoritos)
+        composable(Screen.Scanner.route) {
+            QrScannerScreen(
+                userViewModel = userViewModel,
+                onEntrada = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
+                onPagamento = { sessaoId, valor, nome, pixKey ->
+                    navController.navigate(
+                        Screen.Payment.createRoute(sessaoId, valor, nome, pixKey)
+                    )
+                }
+            )
+        }
+
+        // Tela de pagamento
+        composable(
+            route = Screen.Payment.route,
+            arguments = listOf(
+                navArgument("sessaoId") { type = NavType.StringType },
+                navArgument("valor") { type = NavType.StringType },
+                navArgument("nome") { type = NavType.StringType },
+                navArgument("pixKey") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val sessaoId = (backStackEntry.arguments?.getString("sessaoId") ?: "").let { if (it == "-") "" else it }
+            val valor = backStackEntry.arguments?.getString("valor")?.toDoubleOrNull() ?: 0.0
+            val nome = java.net.URLDecoder.decode(
+                backStackEntry.arguments?.getString("nome") ?: "", "UTF-8"
+            )
+            val pixKey = java.net.URLDecoder.decode(
+                backStackEntry.arguments?.getString("pixKey") ?: "-", "UTF-8"
+            ).let { if (it == "-") "" else it }
+
+            PaymentScreen(
+                sessaoId = sessaoId,
+                valor = valor,
+                nomeEstacionamento = nome,
+                pixKey = pixKey,
+                userViewModel = userViewModel,
+                onBack = { navController.popBackStack() },
+                onPagamentoConfirmado = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
 
         // Tela de Configuração com Save e Delete
         composable(Screen.Config.route) {
-            // ViewModels para Save e Delete
             val saveViewModel: SaveViewModel = viewModel()
             val deleteViewModel: DeleteViewModel = viewModel()
 
             val saveState by saveViewModel.saveState.collectAsState()
             val deleteState by deleteViewModel.deleteState.collectAsState()
 
-            // Observa quando o save for bem-sucedido
             LaunchedEffect(saveState.isSuccess) {
                 if (saveState.isSuccess) {
-                    // Atualiza os dados no UserViewModel se necessário
-                    // ou simplesmente navega de volta
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Config.route) { inclusive = true }
                     }
@@ -127,7 +195,6 @@ fun AppNavGraph(
                 }
             }
 
-            // Observa quando a exclusão for bem-sucedida
             LaunchedEffect(deleteState.isSuccess) {
                 if (deleteState.isSuccess) {
                     userViewModel.clearUser()
@@ -140,66 +207,35 @@ fun AppNavGraph(
 
             ConfigScreen(
                 cliente = userData ?: Cliente(
-                    nome = "",
-                    cpf = "",
-                    email = "",
-                    senha = "",
-                    dataNascimento = Date(),
-                    numeroCelular = "",
-                    placa = ""
+                    nome = "", cpf = "", email = "", senha = "",
+                    dataNascimento = Date(), numeroCelular = "", placa = ""
                 ),
-                veiculo = veiculoData ?: Veiculo(
-                    nome = "",
-                    placa = "",
-                    cor = "",
-                    responsavel = ""
-                ),
+                veiculo = veiculoData ?: Veiculo(nome = "", placa = "", cor = "", responsavel = ""),
                 endereco = enderecoData ?: Endereco(
-                    cep = "",
-                    logradouro = "",
-                    numero = "",
-                    complemento = "",
-                    bairro = "",
-                    cidade = "",
-                    estado = "",
-                    cpfCliente = ""
+                    cep = "", logradouro = "", numero = "", complemento = "",
+                    bairro = "", cidade = "", estado = "", cpfCliente = ""
                 ),
                 onSaveChanges = { nome, email, senha, dataNascimento, numeroCelular,
                                   modeloVeiculo, corVeiculo, placa,
                                   cep, logradouro, numero, complemento, bairro, cidade, estado ->
-
-                    // Pega o CPF do usuário logado
                     val cpf = userData?.cpf ?: ""
-
                     if (cpf.isNotEmpty()) {
                         saveViewModel.saveUser(
-                            nome = nome,
-                            email = email,
-                            senha = senha,
+                            nome = nome, email = email,
+                            senha = senha.ifEmpty { userData?.senha ?: "" },
                             cpf = cpf,
-                            dataNascimento = dataNascimento,
-                            numeroCelular = numeroCelular,
-                            placa = placa,
-                            modeloVeiculo = modeloVeiculo,
-                            corVeiculo = corVeiculo,
-                            cep = cep,
-                            logradouro = logradouro,
-                            numero = numero,
-                            complemento = complemento,
-                            bairro = bairro,
-                            cidade = cidade,
-                            estado = estado
+                            dataNascimento = dataNascimento, numeroCelular = numeroCelular,
+                            placa = placa, modeloVeiculo = modeloVeiculo, corVeiculo = corVeiculo,
+                            cep = cep, logradouro = logradouro, numero = numero,
+                            complemento = complemento, bairro = bairro, cidade = cidade, estado = estado
                         )
                     }
                 },
                 onDeleteAccount = {
-                    // Pega o CPF do usuário logado e deleta a conta
-                    userData?.cpf?.let { cpf ->
-                        deleteViewModel.deleteAccount(cpf)
-                    }
+                    userData?.cpf?.let { cpf -> deleteViewModel.deleteAccount(cpf) }
                 },
-                saveState = saveState,      // ← Passa o estado para mostrar loading/erro
-                deleteState = deleteState   // ← Passa o estado para mostrar loading/erro
+                saveState = saveState,
+                deleteState = deleteState
             )
         }
 
@@ -208,9 +244,9 @@ fun AppNavGraph(
                 cliente = userData,
                 veiculo = veiculoData,
                 endereco = enderecoData,
-                onConfigClick = {
-                    navController.navigate(Screen.Config.route)
-                },
+                onConfigClick = { navController.navigate(Screen.Config.route) },
+                onPremiumClick = { navController.navigate(Screen.Premium.route) },
+                onPaymentMethodsClick = { navController.navigate(Screen.PaymentMethods.route) },
                 onExitClick = {
                     userViewModel.clearUser()
                     navController.navigate(Screen.Login.route) {
@@ -220,20 +256,73 @@ fun AppNavGraph(
             )
         }
 
-        composable(
-            route = Screen.ParkingDetails.route,
-            arguments = listOf(
-                navArgument("parkingId") {
-                    type = NavType.IntType
+        composable(Screen.Premium.route) {
+            val cancelPremiumViewModel: CancelPremiumViewModel = viewModel()
+            val cancelState by cancelPremiumViewModel.state.collectAsState()
+
+            LaunchedEffect(cancelState.isSuccess) {
+                if (cancelState.isSuccess) {
+                    userViewModel.setPremium(false)
+                    cancelPremiumViewModel.resetState()
+                    navController.popBackStack()
+                }
+            }
+
+            PremiumScreen(
+                onBackClick = { navController.popBackStack() },
+                isPremium = userData?.premium ?: false,
+                onSubscribeMonthly = {
+                    navController.navigate(Screen.PremiumPayment.createRoute("MENSAL", 14.90))
+                },
+                onSubscribeAnnual = {
+                    navController.navigate(Screen.PremiumPayment.createRoute("ANUAL", 149.90))
+                },
+                onCancelPremium = {
+                    userData?.cpf?.let { cancelPremiumViewModel.cancelar(it) }
                 }
             )
+        }
+
+        composable(
+            route = Screen.PremiumPayment.route,
+            arguments = listOf(
+                navArgument("planType") { type = NavType.StringType },
+                navArgument("planPrice") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val planType = backStackEntry.arguments?.getString("planType") ?: "MENSAL"
+            val planPrice = backStackEntry.arguments?.getString("planPrice")?.toDoubleOrNull() ?: 14.90
+            val premiumPaymentViewModel: PremiumPaymentViewModel = viewModel()
+            PremiumPaymentScreen(
+                planType = planType,
+                planPrice = planPrice,
+                userViewModel = userViewModel,
+                viewModel = premiumPaymentViewModel,
+                onBackClick = { navController.popBackStack() },
+                onPaymentSuccess = {
+                    navController.navigate(Screen.Profile.route) {
+                        popUpTo(Screen.Premium.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.PaymentMethods.route) {
+            PaymentMethodsScreen(
+                cpf = userData?.cpf ?: "",
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ParkingDetails.route,
+            arguments = listOf(navArgument("parkingId") { type = NavType.IntType })
         ) { backStackEntry ->
             val parkingId = backStackEntry.arguments?.getInt("parkingId") ?: 0
             ParkingDetailsScreen(
                 parkingId = parkingId,
-                onBackClick = {
-                    navController.popBackStack()
-                }
+                isPremium = userData?.premium ?: false,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

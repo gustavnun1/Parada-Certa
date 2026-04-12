@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.example.paradacerta.models.Cliente
 import com.example.paradacerta.models.Endereco
 import com.example.paradacerta.models.Veiculo
+import androidx.compose.ui.graphics.Color
 import com.example.paradacerta.ui.theme.BrancoFundo
 import com.example.paradacerta.ui.theme.CinzaMedio
 
@@ -26,11 +27,14 @@ import com.example.paradacerta.ui.theme.CinzaMedio
 fun ProfileScreen(
     onExitClick: () -> Unit = {},
     onConfigClick: () -> Unit = {},
+    onPremiumClick: () -> Unit = {},
+    onPaymentMethodsClick: () -> Unit = {},
     cliente: Cliente? = null,
     veiculo: Veiculo? = null,
     endereco: Endereco? = null,
     modifier: Modifier = Modifier
 ) {
+    val isPremium = cliente?.premium ?: false
     var showPrivacyDialog by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
     var showSupportDialog by remember { mutableStateOf(false) }
@@ -161,10 +165,12 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Card do plano
+            val premiumGold = Color(0xFFFFC107)
             Card(
+                onClick = onPremiumClick,
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    containerColor = if (isPremium) Color(0xFF1A1A2E) else MaterialTheme.colorScheme.secondaryContainer
                 )
             ) {
                 Row(
@@ -176,21 +182,22 @@ fun ProfileScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Plano Gratuito",
+                            text = if (isPremium) "Plano Premium" else "Plano Gratuito",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            color = if (isPremium) premiumGold else MaterialTheme.colorScheme.onSecondaryContainer
                         )
                         Text(
-                            text = "Upgrade para Premium",
+                            text = if (isPremium) "Você é assinante Premium!" else "Upgrade para Premium",
                             fontSize = 13.sp,
-                            color = BrancoFundo
+                            color = if (isPremium) Color.White.copy(alpha = 0.8f) else BrancoFundo
                         )
                     }
 
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
+                        tint = if (isPremium) premiumGold else MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -207,7 +214,7 @@ fun ProfileScreen(
                     icon = Icons.Default.Star,
                     title = "Plano Premium",
                     subtitle = "Vantagens exclusivas",
-                    onClick = { /* Ação futura */ }
+                    onClick = onPremiumClick
                 )
 
                 ProfileMenuItem(
@@ -228,7 +235,7 @@ fun ProfileScreen(
                     icon = Icons.Default.AccountBox,
                     title = "Formas de Pagamento",
                     subtitle = "Cartões salvos",
-                    onClick = { /* Ação futura */ }
+                    onClick = onPaymentMethodsClick
                 )
 
                 ProfileMenuItem(

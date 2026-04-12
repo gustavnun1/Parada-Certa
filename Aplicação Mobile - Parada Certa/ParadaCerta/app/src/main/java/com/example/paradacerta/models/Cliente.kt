@@ -9,5 +9,6 @@ data class Cliente(
     val senha: String,
     val dataNascimento: Date,
     val numeroCelular: String = "",
-    val placa: String
+    val placa: String,
+    val premium: Boolean = false
 )
