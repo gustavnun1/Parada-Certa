@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p 'C:/Users/gusta/OneDrive/Documentos/Projetos/Projeto Parada Certa/Aplicação QRCode - ParadaCerta/src/main/java/com/paradacerta/api/model')",
+      "Bash(mkdir -p 'C:/Users/gusta/OneDrive/Documentos/Projetos/Projeto Parada Certa/Aplicação QRCode - ParadaCerta/src/main/java/com/paradacerta/api/repository')",
+      "Bash(mkdir -p 'C:/Users/gusta/OneDrive/Documentos/Projetos/Projeto Parada Certa/Aplicação QRCode - ParadaCerta/src/main/java/com/paradacerta/api/service')",
+      "Bash(mkdir -p 'C:/Users/gusta/OneDrive/Documentos/Projetos/Projeto Parada Certa/Aplicação QRCode - ParadaCerta/src/main/java/com/paradacerta/api/controller')",
+      "Bash(mkdir -p 'C:/Users/gusta/OneDrive/Documentos/Projetos/Projeto Parada Certa/Aplicação QRCode - ParadaCerta/src/main/java/com/paradacerta/api/dto')",
+      "Bash(mvn --version)",
+      "Bash(mvn dependency:resolve -q)",
+      "Bash(java -version)",
+      "Bash(mvn -version)"
+    ]
+  }
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login do Motorista - Parada Certa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#071426] text-white flex items-center justify-center px-4">
+
+  <div class="w-full max-w-md bg-[#0d1b31] border border-slate-800 rounded-3xl p-8 shadow-2xl">
+    
+    <div class="flex flex-col items-center mb-8">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg mb-4">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 17h6m-6 0a2 2 0 01-2-2V9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2m-6 0l-2 3m8-3l2 3M7 10h10"/>
+        </svg>
+      </div>
+
+      <h1 class="text-3xl font-bold text-center">
+        Login do <span class="text-green-400">Motorista</span>
+      </h1>
+
+      <p class="text-slate-400 text-center mt-3">
+        Acesse para buscar vagas, reservar e realizar pagamentos.
+      </p>
+    </div>
+
+    <form class="space-y-5" onsubmit="loginUsuario(event)">
+      <div>
+        <label class="block mb-2 text-sm font-medium">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          placeholder="Digite seu e-mail"
+          class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-green-400"
+        >
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium">Senha</label>
+        <input
+          type="password"
+          id="senha"
+          placeholder="Digite sua senha"
+          class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-green-400"
+        >
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-green-500 hover:bg-green-400 text-slate-950 font-bold py-3 rounded-xl transition"
+      >
+        Entrar para reservar
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-slate-400 mt-6">
+      Não tem conta?
+      <a href="cadastro.html" class="text-green-400 hover:underline">Cadastre-se</a>
+    </p>
+
+    <p class="text-center mt-4">
+      <a href="escolha-login.html" class="text-slate-400 hover:text-white text-sm">
+        ← Voltar para escolha de acesso
+      </a>
+    </p>
+
+  </div>
+
+  <script>
+    async function loginUsuario(event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      if (!email || !senha) {
+        alert("Preencha email e senha.");
+        return;
+      }
+
+      try {
+        const resposta = await fetch("http://localhost:3000/usuarios/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, senha })
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+          alert(dados.mensagem);
+          localStorage.setItem("usuarioLogado", JSON.stringify(dados.usuario));
+          window.location.href = "reserva.html";
+        } else {
+          alert(dados.erro || "Email ou senha inválidos.");
+        }
+      } catch (erro) {
+        console.error(erro);
+        alert("Erro ao conectar com o servidor.");
+      }
+    }
+  </script>
+
+</body>
+</html>

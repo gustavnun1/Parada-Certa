@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento - Parada Certa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#071426] text-white min-h-screen">
+
+  <!-- Topo -->
+  <header class="border-b border-slate-800 bg-[#0d1b31]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">
+          Parada<span class="text-green-400">Certa</span>
+        </h1>
+        <p id="usuarioLogadoTexto" class="text-sm text-slate-400 mt-1"></p>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <nav class="flex gap-6 text-sm">
+          <a href="index.html" class="text-slate-300 hover:text-white">Início</a>
+          <a href="reserva.html" class="text-slate-300 hover:text-white">Reserva</a>
+          <a href="pagamento.html" class="text-green-400 font-semibold">Pagamento</a>
+          <a href="avaliacoes.html" class="text-slate-300 hover:text-white">Avaliações</a>
+        </nav>
+
+        <button
+          onclick="logout()"
+          class="bg-red-500 hover:bg-red-400 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+        >
+          Sair
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo -->
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <div class="grid lg:grid-cols-2 gap-8">
+
+      <!-- Formas de pagamento -->
+      <section class="bg-[#0d1b31] border border-slate-800 rounded-2xl p-6">
+        <h2 class="text-3xl font-bold mb-4">Pagamento</h2>
+        <p class="text-slate-400 mb-8">
+          Escolha como deseja pagar sua reserva.
+        </p>
+
+        <div class="space-y-4">
+          <label class="flex items-center justify-between p-4 rounded-xl border border-blue-500 bg-slate-800 cursor-pointer">
+            <div>
+              <p class="font-semibold">Pix</p>
+              <p class="text-sm text-slate-400">Pagamento instantâneo</p>
+            </div>
+            <input type="radio" name="pagamento" value="Pix" checked class="w-5 h-5 accent-blue-500">
+          </label>
+
+          <label class="flex items-center justify-between p-4 rounded-xl border border-slate-700 bg-slate-800 cursor-pointer">
+            <div>
+              <p class="font-semibold">Cartão de Crédito / Débito</p>
+              <p class="text-sm text-slate-400">Final **** 4242</p>
+            </div>
+            <input type="radio" name="pagamento" value="Cartão" class="w-5 h-5 accent-blue-500">
+          </label>
+
+          <label class="flex items-center justify-between p-4 rounded-xl border border-slate-700 bg-slate-800 cursor-pointer">
+            <div>
+              <p class="font-semibold">QR Code</p>
+              <p class="text-sm text-slate-400">Pague pelo app do seu banco</p>
+            </div>
+            <input type="radio" name="pagamento" value="QR Code" class="w-5 h-5 accent-blue-500">
+          </label>
+        </div>
+
+        <div class="mt-6">
+          <button class="text-blue-400 hover:underline text-sm" type="button">
+            + Adicionar novo cartão
+          </button>
+        </div>
+
+        <button
+          onclick="confirmarPagamento()"
+          class="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition"
+        >
+          Confirmar Pagamento
+        </button>
+      </section>
+
+      <!-- Resumo -->
+      <aside class="bg-[#0d1b31] border border-slate-800 rounded-2xl p-6">
+        <h3 class="text-2xl font-bold mb-6">Resumo do Pagamento</h3>
+
+        <div class="space-y-4 text-sm">
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Motorista</span>
+            <span id="resumoUsuario" class="font-medium">-</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Estacionamento</span>
+            <span id="resumoEstacionamento" class="font-medium">-</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Endereço</span>
+            <span id="resumoEndereco" class="font-medium text-right">-</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Data</span>
+            <span id="resumoData" class="font-medium">-</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Horário</span>
+            <span id="resumoHora" class="font-medium">-</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Tempo estimado</span>
+            <span id="resumoDuracao" class="font-medium">-</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Tipo de vaga</span>
+            <span id="resumoTipoVaga" class="font-medium">-</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Preço por hora</span>
+            <span class="font-medium text-green-400">R$ <span id="resumoPrecoHora">0,00</span></span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-800 pb-3">
+            <span class="text-slate-400">Taxa de reserva</span>
+            <span class="font-medium">R$ <span id="resumoTaxaReserva">0,00</span></span>
+          </div>
+
+          <div class="flex justify-between pt-2 text-lg font-bold">
+            <span>Total</span>
+            <span class="text-yellow-400">R$ <span id="resumoTotal">0,00</span></span>
+          </div>
+        </div>
+
+        <div class="mt-8 p-4 rounded-xl bg-slate-800 border border-slate-700">
+          <p class="text-sm text-slate-300 mb-2">Observação</p>
+          <p class="text-sm text-slate-400">
+            Após a confirmação, sua reserva será registrada no sistema e o acesso poderá ser liberado via QR Code.
+          </p>
+        </div>
+
+        <button
+          onclick="window.location.href='avaliacoes.html'"
+          class="w-full mt-6 bg-green-500 hover:bg-green-400 text-slate-950 font-bold py-3 rounded-xl transition"
+        >
+          Ir para Avaliações
+        </button>
+      </aside>
+
+    </div>
+  </main>
+
+  <script>
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    const reservaAtual = JSON.parse(localStorage.getItem("reservaAtual"));
+
+    if (!usuarioLogado) {
+      alert("Você precisa estar logado para acessar o pagamento.");
+      window.location.href = "login-motorista.html";
+    }
+
+    if (!reservaAtual) {
+      alert("Nenhuma reserva encontrada. Faça uma reserva antes do pagamento.");
+      window.location.href = "reserva.html";
+    }
+
+    document.getElementById("usuarioLogadoTexto").innerText = "Logado como: " + usuarioLogado.nome;
+    document.getElementById("resumoUsuario").innerText = usuarioLogado.nome;
+
+    function formatarValor(valor) {
+      return Number(valor).toFixed(2).replace(".", ",");
+    }
+
+    function preencherResumo() {
+      document.getElementById("resumoEstacionamento").innerText = reservaAtual.estacionamento || "-";
+      document.getElementById("resumoEndereco").innerText = reservaAtual.endereco || "-";
+      document.getElementById("resumoData").innerText = reservaAtual.data || "-";
+      document.getElementById("resumoHora").innerText = reservaAtual.hora || "-";
+
+      const duracaoTexto = Number(reservaAtual.duracao) === 8
+        ? "Diária"
+        : Number(reservaAtual.duracao) + (Number(reservaAtual.duracao) > 1 ? " horas" : " hora");
+
+      document.getElementById("resumoDuracao").innerText = duracaoTexto;
+      document.getElementById("resumoTipoVaga").innerText = reservaAtual.tipoVaga || "-";
+      document.getElementById("resumoPrecoHora").innerText = formatarValor(reservaAtual.precoHora || 0);
+      document.getElementById("resumoTaxaReserva").innerText = formatarValor(reservaAtual.taxaReserva || 0);
+      document.getElementById("resumoTotal").innerText = formatarValor(reservaAtual.total || 0);
+    }
+
+    function confirmarPagamento() {
+      const formaSelecionada = document.querySelector('input[name="pagamento"]:checked');
+
+      if (!formaSelecionada) {
+        alert("Selecione uma forma de pagamento.");
+        return;
+      }
+
+      const pagamentoAtual = {
+        usuario: usuarioLogado,
+        reserva: reservaAtual,
+        formaPagamento: formaSelecionada.value,
+        status: "Pago",
+        dataPagamento: new Date().toLocaleString("pt-BR")
+      };
+
+      localStorage.setItem("pagamentoAtual", JSON.stringify(pagamentoAtual));
+      localStorage.removeItem("reservaAtual");
+
+      alert("Pagamento confirmado com sucesso!");
+      window.location.href = "avaliacoes.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("usuarioLogado");
+      localStorage.removeItem("reservaAtual");
+      window.location.href = "login-motorista.html";
+    }
+
+    preencherResumo();
+  </script>
+
+</body>
+</html>
