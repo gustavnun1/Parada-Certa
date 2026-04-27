@@ -2,15 +2,15 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-require("./config/db");
+const { connect } = require("./config/db");
+const estacionamentoRoutes = require("./routes/estacionamentoRoutes");
 
 const app = express();
-const usuarioRoutes = require("./routes/usuarioRoutes");
 
 app.use(cors());
 app.use(express.json());
 
-app.use("/usuarios", usuarioRoutes);
+app.use("/estacionamentos", estacionamentoRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Parada Certa funcionando 🚗");
@@ -18,6 +18,8 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+connect().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
 });
