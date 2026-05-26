@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Financeiro - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Painel administrativo do estacionamento
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <nav id="pc-navbar" data-page="financeiro" class="flex flex-wrap gap-4 text-sm items-center"></nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- TÍTULO -->
+    <section class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <p class="text-green-600 font-semibold mb-2">
+            Controle financeiro
+          </p>
+
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+            Financeiro
+          </h2>
+
+          <p class="text-slate-600 mt-2 max-w-3xl">
+            Acompanhe pagamentos recebidos, taxas da plataforma, valores líquidos e previsão de repasse do estacionamento.
+          </p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+          <p class="text-sm text-slate-500">Módulo</p>
+          <p class="font-semibold text-slate-900">Financeiro administrativo</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- AVISO -->
+    <section class="mb-8 bg-green-50 border border-green-200 rounded-2xl p-5">
+      <p class="text-green-700 font-bold mb-1">
+        Como funciona
+      </p>
+      <p class="text-sm text-slate-700">
+        Esta tela mostra os pagamentos recebidos pelo seu estacionamento, descontando a taxa da plataforma e
+        apresentando o valor líquido para repasse.
+      </p>
+    </section>
+
+    <!-- CARDS -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Total recebido</p>
+        <h3 id="cardTotalRecebido" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Pagamentos confirmados</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Taxas da plataforma</p>
+        <h3 id="cardTaxas" class="text-3xl font-bold mt-2 text-red-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Descontos aplicados</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Valor líquido</p>
+        <h3 id="cardLiquido" class="text-3xl font-bold mt-2 text-yellow-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Valor final do estacionamento</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Pagamentos hoje</p>
+        <h3 id="cardPagamentosHoje" class="text-3xl font-bold mt-2 text-blue-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Movimentações do dia</p>
+      </div>
+    </section>
+
+    <!-- RESUMO -->
+    <section class="grid lg:grid-cols-3 gap-6 mb-8">
+
+      <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-xl font-bold text-slate-900">Resumo financeiro</h3>
+            <p class="text-sm text-slate-500 mt-1">
+              Visão geral dos recebimentos do estacionamento.
+            </p>
+          </div>
+
+          <select
+            id="filtroPeriodo"
+            onchange="filtrarPagamentos()"
+            class="px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="todos">Todos os períodos</option>
+            <option value="hoje">Hoje</option>
+            <option value="semana">Esta semana</option>
+            <option value="mes">Este mês</option>
+          </select>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-sm text-slate-500">Ticket médio</p>
+            <p id="ticketMedio" class="text-2xl font-bold mt-2 text-slate-900">R$ 0,00</p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-sm text-slate-500">Maior pagamento</p>
+            <p id="maiorPagamento" class="text-2xl font-bold mt-2 text-slate-900">R$ 0,00</p>
+          </div>
+
+          <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+            <p class="text-sm text-orange-700">Pendentes</p>
+            <p id="pagamentosPendentes" class="text-2xl font-bold mt-2 text-orange-700">0</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Repasse previsto</h3>
+
+        <div class="space-y-4 text-sm">
+          <div class="flex justify-between border-b border-slate-200 pb-3">
+            <span class="text-slate-500">Estacionamento</span>
+            <span id="repasseEstacionamento" class="font-medium text-slate-900">—</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-200 pb-3">
+            <span class="text-slate-500">Chave PIX</span>
+            <span id="repassePix" class="font-medium text-slate-900">—</span>
+          </div>
+
+          <div class="flex justify-between border-b border-slate-200 pb-3">
+            <span class="text-slate-500">Taxa da plataforma</span>
+            <span id="repasseTaxa" class="font-medium text-slate-900">—</span>
+          </div>
+
+          <div class="flex justify-between pt-2 text-lg font-bold">
+            <span class="text-slate-900">Valor líquido</span>
+            <span id="valorRepasse" class="text-green-600">—</span>
+          </div>
+        </div>
+
+        <div class="mt-6 p-4 rounded-xl bg-green-50 border border-green-200">
+          <p class="text-sm text-green-700 font-bold mb-1">Observação</p>
+          <p class="text-sm text-slate-700">
+            O valor líquido considera a taxa da plataforma descontada dos pagamentos confirmados no período selecionado.
+          </p>
+        </div>
+      </aside>
+
+    </section>
+
+    <!-- FILTROS -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Buscar pagamento</label>
+          <input
+            id="busca"
+            type="text"
+            placeholder="Cliente, placa ou forma..."
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Status</label>
+          <select
+            id="filtroStatus"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="todos">Todos</option>
+            <option value="Pago">Pago</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Resumo</label>
+          <div class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700">
+            <span id="totalExibido">0</span> pagamentos exibidos
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABELA -->
+    <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-6 py-5 border-b border-slate-200">
+        <h3 class="text-xl font-bold text-slate-900">Histórico financeiro</h3>
+        <p class="text-sm text-slate-500 mt-1">
+          Pagamentos recebidos por reservas e permanências do estacionamento.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="px-6 py-4 text-left font-semibold">Cliente</th>
+              <th class="px-6 py-4 text-left font-semibold">Placa</th>
+              <th class="px-6 py-4 text-left font-semibold">Data</th>
+              <th class="px-6 py-4 text-left font-semibold">Forma</th>
+              <th class="px-6 py-4 text-left font-semibold">Bruto</th>
+              <th class="px-6 py-4 text-left font-semibold">Taxa</th>
+              <th class="px-6 py-4 text-left font-semibold">Líquido</th>
+              <th class="px-6 py-4 text-left font-semibold">Status</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaPagamentos" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+
+      <div id="mensagemVazia" class="hidden px-6 py-10 text-center text-slate-500">
+        Nenhum pagamento encontrado.
+      </div>
+    </section>
+
+  </main>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    const sessao = pcRequireSession();
+    const ESTACIONAMENTO_ID = sessao.estacionamentoId;
+
+    let pagamentos = [];
+
+    const formatarMoeda = pcFormatarMoeda;
+
+    function classeStatus(status) {
+      if (status === "PAGO" || status === "Pago") return "bg-green-100 text-green-700 border border-green-200";
+      if (status === "Pendente") return "bg-orange-100 text-orange-700 border border-orange-200";
+      if (status === "Cancelado") return "bg-red-100 text-red-700 border border-red-200";
+      return "bg-slate-100 text-slate-700 border border-slate-200";
+    }
+
+    function preencherEstacionamentoBox() {
+      pcFetch("/api/estacionamentos/" + ESTACIONAMENTO_ID)
+        .then(est => {
+          document.getElementById("repasseEstacionamento").innerText = est.nome || "—";
+          document.getElementById("repassePix").innerText = est.pixKey || "Não cadastrada";
+        })
+        .catch(() => {
+          document.getElementById("repasseEstacionamento").innerText = "—";
+          document.getElementById("repassePix").innerText = "—";
+        });
+    }
+
+    function periodoAtual() {
+      return document.getElementById("filtroPeriodo").value || "todos";
+    }
+
+    async function carregarPagamentos() {
+      const periodo = periodoAtual();
+      try {
+        pagamentos = await pcFetch("/api/financeiro/" + ESTACIONAMENTO_ID + "/pagamentos?periodo=" + encodeURIComponent(periodo));
+      } catch (e) {
+        console.error(e);
+        pagamentos = [];
+        pcErro(e.message || "Não foi possível carregar os pagamentos no momento.");
+      }
+      renderTabela();
+    }
+
+    async function carregarResumo() {
+      const periodo = periodoAtual();
+      try {
+        const r = await pcFetch("/api/financeiro/" + ESTACIONAMENTO_ID + "/resumo?periodo=" + encodeURIComponent(periodo));
+        document.getElementById("cardTotalRecebido").innerText = formatarMoeda(r.totalRecebido);
+        document.getElementById("cardTaxas").innerText         = formatarMoeda(r.totalTaxas);
+        document.getElementById("cardLiquido").innerText       = formatarMoeda(r.totalLiquido);
+        document.getElementById("cardPagamentosHoje").innerText = r.pagamentosHoje ?? 0;
+        document.getElementById("ticketMedio").innerText       = formatarMoeda(r.ticketMedio);
+        document.getElementById("maiorPagamento").innerText    = formatarMoeda(r.maiorPagamento);
+        document.getElementById("pagamentosPendentes").innerText = r.pendentes ?? 0;
+        document.getElementById("valorRepasse").innerText      = formatarMoeda(r.totalLiquido);
+        const pct = Number(r.taxaPlataformaPercentual || 0) * 100;
+        document.getElementById("repasseTaxa").innerText = pct.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "% sobre cada pagamento";
+      } catch (e) {
+        console.error(e);
+        ["cardTotalRecebido","cardTaxas","cardLiquido","valorRepasse","ticketMedio","maiorPagamento"].forEach(id => document.getElementById(id).innerText = "—");
+        document.getElementById("cardPagamentosHoje").innerText = "—";
+        document.getElementById("pagamentosPendentes").innerText = "—";
+        document.getElementById("repasseTaxa").innerText = "—";
+      }
+    }
+
+    function renderTabela() {
+      const busca = (document.getElementById("busca").value || "").toLowerCase();
+      const statusFiltro = document.getElementById("filtroStatus").value;
+
+      const filtrados = pagamentos.filter(p => {
+        const encontrouBusca =
+          String(p.clienteNome || "").toLowerCase().includes(busca) ||
+          String(p.placa || "").toLowerCase().includes(busca) ||
+          String(p.forma || "").toLowerCase().includes(busca);
+        const encontrouStatus = statusFiltro === "todos" || (statusFiltro === "Pago" && p.status === "PAGO");
+        return encontrouBusca && encontrouStatus;
+      });
+
+      const tabela = document.getElementById("tabelaPagamentos");
+      const mensagemVazia = document.getElementById("mensagemVazia");
+      const totalExibido = document.getElementById("totalExibido");
+
+      tabela.innerHTML = "";
+      totalExibido.innerText = filtrados.length;
+
+      if (filtrados.length === 0) {
+        mensagemVazia.classList.remove("hidden");
+        return;
+      }
+      mensagemVazia.classList.add("hidden");
+
+      filtrados.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition";
+        const statusLabel = p.status === "PAGO" ? "Pago" : (p.status || "—");
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-semibold text-slate-900">${p.clienteNome || "Cliente #" + p.clienteId}</div>
+            <div class="text-xs text-slate-500">Sessao #${p.sessaoId}${p.reservado ? " (reserva)" : ""}</div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-semibold">${p.placa || "—"}</span>
+          </td>
+          <td class="px-6 py-4 text-slate-700">${pcFormatarDataHora(p.dataPagamento)}</td>
+          <td class="px-6 py-4 text-slate-700">${p.forma || "—"}</td>
+          <td class="px-6 py-4 font-semibold text-slate-900">${formatarMoeda(p.valorBruto)}</td>
+          <td class="px-6 py-4 font-semibold text-red-600">${formatarMoeda(p.taxaPlataforma)}</td>
+          <td class="px-6 py-4 font-semibold text-green-600">${formatarMoeda(p.valorLiquido)}</td>
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${classeStatus(p.status)}">${statusLabel}</span>
+          </td>
+        `;
+        tabela.appendChild(tr);
+      });
+    }
+
+    function filtrarPagamentos() {
+      // Mudou periodo no servidor — recarrega tudo
+      carregarPagamentos();
+      carregarResumo();
+    }
+
+    const sair = pcSair;
+
+    preencherEstacionamentoBox();
+    carregarResumo();
+    carregarPagamentos();
+
+    document.getElementById("busca").addEventListener("keyup", renderTabela);
+    document.getElementById("filtroStatus").addEventListener("change", renderTabela);
+  </script>
+
+</body>
+</html>

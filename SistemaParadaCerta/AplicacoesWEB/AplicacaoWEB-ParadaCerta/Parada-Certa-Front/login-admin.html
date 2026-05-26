@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Login do Estacionamento - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-900 flex items-center justify-center px-4 py-10">
+
+  <main class="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl">
+
+    <!-- LOGO / TÍTULO -->
+    <div class="flex flex-col items-center mb-8">
+      <div class="w-16 h-16 rounded-2xl bg-green-600 flex items-center justify-center shadow-sm mb-5">
+        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path 
+            stroke-linecap="round" 
+            stroke-linejoin="round" 
+            stroke-width="2"
+            d="M3 21h18M5 21V7l8-4 6 3v15M9 9h1m-1 4h1m4-4h1m-1 4h1"
+          />
+        </svg>
+      </div>
+
+      <h1 class="text-3xl font-bold text-center text-slate-900">
+        Login do <span class="text-green-600">Estacionamento</span>
+      </h1>
+
+      <p class="text-slate-600 text-center mt-3 leading-relaxed">
+        Acesse o painel administrativo para gerenciar vagas, reservas, financeiro, avaliações e relatórios.
+      </p>
+    </div>
+
+    <!-- AVISO -->
+    <div class="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4">
+      <p class="text-sm text-green-700 font-bold mb-1">
+        Acesso administrativo
+      </p>
+      <p class="text-sm text-slate-700 leading-relaxed">
+        Informe o e-mail e a senha cadastrados na página de cadastro do administrador.
+      </p>
+    </div>
+
+    <div id="mensagemErro" class="hidden mb-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-3 text-sm"></div>
+
+    <!-- FORMULÁRIO -->
+    <form class="space-y-5" onsubmit="loginAdmin(event)">
+      <div>
+        <label class="block mb-2 text-sm font-medium text-slate-700">
+          E-mail do administrador
+        </label>
+
+        <input
+          type="email"
+          id="email"
+          placeholder="Digite seu e-mail"
+          class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 outline-none focus:border-green-500 placeholder-slate-400"
+        />
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium text-slate-700">
+          Senha
+        </label>
+
+        <input
+          type="password"
+          id="senha"
+          placeholder="Digite sua senha"
+          class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 outline-none focus:border-green-500 placeholder-slate-400"
+        />
+        <div class="mt-2 text-right">
+          <button
+            type="button"
+            onclick="abrirRecuperacao()"
+            class="text-sm text-green-700 hover:underline font-semibold"
+          >
+            Esqueceu sua senha?
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition"
+      >
+        Entrar no painel
+      </button>
+    </form>
+
+    <!-- CADASTRO -->
+    <p class="text-center text-sm text-slate-600 mt-6">
+      Ainda não possui cadastro?
+      <a href="cadastro.html" class="text-green-600 hover:underline font-semibold">
+        Cadastrar estacionamento
+      </a>
+    </p>
+
+    <p class="text-center text-xs text-slate-500 mt-4 leading-relaxed">
+      Ao acessar o painel, voce declara ciencia dos
+      <a href="termos-de-uso.html" target="_blank" class="text-green-700 hover:underline font-semibold">Termos de Uso</a>
+      e da
+      <a href="politica-privacidade.html" target="_blank" class="text-green-700 hover:underline font-semibold">Politica de Privacidade</a>.
+    </p>
+
+    <!-- INFORMAÇÕES -->
+    <div class="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+      <p class="text-sm text-slate-900 font-semibold mb-2">
+        O que o administrador acessa?
+      </p>
+
+      <ul class="text-sm text-slate-600 leading-relaxed space-y-1">
+        <li>• Dashboard administrativo</li>
+        <li>• Estacionamentos, vagas e preços</li>
+        <li>• Reservas, financeiro e avaliações</li>
+        <li>• Relatórios e configurações</li>
+      </ul>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mt-5">
+      <a
+        href="escolha-login.html"
+        class="text-center bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition text-sm"
+      >
+        Voltar
+      </a>
+
+      <a
+        href="index.html"
+        class="text-center bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition text-sm"
+      >
+        Página inicial
+      </a>
+    </div>
+
+  </main>
+
+  <div id="modalRecuperacao" class="hidden fixed inset-0 z-50 bg-slate-900/60 px-4 py-8 flex items-center justify-center">
+    <div class="w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl p-6">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Recuperar senha</h2>
+          <p id="recuperacaoSubtitulo" class="text-sm text-slate-600 mt-1">
+            Informe seu e-mail ou CPF para receber o codigo.
+          </p>
+        </div>
+        <button type="button" onclick="fecharRecuperacao()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+      </div>
+
+      <div id="recuperacaoErro" class="hidden mb-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-3 text-sm"></div>
+      <div id="recuperacaoSucesso" class="hidden mb-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl p-3 text-sm"></div>
+
+      <form id="formSolicitarCodigo" class="space-y-4" onsubmit="solicitarCodigoRecuperacao(event)">
+        <div>
+          <label class="block mb-2 text-sm font-medium text-slate-700">E-mail ou CPF</label>
+          <input
+            id="recuperacaoLogin"
+            type="text"
+            autocomplete="username"
+            placeholder="email@empresa.com ou CPF"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 outline-none focus:border-green-500 placeholder-slate-400"
+          />
+        </div>
+        <button id="btnSolicitarCodigo" type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition">
+          Enviar codigo
+        </button>
+      </form>
+
+      <form id="formConfirmarCodigo" class="hidden space-y-4" onsubmit="confirmarRecuperacao(event)">
+        <div>
+          <label class="block mb-2 text-sm font-medium text-slate-700">Codigo recebido</label>
+          <input
+            id="recuperacaoCodigo"
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="000000"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 outline-none focus:border-green-500 placeholder-slate-400 tracking-[0.35em] font-bold text-center"
+          />
+        </div>
+        <div>
+          <label class="block mb-2 text-sm font-medium text-slate-700">Nova senha</label>
+          <input
+            id="recuperacaoNovaSenha"
+            type="password"
+            autocomplete="new-password"
+            placeholder="Minimo 6 caracteres"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 outline-none focus:border-green-500 placeholder-slate-400"
+          />
+        </div>
+        <div>
+          <label class="block mb-2 text-sm font-medium text-slate-700">Confirmar nova senha</label>
+          <input
+            id="recuperacaoConfirmarSenha"
+            type="password"
+            autocomplete="new-password"
+            placeholder="Repita a nova senha"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 outline-none focus:border-green-500 placeholder-slate-400"
+          />
+        </div>
+        <button id="btnConfirmarCodigo" type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition">
+          Redefinir senha
+        </button>
+        <button type="button" onclick="voltarSolicitacaoCodigo()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition">
+          Usar outro e-mail ou CPF
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    function mostrarErro(msg) {
+      const el = document.getElementById("mensagemErro");
+      el.innerText = msg;
+      el.classList.remove("hidden");
+    }
+
+    function limparErro() {
+      const el = document.getElementById("mensagemErro");
+      el.classList.add("hidden");
+      el.innerText = "";
+    }
+
+    async function loginAdmin(event) {
+      event.preventDefault();
+      limparErro();
+
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+
+      if (!email || !senha) {
+        mostrarErro("Preencha o e-mail e a senha.");
+        return;
+      }
+
+      const botao = event.target.querySelector("button[type=submit]");
+      const textoOriginal = botao.innerText;
+      botao.disabled = true;
+      botao.innerText = "Entrando...";
+
+      try {
+        const resp = await pcFetch("/api/admin/login", {
+          method: "POST",
+          body: JSON.stringify({ email, senha })
+        });
+
+        if (!resp || !resp.id) {
+          throw new Error("Resposta invalida do servidor.");
+        }
+
+        pcSetSession(resp);
+        window.location.href = "admin-dashboard.html";
+      } catch (e) {
+        console.error("Erro no login:", e);
+        mostrarErro(e.message || "Nao foi possivel autenticar.");
+      } finally {
+        botao.disabled = false;
+        botao.innerText = textoOriginal;
+      }
+    }
+
+    let recuperacaoLoginAtual = "";
+
+    function somenteDigitos(valor) {
+      return String(valor || "").replace(/\D/g, "");
+    }
+
+    function normalizarLoginRecuperacao(valor) {
+      const texto = String(valor || "").trim();
+      const digitos = somenteDigitos(texto);
+      return digitos.length === 11 ? digitos : texto.toLowerCase();
+    }
+
+    function loginRecuperacaoEhCpf(login) {
+      return /^\d{11}$/.test(login);
+    }
+
+    function limparMensagensRecuperacao() {
+      const erro = document.getElementById("recuperacaoErro");
+      const sucesso = document.getElementById("recuperacaoSucesso");
+      erro.classList.add("hidden");
+      erro.innerText = "";
+      sucesso.classList.add("hidden");
+      sucesso.innerText = "";
+    }
+
+    function mostrarRecuperacaoErro(msg) {
+      const el = document.getElementById("recuperacaoErro");
+      el.innerText = msg;
+      el.classList.remove("hidden");
+    }
+
+    function mostrarRecuperacaoSucesso(msg) {
+      const el = document.getElementById("recuperacaoSucesso");
+      el.innerText = msg;
+      el.classList.remove("hidden");
+    }
+
+    function abrirRecuperacao() {
+      limparMensagensRecuperacao();
+      recuperacaoLoginAtual = "";
+      document.getElementById("formSolicitarCodigo").classList.remove("hidden");
+      document.getElementById("formConfirmarCodigo").classList.add("hidden");
+      document.getElementById("recuperacaoLogin").value = document.getElementById("email").value.trim();
+      document.getElementById("recuperacaoCodigo").value = "";
+      document.getElementById("recuperacaoNovaSenha").value = "";
+      document.getElementById("recuperacaoConfirmarSenha").value = "";
+      document.getElementById("modalRecuperacao").classList.remove("hidden");
+      setTimeout(() => document.getElementById("recuperacaoLogin").focus(), 0);
+    }
+
+    function fecharRecuperacao() {
+      document.getElementById("modalRecuperacao").classList.add("hidden");
+      limparMensagensRecuperacao();
+    }
+
+    function voltarSolicitacaoCodigo() {
+      limparMensagensRecuperacao();
+      document.getElementById("formSolicitarCodigo").classList.remove("hidden");
+      document.getElementById("formConfirmarCodigo").classList.add("hidden");
+      document.getElementById("recuperacaoCodigo").value = "";
+      document.getElementById("recuperacaoNovaSenha").value = "";
+      document.getElementById("recuperacaoConfirmarSenha").value = "";
+      document.getElementById("recuperacaoLogin").focus();
+    }
+
+    async function solicitarCodigoRecuperacao(event) {
+      event.preventDefault();
+      limparMensagensRecuperacao();
+
+      const login = normalizarLoginRecuperacao(document.getElementById("recuperacaoLogin").value);
+      if (!login) {
+        mostrarRecuperacaoErro("Informe o e-mail ou CPF cadastrado.");
+        return;
+      }
+
+      const botao = document.getElementById("btnSolicitarCodigo");
+      const textoOriginal = botao.innerText;
+      botao.disabled = true;
+      botao.innerText = "Enviando...";
+
+      try {
+        const resp = await pcFetch("/api/recuperar-senha/solicitar", {
+          method: "POST",
+          body: JSON.stringify({
+            login,
+            cpf: loginRecuperacaoEhCpf(login),
+            perfil: "ADMIN"
+          })
+        });
+
+        recuperacaoLoginAtual = login;
+        mostrarRecuperacaoSucesso(resp?.mensagem || "Codigo enviado para o e-mail cadastrado.");
+        document.getElementById("formSolicitarCodigo").classList.add("hidden");
+        document.getElementById("formConfirmarCodigo").classList.remove("hidden");
+        setTimeout(() => document.getElementById("recuperacaoCodigo").focus(), 0);
+      } catch (e) {
+        console.error("Erro ao solicitar codigo:", e);
+        mostrarRecuperacaoErro(e.message || "Nao foi possivel enviar o codigo.");
+      } finally {
+        botao.disabled = false;
+        botao.innerText = textoOriginal;
+      }
+    }
+
+    async function confirmarRecuperacao(event) {
+      event.preventDefault();
+      limparMensagensRecuperacao();
+
+      const codigo = somenteDigitos(document.getElementById("recuperacaoCodigo").value);
+      const novaSenha = document.getElementById("recuperacaoNovaSenha").value;
+      const confirmarSenha = document.getElementById("recuperacaoConfirmarSenha").value;
+
+      if (!recuperacaoLoginAtual) {
+        mostrarRecuperacaoErro("Solicite um codigo antes de redefinir a senha.");
+        return;
+      }
+      if (codigo.length !== 6) {
+        mostrarRecuperacaoErro("Informe o codigo de 6 digitos enviado por e-mail.");
+        return;
+      }
+      if (novaSenha.length < 6) {
+        mostrarRecuperacaoErro("A nova senha deve ter pelo menos 6 caracteres.");
+        return;
+      }
+      if (novaSenha !== confirmarSenha) {
+        mostrarRecuperacaoErro("As senhas informadas nao conferem.");
+        return;
+      }
+
+      const botao = document.getElementById("btnConfirmarCodigo");
+      const textoOriginal = botao.innerText;
+      botao.disabled = true;
+      botao.innerText = "Redefinindo...";
+
+      try {
+        const resp = await pcFetch("/api/recuperar-senha/confirmar", {
+          method: "POST",
+          body: JSON.stringify({
+            login: recuperacaoLoginAtual,
+            cpf: loginRecuperacaoEhCpf(recuperacaoLoginAtual),
+            perfil: "ADMIN",
+            codigo,
+            novaSenha
+          })
+        });
+
+        mostrarRecuperacaoSucesso(resp?.mensagem || "Senha redefinida com sucesso.");
+        document.getElementById("email").value = loginRecuperacaoEhCpf(recuperacaoLoginAtual) ? "" : recuperacaoLoginAtual;
+        document.getElementById("senha").value = "";
+        setTimeout(fecharRecuperacao, 1400);
+      } catch (e) {
+        console.error("Erro ao confirmar recuperacao:", e);
+        mostrarRecuperacaoErro(e.message || "Nao foi possivel redefinir a senha.");
+      } finally {
+        botao.disabled = false;
+        botao.innerText = textoOriginal;
+      }
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        fecharRecuperacao();
+      }
+    });
+
+    // Se ja esta logado, pula direto para o dashboard.
+    if (pcGetSession()) {
+      window.location.href = "admin-dashboard.html";
+    }
+  </script>
+
+</body>
+</html>

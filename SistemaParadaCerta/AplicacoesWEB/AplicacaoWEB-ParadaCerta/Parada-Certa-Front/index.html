@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Parada Certa - Plataforma para Estacionamentos</title>
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" 
+    rel="stylesheet"
+  />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            jakarta: ["Plus Jakarta Sans", "sans-serif"],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-900 font-jakarta">
+
+  <!-- HEADER -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between gap-6">
+
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-green-600 flex items-center justify-center">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                d="M3 21h18M5 21V7l8-4 6 3v15M9 9h1m-1 4h1m4-4h1m-1 4h1"
+              />
+            </svg>
+          </div>
+
+          <div>
+            <span class="text-xl font-bold text-slate-900">
+              Parada<span class="text-green-600">Certa</span>
+            </span>
+            <p class="text-xs text-slate-500 mt-1">
+              Gestão inteligente para estacionamentos
+            </p>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#inicio" class="text-sm text-slate-700 hover:text-green-600 font-medium transition">Início</a>
+          <a href="#beneficios" class="text-sm text-slate-700 hover:text-green-600 font-medium transition">Benefícios</a>
+          <a href="#funcionalidades" class="text-sm text-slate-700 hover:text-green-600 font-medium transition">Funcionalidades</a>
+          <a href="#como-funciona" class="text-sm text-slate-700 hover:text-green-600 font-medium transition">Como funciona</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <button
+            onclick="window.location.href='escolha-login.html'"
+            class="hidden sm:flex px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-lg text-sm font-bold transition"
+          >
+            Entrar
+          </button>
+
+          <button
+            onclick="window.location.href='cadastro.html'"
+            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition"
+          >
+            Cadastrar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section id="inicio" class="pt-32 pb-20 bg-gradient-to-br from-green-50 via-white to-slate-100">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+        <div class="space-y-8">
+          
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
+            Transforme seu estacionamento em uma operação
+            <span class="text-green-600">
+              mais organizada e inteligente
+            </span>
+          </h1>
+
+          <p class="text-lg text-slate-600 max-w-xl leading-relaxed">
+            O Parada Certa ajuda administradores e operadores a acompanhar vagas, reservas,
+            QR Code, pagamentos, avaliações, preços e relatórios em um painel web simples e profissional.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-4">
+            <button
+              onclick="window.location.href='escolha-login.html'"
+              class="px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl text-base font-bold transition shadow-sm"
+            >
+              Entrar no Sistema
+            </button>
+
+            <button
+              onclick="window.location.href='cadastro.html'"
+              class="px-8 py-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 rounded-xl text-base font-bold transition"
+            >
+              Cadastrar Estacionamento
+            </button>
+
+            <button
+              onclick="irParaComoFunciona()"
+              class="px-8 py-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 rounded-xl text-base font-bold transition"
+            >
+              Ver como funciona
+            </button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 pt-4 max-w-xl">
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <p class="text-3xl font-bold text-green-600">24h</p>
+              <p class="text-sm text-slate-500 mt-1">Operação acompanhada</p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <p class="text-3xl font-bold text-blue-600">QR</p>
+              <p class="text-sm text-slate-500 mt-1">Entrada e saída</p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <p class="text-3xl font-bold text-slate-900">WEB</p>
+              <p class="text-sm text-slate-500 mt-1">Painel completo</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOCKUP CLARO -->
+        <div class="relative">
+          <span class="absolute -top-3 right-4 z-10 bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+            Exemplo de tela
+          </span>
+          <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-xl">
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden">
+              <div class="flex items-center gap-2 px-5 py-4 border-b border-slate-200 bg-white">
+                <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                <span class="ml-3 text-xs text-slate-500">admin-dashboard.html</span>
+              </div>
+
+              <div class="p-6">
+                <div class="mb-6">
+                  <p class="text-sm text-green-600 font-bold">Painel administrativo</p>
+                  <h3 class="text-2xl font-bold text-slate-900 mt-1">Resumo operacional</h3>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                  <div class="bg-white border border-slate-200 rounded-2xl p-4">
+                    <p class="text-sm text-slate-500">Vagas disponíveis</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2">520</p>
+                  </div>
+
+                  <div class="bg-white border border-slate-200 rounded-2xl p-4">
+                    <p class="text-sm text-slate-500">Estacionamentos</p>
+                    <p class="text-3xl font-bold text-blue-600 mt-2">8</p>
+                  </div>
+
+                  <div class="bg-white border border-slate-200 rounded-2xl p-4">
+                    <p class="text-sm text-slate-500">Preço médio</p>
+                    <p class="text-3xl font-bold text-yellow-600 mt-2">R$ 15</p>
+                  </div>
+
+                  <div class="bg-white border border-slate-200 rounded-2xl p-4">
+                    <p class="text-sm text-slate-500">Status</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2">OK</p>
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4">
+                    <div>
+                      <p class="font-semibold text-slate-900">Reserva recebida</p>
+                      <p class="text-sm text-slate-500">Cliente com vaga reservada pelo aplicativo</p>
+                    </div>
+                    <span class="text-xs text-blue-700 bg-blue-100 border border-blue-200 px-3 py-1 rounded-full font-bold">
+                      Ativa
+                    </span>
+                  </div>
+
+                  <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4">
+                    <div>
+                      <p class="font-semibold text-slate-900">Pagamento confirmado</p>
+                      <p class="text-sm text-slate-500">Financeiro atualizado no painel</p>
+                    </div>
+                    <span class="text-xs text-green-700 bg-green-100 border border-green-200 px-3 py-1 rounded-full font-bold">
+                      Pago
+                    </span>
+                  </div>
+
+                  <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4">
+                    <div>
+                      <p class="font-semibold text-slate-900">Entrada por QR Code</p>
+                      <p class="text-sm text-slate-500">Controle rápido de entrada e saída</p>
+                    </div>
+                    <span class="text-xs text-yellow-700 bg-yellow-100 border border-yellow-200 px-3 py-1 rounded-full font-bold">
+                      QR
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFÍCIOS -->
+  <section id="beneficios" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+
+      <div class="text-center mb-12">
+        <p class="text-green-600 font-bold mb-2">Benefícios</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          Mais controle para o estacionamento, mais confiança para o cliente
+        </h2>
+
+        <p class="text-slate-600 max-w-3xl mx-auto">
+          O Parada Certa ajuda o estacionamento a organizar a operação, receber reservas e acompanhar tudo de forma simples e visual.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-5">
+            <span class="text-2xl">📍</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Mais visibilidade</h3>
+          <p class="text-slate-600">
+            O estacionamento pode ser encontrado por motoristas que procuram vagas próximas, seguras e com informações claras.
+          </p>
+        </div>
+
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-5">
+            <span class="text-2xl">📅</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Reservas organizadas</h3>
+          <p class="text-slate-600">
+            O painel permite acompanhar reservas, placas, horários, valores e status da operação.
+          </p>
+        </div>
+
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <div class="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center mb-5">
+            <span class="text-2xl">💳</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Financeiro claro</h3>
+          <p class="text-slate-600">
+            Visualize pagamentos, taxas, valores líquidos, estimativas e informações importantes para a gestão.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FUNCIONALIDADES -->
+  <section id="funcionalidades" class="py-20 bg-slate-100">
+    <div class="max-w-7xl mx-auto px-6">
+
+      <div class="text-center mb-12">
+        <p class="text-green-600 font-bold mb-2">Funcionalidades</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          Painel web para administrador e operador
+        </h2>
+
+        <p class="text-slate-600 max-w-3xl mx-auto">
+          A plataforma separa a visão de gestão do administrador e a operação diária do funcionário do estacionamento.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 class="text-xl font-bold mb-3 text-green-600">Dashboard</h3>
+          <p class="text-slate-600">
+            Indicadores de vagas, capacidade, preço médio, estacionamentos ativos e resumo geral.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 class="text-xl font-bold mb-3 text-blue-600">Operador</h3>
+          <p class="text-slate-600">
+            Área para acompanhar vagas, veículos, reservas, entrada, saída e validação por QR Code.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 class="text-xl font-bold mb-3 text-yellow-600">Reservas</h3>
+          <p class="text-slate-600">
+            Controle de reservas recebidas, status de permanência e ocupação.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 class="text-xl font-bold mb-3 text-green-600">Financeiro</h3>
+          <p class="text-slate-600">
+            Acompanhamento de valores recebidos, taxas, preço por hora e simulação de receita.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 class="text-xl font-bold mb-3 text-purple-600">Avaliações</h3>
+          <p class="text-slate-600">
+            Consulta de notas e comentários enviados pelos clientes sobre os estacionamentos.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 class="text-xl font-bold mb-3 text-slate-900">Relatórios</h3>
+          <p class="text-slate-600">
+            Indicadores para entender ocupação, reservas, vagas e desempenho.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section id="como-funciona" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+
+      <div class="text-center mb-16">
+        <p class="text-green-600 font-bold mb-2">Como funciona</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          Como o estacionamento usa a plataforma
+        </h2>
+
+        <p class="text-slate-600 max-w-2xl mx-auto">
+          O fluxo foi pensado para facilitar o controle do estacionamento e melhorar a experiência do motorista.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+
+        <div class="bg-slate-50 border border-slate-200 rounded-3xl p-8 text-center shadow-sm">
+          <div class="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-2xl flex items-center justify-center">
+            <span class="text-3xl font-bold text-green-600">1</span>
+          </div>
+
+          <h3 class="text-xl font-bold text-slate-900 mb-3">
+            Cadastro do estacionamento
+          </h3>
+
+          <p class="text-slate-600">
+            O responsável informa dados principais como nome, endereço, vagas, preço e horário de funcionamento.
+          </p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-3xl p-8 text-center shadow-sm">
+          <div class="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-2xl flex items-center justify-center">
+            <span class="text-3xl font-bold text-blue-600">2</span>
+          </div>
+
+          <h3 class="text-xl font-bold text-slate-900 mb-3">
+            Operação e reservas
+          </h3>
+
+          <p class="text-slate-600">
+            O operador acompanha reservas, vagas, veículos, entrada, saída e validação por QR Code.
+          </p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-3xl p-8 text-center shadow-sm">
+          <div class="w-20 h-20 mx-auto mb-6 bg-yellow-100 rounded-2xl flex items-center justify-center">
+            <span class="text-3xl font-bold text-yellow-600">3</span>
+          </div>
+
+          <h3 class="text-xl font-bold text-slate-900 mb-3">
+            Gestão pelo administrador
+          </h3>
+
+          <p class="text-slate-600">
+            O administrador acompanha financeiro, relatórios, avaliações, preços e configurações do estacionamento.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 bg-green-600">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        Comece a gerenciar seu estacionamento com mais controle
+      </h2>
+
+      <p class="text-green-50 mb-8 max-w-2xl mx-auto">
+        Acesse o painel web, cadastre seu estacionamento e acompanhe as principais informações da operação em um só lugar.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          onclick="window.location.href='escolha-login.html'"
+          class="px-8 py-4 bg-white hover:bg-slate-100 text-green-700 rounded-xl font-bold transition"
+        >
+          Entrar no Sistema
+        </button>
+
+        <button
+          onclick="window.location.href='cadastro.html'"
+          class="px-8 py-4 bg-green-700 hover:bg-green-800 border border-green-500 text-white rounded-xl font-bold transition"
+        >
+          Cadastrar Estacionamento
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-12 bg-white border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-6">
+
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M3 21h18M5 21V7l8-4 6 3v15M9 9h1m-1 4h1m4-4h1m-1 4h1"
+                />
+              </svg>
+            </div>
+
+            <span class="text-xl font-bold text-slate-900">
+              Parada<span class="text-green-600">Certa</span>
+            </span>
+          </div>
+
+          <p class="text-sm text-slate-600">
+            Plataforma que conecta motoristas a estacionamentos e oferece um painel web para gestão e operação.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 mb-4">Acesso</h4>
+
+          <ul class="space-y-2 text-sm text-slate-600">
+            <li><a href="escolha-login.html" class="hover:text-green-600 transition">Entrar no Sistema</a></li>
+            <li><a href="cadastro.html" class="hover:text-green-600 transition">Cadastrar Estacionamento</a></li>
+            <li><a href="#como-funciona" class="hover:text-green-600 transition">Como funciona</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 mb-4">Painel</h4>
+
+          <ul class="space-y-2 text-sm text-slate-600">
+            <li><a href="admin-dashboard.html" class="hover:text-green-600 transition">Dashboard</a></li>
+            <li><a href="admin-vagas.html" class="hover:text-green-600 transition">Estacionamentos</a></li>
+            <li><a href="reserva.html" class="hover:text-green-600 transition">Painel de Operação</a></li>
+            <li><a href="pagamento.html" class="hover:text-green-600 transition">Financeiro</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 mb-4">Administração</h4>
+
+          <ul class="space-y-2 text-sm text-slate-600">
+            <li><a href="avaliacoes.html" class="hover:text-green-600 transition">Avaliações</a></li>
+            <li><a href="admin-precos.html" class="hover:text-green-600 transition">Preços</a></li>
+            <li><a href="admin-relatorios.html" class="hover:text-green-600 transition">Relatórios</a></li>
+            <li><a href="admin-configuracoes.html" class="hover:text-green-600 transition">Configurações</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-sm text-slate-500">
+          © 2026 Parada Certa. Todos os direitos reservados.
+        </p>
+
+        <p class="text-sm text-slate-500">
+          Painel web para estacionamentos.
+        </p>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>
+    function irParaComoFunciona() {
+      const alvo = document.getElementById("como-funciona");
+
+      if (alvo) {
+        alvo.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener("click", function(event) {
+        event.preventDefault();
+
+        const target = document.querySelector(this.getAttribute("href"));
+
+        if (target) {
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

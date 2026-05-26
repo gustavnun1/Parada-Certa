@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Avaliações - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Painel administrativo do estacionamento
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <nav id="pc-navbar" data-page="avaliacoes" class="flex flex-wrap gap-4 text-sm items-center"></nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- TÍTULO -->
+    <section class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <p class="text-green-600 font-semibold mb-2">
+            Feedback dos clientes
+          </p>
+
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+            Avaliações dos Estacionamentos
+          </h2>
+
+          <p class="text-slate-600 mt-2 max-w-3xl">
+            Consulte as avaliações registradas pelos motoristas após o uso dos estacionamentos cadastrados na plataforma.
+          </p>
+        </div>
+
+        <button
+          onclick="carregarDados()"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition"
+        >
+          Atualizar avaliações
+        </button>
+      </div>
+    </section>
+
+    <!-- ALERTA ERRO -->
+    <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
+      Não foi possível carregar as avaliações no momento. Tente novamente em instantes.
+    </section>
+
+    <!-- FILTROS -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="grid md:grid-cols-4 gap-4 items-end">
+        <div class="md:col-span-2">
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Estacionamento</label>
+          <select
+            id="selectEstacionamento"
+            onchange="carregarAvaliacoes()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="todos">Todos os estacionamentos</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Filtro de nota</label>
+          <select
+            id="filtroNota"
+            onchange="renderizarAvaliacoes()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="todas">Todas</option>
+            <option value="5">5 estrelas</option>
+            <option value="4">4 estrelas ou mais</option>
+            <option value="3">3 estrelas ou mais</option>
+            <option value="baixas">Notas abaixo de 3</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Resumo</label>
+          <div class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700">
+            <span id="totalExibido">0</span> avaliações exibidas
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARDS -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Total de avaliações</p>
+        <h3 id="cardTotal" class="text-3xl font-bold mt-2 text-slate-900">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Registros encontrados</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Avaliação média</p>
+        <h3 id="cardMedia" class="text-3xl font-bold mt-2 text-yellow-600">0.0</h3>
+        <p class="text-xs text-slate-500 mt-2">Média geral das notas</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Avaliações positivas</p>
+        <h3 id="cardPositivas" class="text-3xl font-bold mt-2 text-green-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Notas iguais ou acima de 4</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Pontos de atenção</p>
+        <h3 id="cardAtencao" class="text-3xl font-bold mt-2 text-red-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Notas abaixo de 3</p>
+      </div>
+    </section>
+
+    <!-- RESUMO VISUAL -->
+    <section class="grid lg:grid-cols-3 gap-6 mb-8">
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">
+          Distribuição das notas
+        </h3>
+
+        <div id="distribuicaoNotas" class="space-y-3"></div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm lg:col-span-2">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">
+          Leitura para o administrador
+        </h3>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+            <p class="text-sm text-green-700 font-semibold">Qualidade percebida</p>
+            <p id="textoQualidade" class="text-slate-700 mt-2 text-sm">
+              Aguardando dados das avaliações.
+            </p>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <p class="text-sm text-blue-700 font-semibold">Operação</p>
+            <p class="text-slate-700 mt-2 text-sm">
+              As avaliações ajudam o administrador a entender atendimento, segurança e experiência do cliente.
+            </p>
+          </div>
+
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <p class="text-sm text-yellow-700 font-semibold">Ação recomendada</p>
+            <p id="textoAcao" class="text-slate-700 mt-2 text-sm">
+              Acompanhar feedbacks para melhorar o serviço.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- LISTA -->
+    <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-6 py-5 border-b border-slate-200">
+        <h3 class="text-xl font-bold text-slate-900">
+          Lista de avaliações
+        </h3>
+        <p class="text-sm text-slate-500 mt-1">
+          Avaliações recebidas em cada estacionamento.
+        </p>
+      </div>
+
+      <div id="listaAvaliacoes" class="divide-y divide-slate-200"></div>
+
+      <div id="mensagemVazia" class="hidden px-6 py-10 text-center text-slate-500">
+        Nenhuma avaliação encontrada para o filtro selecionado.
+      </div>
+    </section>
+
+  </main>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    const sessao = pcRequireSession();
+    const ADMIN_ID = sessao.id;
+
+    const API_ESTACIONAMENTOS = "http://localhost:8080/api/estacionamentos?adminId=" + encodeURIComponent(ADMIN_ID);
+    const API_AVALIACOES = "http://localhost:8080/api/avaliacao/estacionamento";
+
+    let estacionamentos = [];
+    let avaliacoes = [];
+
+    function obterNota(avaliacao) {
+      return Number(
+        avaliacao.nota ??
+        avaliacao.estrelas ??
+        avaliacao.avaliacao ??
+        avaliacao.media ??
+        0
+      );
+    }
+
+    function obterComentario(avaliacao) {
+      return (
+        avaliacao.comentario ??
+        avaliacao.descricao ??
+        avaliacao.feedback ??
+        avaliacao.observacao ??
+        "Sem comentário informado."
+      );
+    }
+
+    function obterCliente(avaliacao) {
+      return (
+        avaliacao.clienteNome ??
+        avaliacao.nomeCliente ??
+        avaliacao.cliente ??
+        avaliacao.usuario ??
+        "Cliente"
+      );
+    }
+
+    function obterData(avaliacao) {
+      const data =
+        avaliacao.dataAvaliacao ??
+        avaliacao.data ??
+        avaliacao.criadoEm ??
+        avaliacao.createdAt ??
+        null;
+
+      if (!data) return "Data não informada";
+
+      try {
+        return new Date(data).toLocaleDateString("pt-BR");
+      } catch {
+        return String(data);
+      }
+    }
+
+    function estrelas(nota) {
+      const n = Math.round(Number(nota || 0));
+      let html = "";
+
+      for (let i = 1; i <= 5; i++) {
+        html += i <= n
+          ? `<span class="text-yellow-500">★</span>`
+          : `<span class="text-slate-300">★</span>`;
+      }
+
+      return html;
+    }
+
+    function mediaAvaliacoes(lista) {
+      if (lista.length === 0) return 0;
+
+      const soma = lista.reduce((total, a) => total + obterNota(a), 0);
+      return soma / lista.length;
+    }
+
+    async function carregarDados() {
+      await carregarEstacionamentos();
+      await carregarAvaliacoes();
+    }
+
+    async function carregarEstacionamentos() {
+      try {
+        const resposta = await fetch(API_ESTACIONAMENTOS);
+
+        if (!resposta.ok) {
+          throw new Error("Erro ao carregar estacionamentos");
+        }
+
+        estacionamentos = await resposta.json();
+
+        document.getElementById("alertaErro").classList.add("hidden");
+
+        preencherSelect();
+
+      } catch (erro) {
+        console.error("Erro ao carregar estacionamentos:", erro);
+        document.getElementById("alertaErro").classList.remove("hidden");
+        estacionamentos = [];
+        preencherSelect();
+      }
+    }
+
+    function preencherSelect() {
+      const select = document.getElementById("selectEstacionamento");
+      const valorAtual = select.value;
+
+      select.innerHTML = `<option value="todos">Todos os estacionamentos</option>`;
+
+      estacionamentos.forEach((e) => {
+        const option = document.createElement("option");
+        option.value = e.id;
+        option.textContent = `${e.nome || "Sem nome"} - ID ${e.id}`;
+        select.appendChild(option);
+      });
+
+      if (valorAtual) {
+        select.value = valorAtual;
+      }
+    }
+
+    async function carregarAvaliacoes() {
+      const selecionado = document.getElementById("selectEstacionamento").value;
+
+      try {
+        document.getElementById("alertaErro").classList.add("hidden");
+
+        if (selecionado === "todos") {
+          const respostas = await Promise.all(
+            estacionamentos.map(async (estacionamento) => {
+              try {
+                const resposta = await fetch(`${API_AVALIACOES}/${estacionamento.id}`);
+
+                if (!resposta.ok) {
+                  return [];
+                }
+
+                const dados = await resposta.json();
+
+                return dados.map((avaliacao) => ({
+                  ...avaliacao,
+                  estacionamentoId: estacionamento.id,
+                  estacionamentoNome: estacionamento.nome
+                }));
+
+              } catch {
+                return [];
+              }
+            })
+          );
+
+          avaliacoes = respostas.flat();
+
+        } else {
+          const resposta = await fetch(`${API_AVALIACOES}/${selecionado}`);
+
+          if (!resposta.ok) {
+            throw new Error("Erro ao carregar avaliações");
+          }
+
+          const dados = await resposta.json();
+          const estacionamento = estacionamentos.find((e) => String(e.id) === String(selecionado));
+
+          avaliacoes = dados.map((avaliacao) => ({
+            ...avaliacao,
+            estacionamentoId: selecionado,
+            estacionamentoNome: estacionamento?.nome || `Estacionamento ${selecionado}`
+          }));
+        }
+
+        renderizarAvaliacoes();
+
+      } catch (erro) {
+        console.error("Erro ao carregar avaliações:", erro);
+        document.getElementById("alertaErro").classList.remove("hidden");
+        avaliacoes = [];
+        renderizarAvaliacoes();
+      }
+    }
+
+    function filtrarPorNota(lista) {
+      const filtro = document.getElementById("filtroNota").value;
+
+      return lista.filter((a) => {
+        const nota = obterNota(a);
+
+        if (filtro === "todas") return true;
+        if (filtro === "5") return nota === 5;
+        if (filtro === "4") return nota >= 4;
+        if (filtro === "3") return nota >= 3;
+        if (filtro === "baixas") return nota < 3;
+
+        return true;
+      });
+    }
+
+    function renderizarAvaliacoes() {
+      const listaFiltrada = filtrarPorNota(avaliacoes);
+
+      atualizarCards(listaFiltrada);
+      atualizarDistribuicao(listaFiltrada);
+      atualizarTextoResumo(listaFiltrada);
+      preencherLista(listaFiltrada);
+    }
+
+    function atualizarCards(lista) {
+      const total = lista.length;
+      const media = mediaAvaliacoes(lista);
+      const positivas = lista.filter((a) => obterNota(a) >= 4).length;
+      const atencao = lista.filter((a) => obterNota(a) < 3).length;
+
+      document.getElementById("cardTotal").innerText = total;
+      document.getElementById("cardMedia").innerText = media.toFixed(1);
+      document.getElementById("cardPositivas").innerText = positivas;
+      document.getElementById("cardAtencao").innerText = atencao;
+      document.getElementById("totalExibido").innerText = total;
+    }
+
+    function atualizarDistribuicao(lista) {
+      const container = document.getElementById("distribuicaoNotas");
+      container.innerHTML = "";
+
+      for (let nota = 5; nota >= 1; nota--) {
+        const quantidade = lista.filter((a) => Math.round(obterNota(a)) === nota).length;
+        const porcentagem = lista.length > 0 ? Math.round((quantidade / lista.length) * 100) : 0;
+
+        const linha = document.createElement("div");
+        linha.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium text-slate-700">${nota} estrelas</span>
+            <span class="text-sm text-slate-500">${quantidade}</span>
+          </div>
+
+          <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+            <div class="h-full bg-green-600 rounded-full" style="width: ${porcentagem}%"></div>
+          </div>
+        `;
+
+        container.appendChild(linha);
+      }
+    }
+
+    function atualizarTextoResumo(lista) {
+      const media = mediaAvaliacoes(lista);
+
+      const textoQualidade = document.getElementById("textoQualidade");
+      const textoAcao = document.getElementById("textoAcao");
+
+      if (lista.length === 0) {
+        textoQualidade.innerText = "Ainda não há avaliações carregadas para este filtro.";
+        textoAcao.innerText = "Acompanhar novas avaliações conforme os clientes utilizarem o serviço.";
+        return;
+      }
+
+      if (media >= 4) {
+        textoQualidade.innerText = "A percepção dos clientes está positiva, indicando boa experiência no estacionamento.";
+        textoAcao.innerText = "Manter o padrão de atendimento e usar os comentários positivos como referência.";
+      } else if (media >= 3) {
+        textoQualidade.innerText = "A avaliação está regular, com espaço para melhoria na experiência do cliente.";
+        textoAcao.innerText = "Verificar comentários recorrentes e priorizar ajustes operacionais.";
+      } else {
+        textoQualidade.innerText = "A média está baixa e indica necessidade de atenção do administrador.";
+        textoAcao.innerText = "Analisar reclamações, atendimento, segurança, preço e tempo de permanência.";
+      }
+    }
+
+    function preencherLista(lista) {
+      const container = document.getElementById("listaAvaliacoes");
+      const mensagemVazia = document.getElementById("mensagemVazia");
+
+      container.innerHTML = "";
+
+      if (lista.length === 0) {
+        mensagemVazia.classList.remove("hidden");
+        return;
+      }
+
+      mensagemVazia.classList.add("hidden");
+
+      lista.forEach((avaliacao) => {
+        const nota = obterNota(avaliacao);
+        const comentario = obterComentario(avaliacao);
+        const cliente = obterCliente(avaliacao);
+        const data = obterData(avaliacao);
+        const estacionamentoNome = avaliacao.estacionamentoNome || "Estacionamento";
+
+        const item = document.createElement("div");
+        item.className = "p-6 hover:bg-slate-50 transition";
+
+        item.innerHTML = `
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h4 class="font-bold text-slate-900">${cliente}</h4>
+                <span class="text-lg">${estrelas(nota)}</span>
+                <span class="text-sm font-bold text-slate-700">${nota.toFixed(1)}</span>
+              </div>
+
+              <p class="text-sm text-slate-500 mb-2">
+                ${estacionamentoNome} • ${data}
+              </p>
+
+              <p class="text-slate-700 leading-relaxed">
+                ${comentario}
+              </p>
+            </div>
+
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+                nota >= 4
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : nota >= 3
+                    ? "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                    : "bg-red-100 text-red-700 border border-red-200"
+              }">
+                ${
+                  nota >= 4
+                    ? "Positiva"
+                    : nota >= 3
+                      ? "Regular"
+                      : "Atenção"
+                }
+              </span>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(item);
+      });
+    }
+
+    const sair = pcSair;
+
+    carregarDados();
+  </script>
+
+</body>
+</html>

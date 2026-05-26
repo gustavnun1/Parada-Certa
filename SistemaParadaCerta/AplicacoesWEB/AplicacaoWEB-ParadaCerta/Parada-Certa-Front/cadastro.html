@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Cadastro do Estacionamento - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Cadastro para administradores de estacionamento
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a
+          href="index.html"
+          class="text-sm text-slate-700 hover:text-green-600 font-medium"
+        >
+          Página inicial
+        </a>
+
+        <a
+          href="login-admin.html"
+          class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition"
+        >
+          Entrar
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-6xl mx-auto px-6 py-10">
+
+    <!-- TÍTULO -->
+    <section class="mb-8">
+      <p class="text-green-600 font-semibold mb-2">
+        Área para donos e administradores
+      </p>
+
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+        Cadastre seu estacionamento
+      </h2>
+
+      <p class="text-slate-600 mt-2 max-w-3xl">
+        Informe os dados do responsável e do estacionamento para demonstrar como o painel administrativo será ativado dentro da plataforma Parada Certa.
+      </p>
+    </section>
+
+    <!-- AVISO -->
+    <section class="mb-8 bg-green-50 border border-green-200 rounded-2xl p-5">
+      <p class="text-green-700 font-bold mb-1">
+        Cadastro administrativo
+      </p>
+      <p class="text-sm text-slate-700">
+        Preencha os dados do responsável, do estacionamento e do primeiro operador.
+        Ao concluir, o administrador será criado e você será direcionado para configurar vagas e fotos.
+      </p>
+    </section>
+
+    <section id="mensagemErro" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 text-sm"></section>
+
+    <!-- FORM -->
+    <form onsubmit="cadastrarEstacionamento(event)" class="grid lg:grid-cols-2 gap-8">
+
+      <!-- RESPONSÁVEL -->
+      <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold text-slate-900 mb-6">
+          Dados do responsável
+        </h3>
+
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Nome completo
+            </label>
+            <input
+              id="nomeResponsavel"
+              type="text"
+              placeholder="Ex: Rafael Menezes"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              E-mail administrativo
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="admin@estacionamento.com"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Telefone
+            </label>
+            <input
+              id="telefone"
+              type="text"
+              placeholder="(11) 99999-9999"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              required
+            />
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                CPF
+              </label>
+              <input
+                id="cpfResponsavel"
+                type="text"
+                inputmode="numeric"
+                maxlength="14"
+                placeholder="000.000.000-00"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Data de nascimento
+              </label>
+              <input
+                id="dataNascimentoResponsavel"
+                type="date"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+              />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Senha
+              </label>
+              <input
+                id="senha"
+                type="password"
+                placeholder="Crie uma senha"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Confirmar senha
+              </label>
+              <input
+                id="confirmarSenha"
+                type="password"
+                placeholder="Repita a senha"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ESTACIONAMENTO -->
+      <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold text-slate-900 mb-6">
+          Dados do estacionamento
+        </h3>
+
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Nome do estacionamento
+            </label>
+            <input
+              id="nomeEstacionamento"
+              type="text"
+              placeholder="Ex: Estacionamento Central"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              required
+            />
+          </div>
+
+          <!-- Endereço detalhado (com ViaCEP + Nominatim) -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">CNPJ</label>
+              <input
+                id="cnpj"
+                type="text"
+                inputmode="numeric"
+                maxlength="18"
+                placeholder="00.000.000/0000-00"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Nome fantasia</label>
+              <input
+                id="nomeFantasia"
+                type="text"
+                maxlength="200"
+                placeholder="Nome exibido para clientes"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Razao social</label>
+            <input
+              id="razaoSocial"
+              type="text"
+              maxlength="200"
+              placeholder="Razao social registrada no CNPJ"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              required
+            />
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">CEP</label>
+              <input
+                id="cep"
+                type="text"
+                inputmode="numeric"
+                maxlength="9"
+                placeholder="00000-000"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              />
+              <p id="cepStatus" class="text-xs text-slate-500 mt-1 min-h-[1rem]"></p>
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Logradouro</label>
+              <input id="logradouro" type="text" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Número</label>
+              <input id="numero" type="text" maxlength="10" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Complemento</label>
+              <input id="complemento" type="text" maxlength="100" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Bairro</label>
+              <input id="bairro" type="text" maxlength="100" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Cidade</label>
+              <input id="cidade" type="text" maxlength="100" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">UF</label>
+              <input id="uf" type="text" maxlength="2" placeholder="SP" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 uppercase focus:outline-none focus:border-green-500" />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-3 mt-2">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Latitude (auto)</label>
+              <input id="latitude" type="text" readonly placeholder="—" class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 cursor-not-allowed" />
+            </div>
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Longitude (auto)</label>
+              <input id="longitude" type="text" readonly placeholder="—" class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 cursor-not-allowed" />
+            </div>
+          </div>
+
+          <p id="geoStatus" class="text-xs text-slate-500 mt-1 min-h-[1rem]"></p>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Endereço final (gerado automaticamente; opcional sobrescrever)
+            </label>
+            <input
+              id="endereco"
+              type="text"
+              maxlength="300"
+              placeholder="Rua, número - bairro, cidade - UF"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+            />
+            <p class="text-xs text-slate-500 mt-1">
+              Formato padrão: "logradouro, número - bairro, cidade - UF". Deixe vazio para usar o texto montado automaticamente.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Chave Pix (para recebimentos)
+            </label>
+            <input
+              id="pixKey"
+              type="text"
+              maxlength="200"
+              placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+            />
+            <p class="text-xs text-slate-500 mt-1">
+              Pode ser CPF (11 dígitos), CNPJ (14 dígitos), e-mail, telefone com DDD ou chave aleatória.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Total de vagas
+              </label>
+              <input
+                id="qtdVagasTotais"
+                type="number"
+                min="1"
+                placeholder="Ex: 100"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Preço por hora
+              </label>
+              <input
+                id="precoHora"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex: 15.00"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <label class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <input id="permiteReserva" type="checkbox" class="w-5 h-5 accent-green-600" />
+              <span class="font-medium text-slate-700">Permitir reservas pelo aplicativo</span>
+            </label>
+
+            <div id="grupoQtdVagasReservaveis" class="hidden">
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Vagas para reserva
+              </label>
+              <input
+                id="qtdVagasReservaveis"
+                type="number"
+                min="1"
+                value="1"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+              />
+              <p class="text-xs text-slate-500 mt-1">A quantidade deve ser menor ou igual ao total de vagas.</p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Horário de abertura
+              </label>
+              <input
+                id="horarioAbertura"
+                type="time"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Horário de fechamento
+              </label>
+              <input
+                id="horarioFechamento"
+                type="time"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Descrição
+            </label>
+            <textarea
+              id="descricao"
+              rows="4"
+              placeholder="Descreva diferenciais, segurança, localização e benefícios..."
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- OPERADOR INICIAL DO KIOSK -->
+      <section class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div class="mb-4">
+          <p class="text-blue-600 font-bold mb-1">Operador do kiosk</p>
+          <h3 class="text-xl font-bold text-slate-900">Login que vai operar o balcão (totem de impressão de QR)</h3>
+          <p class="text-sm text-slate-600 mt-1">
+            O operador é a pessoa que vai gerar QR Codes na aplicação do balcão. É um login separado do administrador web —
+            essa conta acessa apenas o totem (ParadaCertaManager). Você poderá adicionar mais operadores depois em "Usuários".
+          </p>
+        </div>
+
+        <!-- Aviso LGPD -->
+        <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+          <p class="text-yellow-700 font-bold mb-1 text-sm">Dados pessoais (LGPD)</p>
+          <p class="text-sm text-slate-700">
+            CPF, e-mail, telefone e endereço do operador são tratados conforme a LGPD: o CPF aparece mascarado
+            em listagens (***.***.***-XX) e só é visível na tela de edição do próprio operador.
+            O CPF é imutável após o cadastro.
+          </p>
+        </div>
+
+        <!-- Bloco: identificação -->
+        <h4 class="text-lg font-bold text-slate-900 mb-3">Identificação</h4>
+        <div class="grid md:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Nome completo</label>
+            <input id="opNome" type="text" placeholder="Ex: Carlos da Recepção" maxlength="100"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              CPF <span class="text-xs text-slate-500 font-normal">(11 dígitos)</span>
+            </label>
+            <input id="opCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+            <p class="text-xs text-slate-500 mt-1">Imutável após o cadastro.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">E-mail</label>
+            <input id="opEmail" type="email" maxlength="200" placeholder="operador@empresa.com"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Telefone</label>
+            <input id="opTelefone" type="text" inputmode="tel" maxlength="20" placeholder="(11) 99999-9999"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Usuário (login no kiosk)</label>
+            <input id="opUsuario" type="text" placeholder="Ex: operador1" minlength="3" maxlength="50"
+              pattern="[A-Za-z0-9._\-]+"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+            <p class="text-xs text-slate-500 mt-1">Apenas letras, números, ponto, hífen e underline.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Senha</label>
+            <input id="opSenha" type="password" placeholder="Mínimo 6 caracteres" minlength="6"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+            <p class="text-xs text-slate-500 mt-1">A senha é armazenada de forma segura.</p>
+          </div>
+        </div>
+
+        <!-- Bloco: endereço -->
+        <h4 class="text-lg font-bold text-slate-900 mt-8 mb-3">Endereço do operador</h4>
+
+        <div class="grid md:grid-cols-6 gap-5">
+          <div class="md:col-span-2">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">CEP</label>
+            <input id="opCep" type="text" inputmode="numeric" maxlength="9" placeholder="00000-000"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+            <p id="opCepStatus" class="text-xs text-slate-500 mt-1 min-h-[1rem]"></p>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Logradouro</label>
+            <input id="opLogradouro" type="text" maxlength="200"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Número</label>
+            <input id="opNumero" type="text" maxlength="10"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Complemento</label>
+            <input id="opComplemento" type="text" maxlength="100"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Bairro</label>
+            <input id="opBairro" type="text" maxlength="100"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+
+          <div class="md:col-span-4">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Cidade</label>
+            <input id="opCidade" type="text" maxlength="100"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">UF</label>
+            <input id="opUf" type="text" maxlength="2" placeholder="SP"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 uppercase focus:outline-none focus:border-green-500" required />
+          </div>
+        </div>
+      </section>
+
+      <!-- PLANO -->
+      <section class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div class="grid lg:grid-cols-3 gap-6 items-center">
+          <div class="lg:col-span-2">
+            <p class="text-green-600 font-bold mb-2">
+              Plano recomendado
+            </p>
+
+            <h3 class="text-2xl font-bold text-slate-900">
+              Plano Profissional para administradores
+            </h3>
+
+            <p class="text-slate-600 mt-2">
+              Com o plano premium, o estacionamento libera gestão completa, relatórios, financeiro, reservas, preços e acompanhamento operacional.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-3 mt-5">
+              <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                <p class="font-bold text-green-700">Reservas</p>
+                <p class="text-sm text-slate-600 mt-1">Receba clientes pelo app.</p>
+              </div>
+
+              <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p class="font-bold text-blue-700">Relatórios</p>
+                <p class="text-sm text-slate-600 mt-1">Acompanhe operação e receita.</p>
+              </div>
+
+              <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                <p class="font-bold text-yellow-700">Financeiro</p>
+                <p class="text-sm text-slate-600 mt-1">Controle pagamentos e preços.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+            <p class="text-sm text-slate-500">Plano Standard</p>
+            <p class="text-4xl font-bold text-slate-900 mt-2">
+              R$ 149,90
+            </p>
+            <p class="text-sm text-slate-500 mt-1">/ mês</p>
+
+            <label class="flex items-center gap-3 mt-5">
+              <input id="planoPremium" type="checkbox" class="w-5 h-5 accent-green-600" checked />
+              <span class="text-sm font-medium text-slate-700">
+                Ativar demonstração
+              </span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- BOTÕES -->
+      <section class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h3 class="text-xl font-bold text-slate-900">Fotos do estabelecimento</h3>
+            <p class="text-sm text-slate-600 mt-1">
+              O cadastro inicial entra como BASIC trial, com limite de 3 fotos. Aceita JPG, PNG ou WEBP ate 5 MB cada.
+            </p>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <input
+              id="fotosEstacionamento"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              class="text-sm"
+            />
+            <button
+              id="btnLimparFotosCadastro"
+              type="button"
+              onclick="limparFotosCadastro()"
+              class="hidden bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold px-4 py-2 rounded-xl transition text-sm"
+            >
+              Remover fotos
+            </button>
+          </div>
+        </div>
+        <p id="fotosCadastroStatus" class="text-xs text-slate-500 mt-3 min-h-[1rem]">Nenhuma foto selecionada.</p>
+        <div id="previewFotosCadastro" class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4"></div>
+      </section>
+
+      <section class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <label class="flex items-start gap-3 text-sm text-slate-700">
+          <input id="aceiteLegal" type="checkbox" class="mt-1 w-5 h-5 accent-green-600" required />
+          <span>
+            Li e aceito os
+            <a href="termos-de-uso.html" target="_blank" class="font-semibold text-green-700 hover:underline">Termos de Uso</a>
+            e a
+            <a href="politica-privacidade.html" target="_blank" class="font-semibold text-green-700 hover:underline">Politica de Privacidade</a>
+            do Parada Certa, incluindo o uso de dados operacionais nao sensiveis, agregados ou anonimizados para relatorios, estatisticas e melhoria da plataforma.
+          </span>
+        </label>
+      </section>
+
+      <section class="lg:col-span-2 flex flex-col sm:flex-row gap-4 justify-end">
+        <a
+          href="login-admin.html"
+          class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-6 py-3 rounded-xl transition text-center"
+        >
+          Já tenho cadastro
+        </a>
+
+        <button
+          type="submit"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition"
+        >
+          Cadastrar estacionamento
+        </button>
+      </section>
+
+    </form>
+
+  </main>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    function mostrarErro(msg) {
+      const el = document.getElementById("mensagemErro");
+      el.innerText = msg;
+      el.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function limparErro() {
+      const el = document.getElementById("mensagemErro");
+      el.classList.add("hidden");
+      el.innerText = "";
+    }
+
+    // ── Helpers de formatação / validação (mesma lógica de usuarios.html) ───
+    function atualizarCamposReservaCadastro() {
+      const permite = document.getElementById("permiteReserva").checked;
+      const grupo = document.getElementById("grupoQtdVagasReservaveis");
+      const input = document.getElementById("qtdVagasReservaveis");
+      grupo.classList.toggle("hidden", !permite);
+      input.disabled = !permite;
+      input.required = permite;
+      const total = Number(document.getElementById("qtdVagasTotais").value || 0);
+      if (total > 0) input.max = String(total);
+      if (!permite) input.value = "1";
+    }
+
+    function somenteDigitos(v) {
+      return String(v || "").replace(/\D/g, "");
+    }
+    function formatarCpfInput(digitos) {
+      const d = digitos.slice(0, 11);
+      if (d.length <= 3) return d;
+      if (d.length <= 6) return d.substring(0,3) + "." + d.substring(3);
+      if (d.length <= 9) return d.substring(0,3) + "." + d.substring(3,6) + "." + d.substring(6);
+      return d.substring(0,3) + "." + d.substring(3,6) + "." + d.substring(6,9) + "-" + d.substring(9);
+    }
+    function formatarCnpjInput(digitos) {
+      const d = digitos.slice(0, 14);
+      if (d.length <= 2) return d;
+      if (d.length <= 5) return d.substring(0,2) + "." + d.substring(2);
+      if (d.length <= 8) return d.substring(0,2) + "." + d.substring(2,5) + "." + d.substring(5);
+      if (d.length <= 12) return d.substring(0,2) + "." + d.substring(2,5) + "." + d.substring(5,8) + "/" + d.substring(8);
+      return d.substring(0,2) + "." + d.substring(2,5) + "." + d.substring(5,8) + "/" + d.substring(8,12) + "-" + d.substring(12);
+    }
+    function formatarTelefoneInput(digitos) {
+      const d = digitos.slice(0, 11);
+      if (d.length <= 2)  return d.length ? "(" + d : d;
+      if (d.length <= 6)  return "(" + d.substring(0,2) + ") " + d.substring(2);
+      if (d.length <= 10) return "(" + d.substring(0,2) + ") " + d.substring(2,6) + "-" + d.substring(6);
+      return "(" + d.substring(0,2) + ") " + d.substring(2,7) + "-" + d.substring(7);
+    }
+    function formatarCepInput(digitos) {
+      const d = digitos.slice(0, 8);
+      if (d.length <= 5) return d;
+      return d.substring(0,5) + "-" + d.substring(5);
+    }
+
+    /** Algoritmo brasileiro de CPF (mesma lógica do backend OperadorService). */
+    function validarCpfLocal(cpf) {
+      const d = somenteDigitos(cpf);
+      if (d.length !== 11) return false;
+      if (/^(\d)\1{10}$/.test(d)) return false;
+      let soma = 0;
+      for (let i = 0; i < 9; i++) soma += Number(d[i]) * (10 - i);
+      let dig1 = (soma % 11) < 2 ? 0 : 11 - (soma % 11);
+      if (dig1 !== Number(d[9])) return false;
+      soma = 0;
+      for (let i = 0; i < 10; i++) soma += Number(d[i]) * (11 - i);
+      let dig2 = (soma % 11) < 2 ? 0 : 11 - (soma % 11);
+      return dig2 === Number(d[10]);
+    }
+
+    function validarCnpjLocal(cnpj) {
+      const d = somenteDigitos(cnpj);
+      if (d.length !== 14) return false;
+      if (/^(\d)\1{13}$/.test(d)) return false;
+      const calc = (base) => {
+        const pesos = base === 12 ? [5,4,3,2,9,8,7,6,5,4,3,2] : [6,5,4,3,2,9,8,7,6,5,4,3,2];
+        let soma = 0;
+        for (let i = 0; i < base; i++) soma += Number(d[i]) * pesos[i];
+        const resto = soma % 11;
+        return resto < 2 ? 0 : 11 - resto;
+      };
+      return calc(12) === Number(d[12]) && calc(13) === Number(d[13]);
+    }
+
+    function normalizarCidade(v) {
+      return String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    }
+
+    function ehCidadeSaoPaulo(v) {
+      return normalizarCidade(v) === "sao paulo";
+    }
+
+    function validarEmailLocal(email) {
+      return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(String(email || "").trim());
+    }
+
+    /**
+     * Chave Pix: aceita CPF (11d), CNPJ (14d), e-mail, telefone com DDD (10/11d com +55 ou só dígitos)
+     * ou chave aleatória no formato UUID (8-4-4-4-12 hex). Validação intencionalmente permissiva.
+     */
+    function validarChavePixLocal(chave) {
+      const v = String(chave || "").trim();
+      if (!v) return false;
+      const digitos = somenteDigitos(v);
+      if (validarEmailLocal(v)) return true;
+      if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)) return true;
+      if (digitos.length === 11 && validarCpfLocal(digitos)) return true;
+      if (digitos.length === 14 && validarCnpjLocal(digitos)) return true;
+      // Telefone +55DDD9XXXXXXXX (13d) ou 11d (DDD + 9 dígitos)
+      if (digitos.length === 13 && digitos.startsWith("55")) return true;
+      if (digitos.length === 10 || digitos.length === 11) return true;
+      return false;
+    }
+
+    // ── ViaCEP + Nominatim (mesma logica de admin-vagas.html) ───────────────
+    function formatarCep(v) {
+      const d = String(v || "").replace(/\D/g, "");
+      if (d.length !== 8) return d;
+      return d.substring(0,5) + "-" + d.substring(5);
+    }
+
+    let _cadCepRequestSeq = 0;
+    let _cadGeoRequestSeq = 0;
+    let _opCepRequestSeq = 0;
+
+    function limparEnderecoEstacionamentoPorCep() {
+      ["logradouro","bairro","cidade","uf","complemento","latitude","longitude","endereco"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      const geoStatusEl = document.getElementById("geoStatus");
+      if (geoStatusEl) geoStatusEl.innerText = "";
+      if (_cadGeoTimer) clearTimeout(_cadGeoTimer);
+      _cadGeoRequestSeq++;
+    }
+
+    function limparEnderecoOperadorPorCep() {
+      ["opLogradouro","opBairro","opCidade","opUf","opComplemento"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+    }
+
+    async function consultarCep() {
+      const cep = String(document.getElementById("cep").value || "").replace(/\D/g, "");
+      const statusEl = document.getElementById("cepStatus");
+      const requestSeq = ++_cadCepRequestSeq;
+      limparEnderecoEstacionamentoPorCep();
+      if (cep.length !== 8) {
+        statusEl.innerText = cep.length === 0 ? "" : "Informe um CEP com 8 dígitos.";
+        return;
+      }
+      statusEl.innerText = "Buscando CEP no ViaCEP...";
+      try {
+        const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (!r.ok) throw new Error("Falha na consulta ViaCEP");
+        const j = await r.json();
+        if (requestSeq !== _cadCepRequestSeq || String(document.getElementById("cep").value || "").replace(/\D/g, "") !== cep) return;
+        if (j.erro) { statusEl.innerText = "CEP não encontrado."; return; }
+        if (!ehCidadeSaoPaulo(j.localidade)) {
+          statusEl.innerText = "No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.";
+          return;
+        }
+        document.getElementById("cep").value = formatarCep(cep);
+        document.getElementById("logradouro").value = j.logradouro || "";
+        document.getElementById("bairro").value     = j.bairro || "";
+        document.getElementById("cidade").value     = j.localidade || "";
+        document.getElementById("uf").value         = (j.uf || "").toUpperCase();
+        if (j.complemento) {
+          document.getElementById("complemento").value = j.complemento;
+        }
+        if (document.getElementById("numero").value.trim()) {
+          agendarGeocoding();
+        }
+
+        statusEl.innerText = "Endereço preenchido pelo ViaCEP.";
+      } catch (e) {
+        console.error("Erro ViaCEP:", e);
+        if (requestSeq !== _cadCepRequestSeq || String(document.getElementById("cep").value || "").replace(/\D/g, "") !== cep) return;
+        statusEl.innerText = "Não foi possível consultar o CEP agora.";
+      }
+    }
+
+    let _cadGeoTimer = null;
+    async function geocodificarAgora() {
+      const requestSeq = ++_cadGeoRequestSeq;
+      const numero      = document.getElementById("numero").value.trim();
+      const logradouro  = document.getElementById("logradouro").value.trim();
+      const bairro      = document.getElementById("bairro").value.trim();
+      const cidade      = document.getElementById("cidade").value.trim();
+      const uf          = document.getElementById("uf").value.trim().toUpperCase();
+      const cep         = String(document.getElementById("cep").value || "").replace(/\D/g, "");
+      const statusEl    = document.getElementById("geoStatus");
+      document.getElementById("latitude").value = "";
+      document.getElementById("longitude").value = "";
+      const enderecoOrigem = { numero, logradouro, bairro, cidade, uf, cep };
+      const enderecoAindaAtual = () =>
+        requestSeq === _cadGeoRequestSeq &&
+        document.getElementById("numero").value.trim() === enderecoOrigem.numero &&
+        document.getElementById("logradouro").value.trim() === enderecoOrigem.logradouro &&
+        document.getElementById("bairro").value.trim() === enderecoOrigem.bairro &&
+        document.getElementById("cidade").value.trim() === enderecoOrigem.cidade &&
+        document.getElementById("uf").value.trim().toUpperCase() === enderecoOrigem.uf &&
+        String(document.getElementById("cep").value || "").replace(/\D/g, "") === enderecoOrigem.cep;
+
+      if (!logradouro || !cidade) {
+        statusEl.innerText = "Para calcular as coordenadas, preencha logradouro e cidade.";
+        return;
+      }
+      if (!numero) {
+        statusEl.innerText = "Informe o numero do endereco para calcular latitude e longitude.";
+        return;
+      }
+      if (!ehCidadeSaoPaulo(cidade)) {
+        statusEl.innerText = "No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.";
+        return;
+      }
+      const estado = uf || "SP";
+      const contato = "gustavon.o.alegria%40gmail.com";
+      const consultas = [
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&addressdetails=0&email=${contato}&street=${encodeURIComponent(numero + " " + logradouro)}&city=${encodeURIComponent(cidade)}&state=${encodeURIComponent(estado)}&country=${encodeURIComponent("Brasil")}`,
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&addressdetails=0&email=${contato}&q=${encodeURIComponent(`${logradouro}, ${numero}, ${cidade}, ${estado}, Brasil`)}`,
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&addressdetails=0&email=${contato}&q=${encodeURIComponent(`${logradouro}, ${numero}, ${bairro}, ${cidade}, ${estado}, Brasil`)}`
+      ];
+
+      statusEl.innerText = "Calculando coordenadas via OpenStreetMap...";
+      try {
+        let arr = [];
+        for (const url of consultas) {
+          const r = await fetch(url, { headers: { "Accept": "application/json", "Accept-Language": "pt-BR" } });
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          arr = await r.json();
+          if (Array.isArray(arr) && arr.length > 0) break;
+          if (!enderecoAindaAtual()) return;
+        }
+        if (!enderecoAindaAtual()) return;
+        if (!Array.isArray(arr) || arr.length === 0) {
+          statusEl.innerText = "Endereco nao localizado no OpenStreetMap. Confira logradouro, numero, cidade e UF.";
+          return;
+        }
+        const lat = Number(arr[0].lat), lon = Number(arr[0].lon);
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
+          document.getElementById("latitude").value  = lat.toFixed(7);
+          document.getElementById("longitude").value = lon.toFixed(7);
+          statusEl.innerText = `Coordenadas atualizadas (${lat.toFixed(5)}, ${lon.toFixed(5)}).`;
+        } else {
+          statusEl.innerText = "Resposta do Nominatim sem coordenadas válidas.";
+        }
+      } catch (e) {
+        console.error("Erro Nominatim:", e);
+        if (!enderecoAindaAtual()) return;
+        statusEl.innerText = "Não foi possível calcular as coordenadas agora.";
+      }
+    }
+    function agendarGeocoding() {
+      if (_cadGeoTimer) clearTimeout(_cadGeoTimer);
+      _cadGeoTimer = setTimeout(geocodificarAgora, 800);
+    }
+
+    // ── ViaCEP do operador (autocompleta endereço pessoal) ──────────────────
+    async function consultarCepOperador() {
+      const cep = somenteDigitos(document.getElementById("opCep").value);
+      const statusEl = document.getElementById("opCepStatus");
+      const requestSeq = ++_opCepRequestSeq;
+      limparEnderecoOperadorPorCep();
+      if (cep.length !== 8) {
+        statusEl.innerText = cep.length === 0 ? "" : "Informe um CEP com 8 dígitos.";
+        return;
+      }
+      statusEl.innerText = "Buscando CEP no ViaCEP...";
+      try {
+        const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (!r.ok) throw new Error("Falha na consulta ViaCEP");
+        const j = await r.json();
+        if (requestSeq !== _opCepRequestSeq || somenteDigitos(document.getElementById("opCep").value) !== cep) return;
+        if (j.erro) { statusEl.innerText = "CEP não encontrado."; return; }
+        document.getElementById("opCep").value = formatarCepInput(cep);
+        document.getElementById("opLogradouro").value = j.logradouro || "";
+        document.getElementById("opBairro").value     = j.bairro || "";
+        document.getElementById("opCidade").value     = j.localidade || "";
+        document.getElementById("opUf").value         = (j.uf || "").toUpperCase();
+        if (j.complemento) {
+          document.getElementById("opComplemento").value = j.complemento;
+        }
+        if (!ehCidadeSaoPaulo(j.localidade)) {
+
+          statusEl.innerText = "No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.";
+
+          return;
+
+        }
+
+        statusEl.innerText = "Endereço preenchido pelo ViaCEP. Confirme o número e o complemento.";
+      } catch (e) {
+        console.error("Erro ViaCEP (operador):", e);
+        if (requestSeq !== _opCepRequestSeq || somenteDigitos(document.getElementById("opCep").value) !== cep) return;
+        statusEl.innerText = "Não foi possível consultar o CEP agora.";
+      }
+    }
+
+    const FOTO_CADASTRO_LIMITE = 3;
+    const FOTO_CADASTRO_TIPOS = ["image/jpeg", "image/png", "image/webp"];
+    let fotosCadastroSelecionadas = [];
+
+    function sincronizarInputFotosCadastro() {
+      const input = document.getElementById("fotosEstacionamento");
+      if (!input) return;
+      if (!fotosCadastroSelecionadas.length) {
+        input.value = "";
+        return;
+      }
+      const dt = new DataTransfer();
+      fotosCadastroSelecionadas.forEach(file => dt.items.add(file));
+      input.files = dt.files;
+    }
+
+    function validarFotosCadastro(files) {
+      const lista = Array.from(files || []);
+      if (lista.length > FOTO_CADASTRO_LIMITE) {
+        return "O plano BASIC trial permite ate 3 fotos no cadastro inicial.";
+      }
+      const invalida = lista.find(f => f.size > 5 * 1024 * 1024 || !FOTO_CADASTRO_TIPOS.includes(f.type));
+      if (invalida) {
+        return "Selecione apenas imagens JPG, PNG ou WEBP ate 5 MB.";
+      }
+      return "";
+    }
+
+    function atualizarPreviewFotosCadastro() {
+      const status = document.getElementById("fotosCadastroStatus");
+      const grid = document.getElementById("previewFotosCadastro");
+      const botaoLimpar = document.getElementById("btnLimparFotosCadastro");
+      if (!status || !grid) return;
+      grid.innerHTML = "";
+      status.innerText = fotosCadastroSelecionadas.length
+        ? fotosCadastroSelecionadas.length + " de " + FOTO_CADASTRO_LIMITE + " fotos selecionadas."
+        : "Nenhuma foto selecionada.";
+      if (botaoLimpar) botaoLimpar.classList.toggle("hidden", fotosCadastroSelecionadas.length === 0);
+      fotosCadastroSelecionadas.forEach((file, index) => {
+        const url = URL.createObjectURL(file);
+        const div = document.createElement("div");
+        div.className = "border border-slate-200 rounded-xl overflow-hidden bg-slate-50";
+        div.innerHTML = '<div class="aspect-video bg-slate-100"><img src="' + url + '" class="w-full h-full object-cover" alt="Preview da foto" /></div>';
+        const rodape = document.createElement("div");
+        rodape.className = "p-2 flex items-center justify-between gap-2";
+        const nome = document.createElement("span");
+        nome.className = "text-xs text-slate-600 truncate";
+        nome.textContent = file.name;
+        const remover = document.createElement("button");
+        remover.type = "button";
+        remover.className = "shrink-0 text-xs font-bold text-red-600 hover:underline";
+        remover.textContent = "Remover";
+        remover.onclick = () => removerFotoCadastro(index);
+        rodape.appendChild(nome);
+        rodape.appendChild(remover);
+        div.appendChild(rodape);
+        grid.appendChild(div);
+      });
+    }
+
+    function removerFotoCadastro(index) {
+      fotosCadastroSelecionadas.splice(index, 1);
+      sincronizarInputFotosCadastro();
+      atualizarPreviewFotosCadastro();
+    }
+
+    function limparFotosCadastro() {
+      fotosCadastroSelecionadas = [];
+      sincronizarInputFotosCadastro();
+      atualizarPreviewFotosCadastro();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // ── Estacionamento: CEP + UF + geocoding ──
+      const cepEl = document.getElementById("cep");
+      if (cepEl) {
+        cepEl.addEventListener("blur", consultarCep);
+        cepEl.addEventListener("input", (e) => {
+          const d = e.target.value.replace(/\D/g, "").slice(0, 8);
+          e.target.value = d.length > 5 ? d.substring(0,5) + "-" + d.substring(5) : d;
+          _cadCepRequestSeq++;
+          limparEnderecoEstacionamentoPorCep();
+          const statusEl = document.getElementById("cepStatus");
+          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dígitos.");
+        });
+      }
+      const ufEl = document.getElementById("uf");
+      if (ufEl) ufEl.addEventListener("input", (e) => { e.target.value = e.target.value.toUpperCase().slice(0,2); });
+      ["numero","logradouro","cidade","uf"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("blur", agendarGeocoding);
+      });
+
+      // ── Responsável: máscara do telefone admin ──
+      const telRespEl = document.getElementById("telefone");
+      if (telRespEl) telRespEl.addEventListener("input", e => {
+        e.target.value = formatarTelefoneInput(somenteDigitos(e.target.value));
+      });
+
+      const cpfRespEl = document.getElementById("cpfResponsavel");
+      if (cpfRespEl) cpfRespEl.addEventListener("input", e => {
+        e.target.value = formatarCpfInput(somenteDigitos(e.target.value));
+      });
+
+      const cnpjEl = document.getElementById("cnpj");
+      if (cnpjEl) cnpjEl.addEventListener("input", e => {
+        e.target.value = formatarCnpjInput(somenteDigitos(e.target.value));
+      });
+
+      const permiteReservaEl = document.getElementById("permiteReserva");
+      if (permiteReservaEl) permiteReservaEl.addEventListener("change", atualizarCamposReservaCadastro);
+      const qtdVagasTotaisEl = document.getElementById("qtdVagasTotais");
+      if (qtdVagasTotaisEl) qtdVagasTotaisEl.addEventListener("input", atualizarCamposReservaCadastro);
+      atualizarCamposReservaCadastro();
+
+      const fotosEl = document.getElementById("fotosEstacionamento");
+      if (fotosEl) fotosEl.addEventListener("change", e => {
+        const files = Array.from(e.target.files || []);
+        const erroFotos = validarFotosCadastro(files);
+        if (erroFotos) {
+          mostrarErro(erroFotos);
+          e.target.value = "";
+          fotosCadastroSelecionadas = [];
+        } else {
+          limparErro();
+          fotosCadastroSelecionadas = files;
+        }
+        atualizarPreviewFotosCadastro();
+      });
+
+      // ── Operador: máscaras dinâmicas + ViaCEP ──
+      const opCpfEl = document.getElementById("opCpf");
+      if (opCpfEl) opCpfEl.addEventListener("input", e => {
+        e.target.value = formatarCpfInput(somenteDigitos(e.target.value));
+      });
+
+      const opTelEl = document.getElementById("opTelefone");
+      if (opTelEl) opTelEl.addEventListener("input", e => {
+        e.target.value = formatarTelefoneInput(somenteDigitos(e.target.value));
+      });
+
+      const opCepEl = document.getElementById("opCep");
+      if (opCepEl) {
+        opCepEl.addEventListener("input", e => {
+          const d = somenteDigitos(e.target.value).slice(0, 8);
+          e.target.value = formatarCepInput(d);
+          _opCepRequestSeq++;
+          limparEnderecoOperadorPorCep();
+          const statusEl = document.getElementById("opCepStatus");
+          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dígitos.");
+        });
+        opCepEl.addEventListener("blur", consultarCepOperador);
+      }
+
+      const opUfEl = document.getElementById("opUf");
+      if (opUfEl) opUfEl.addEventListener("input", e => {
+        e.target.value = e.target.value.toUpperCase().slice(0,2);
+      });
+    });
+
+    async function cadastrarEstacionamento(event) {
+      event.preventDefault();
+      limparErro();
+
+      const aceiteLegal = document.getElementById("aceiteLegal");
+      if (aceiteLegal && !aceiteLegal.checked) {
+        mostrarErro("Para cadastrar o estacionamento, aceite os Termos de Uso e a Politica de Privacidade.");
+        return;
+      }
+
+      const senha = document.getElementById("senha").value;
+      const confirmarSenha = document.getElementById("confirmarSenha").value;
+
+      if (senha !== confirmarSenha) {
+        mostrarErro("As senhas nao conferem.");
+        return;
+      }
+      if (senha.length < 6) {
+        mostrarErro("A senha deve ter ao menos 6 caracteres.");
+        return;
+      }
+
+      const cpfRespDigits = somenteDigitos(document.getElementById("cpfResponsavel").value);
+      if (!validarCpfLocal(cpfRespDigits)) {
+        mostrarErro("CPF do responsavel invalido.");
+        return;
+      }
+
+      const cnpjDigits = somenteDigitos(document.getElementById("cnpj").value);
+      if (!validarCnpjLocal(cnpjDigits)) {
+        mostrarErro("CNPJ do estacionamento invalido.");
+        return;
+      }
+
+      const razaoSocial = document.getElementById("razaoSocial").value.trim();
+      const nomeFantasia = document.getElementById("nomeFantasia").value.trim();
+      if (!razaoSocial) {
+        mostrarErro("Informe a razao social do estacionamento.");
+        return;
+      }
+
+      const horarioAbertura = document.getElementById("horarioAbertura").value;
+      const horarioFechamento = document.getElementById("horarioFechamento").value;
+
+      // Garante coordenadas via Nominatim se ainda não tiver
+      const latVazia = !document.getElementById("latitude").value;
+      const lonVazia = !document.getElementById("longitude").value;
+      if ((latVazia || lonVazia) && document.getElementById("logradouro").value.trim()
+          && document.getElementById("cidade").value.trim()) {
+        try { await geocodificarAgora(); } catch (_) {}
+      }
+
+      const cepDigits = String(document.getElementById("cep").value || "").replace(/\D/g, "");
+      if (cepDigits && cepDigits.length !== 8) {
+        mostrarErro("CEP deve ter 8 dígitos.");
+        return;
+      }
+
+      const logradouro    = document.getElementById("logradouro").value.trim();
+      const numero        = document.getElementById("numero").value.trim();
+      const bairro        = document.getElementById("bairro").value.trim();
+      const cidade        = document.getElementById("cidade").value.trim();
+      const uf            = document.getElementById("uf").value.trim().toUpperCase();
+      const partesObrigatorias = { logradouro, numero, bairro, cidade, uf };
+      const faltando = Object.entries(partesObrigatorias).filter(([_, v]) => !v).map(([k]) => k);
+      if (faltando.length) {
+        mostrarErro("Informe o endereço completo do estacionamento: logradouro, número, bairro, cidade e UF.");
+        return;
+      }
+      if (!ehCidadeSaoPaulo(cidade)) {
+        mostrarErro("No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.");
+        return;
+      }
+
+      // Endereço no formato padrão "logradouro, numero - bairro, cidade - UF".
+      const enderecoUsuario = document.getElementById("endereco").value.trim();
+      const enderecoMontado = pcMontarEndereco({ logradouro, numero, bairro, cidade, uf });
+      const enderecoFinal   = enderecoUsuario || enderecoMontado;
+
+      // Chave Pix (opcional, mas se preenchida deve ter formato plausível)
+      const pixKey = document.getElementById("pixKey").value.trim();
+      if (pixKey && !validarChavePixLocal(pixKey)) {
+        mostrarErro("Chave Pix em formato inválido. Use CPF, CNPJ, e-mail, telefone ou chave aleatória.");
+        return;
+      }
+
+      // ── Operador inicial do kiosk (dados pessoais obrigatórios — LGPD) ──
+      const permiteReserva = document.getElementById("permiteReserva").checked;
+      const qtdVagasTotais = Number(document.getElementById("qtdVagasTotais").value);
+      const qtdVagasReservaveis = permiteReserva ? Number(document.getElementById("qtdVagasReservaveis").value || 0) : 0;
+      if (permiteReserva && (!qtdVagasReservaveis || qtdVagasReservaveis < 1)) {
+        mostrarErro("Informe quantas vagas serão reserváveis.");
+        return;
+      }
+      if (qtdVagasReservaveis > qtdVagasTotais) {
+        mostrarErro("Vagas reserváveis não pode ser maior que o total de vagas.");
+        return;
+      }
+
+      const opNome        = document.getElementById("opNome").value.trim();
+      const opCpfDigits   = somenteDigitos(document.getElementById("opCpf").value);
+      const opEmail       = document.getElementById("opEmail").value.trim();
+      const opTelDigits   = somenteDigitos(document.getElementById("opTelefone").value);
+      const opUsuario     = document.getElementById("opUsuario").value.trim();
+      const opSenha       = document.getElementById("opSenha").value;
+      const opCepDigits   = somenteDigitos(document.getElementById("opCep").value);
+      const opLogradouro  = document.getElementById("opLogradouro").value.trim();
+      const opNumero      = document.getElementById("opNumero").value.trim();
+      const opComplemento = document.getElementById("opComplemento").value.trim();
+      const opBairro      = document.getElementById("opBairro").value.trim();
+      const opCidade      = document.getElementById("opCidade").value.trim();
+      const opUf          = document.getElementById("opUf").value.trim().toUpperCase();
+
+      if (!opNome) {
+        mostrarErro("Informe o nome do operador do kiosk.");
+        return;
+      }
+      if (!validarCpfLocal(opCpfDigits)) {
+        mostrarErro("CPF do operador inválido.");
+        return;
+      }
+      if (!validarEmailLocal(opEmail)) {
+        mostrarErro("E-mail do operador inválido.");
+        return;
+      }
+      if (opTelDigits.length < 8) {
+        mostrarErro("Telefone do operador inválido (informe DDD + número).");
+        return;
+      }
+      if (!opUsuario || !/^[A-Za-z0-9._\-]+$/.test(opUsuario) || opUsuario.length < 3) {
+        mostrarErro("Usuário do operador inválido. Use 3 a 50 caracteres entre letras, números, ponto, hífen ou underline.");
+        return;
+      }
+      if (!opSenha || opSenha.length < 6) {
+        mostrarErro("A senha do operador deve ter ao menos 6 caracteres.");
+        return;
+      }
+      if (opCepDigits.length !== 8) {
+        mostrarErro("CEP do operador deve ter 8 dígitos.");
+        return;
+      }
+      if (!opLogradouro || !opNumero || !opBairro || !opCidade || opUf.length !== 2) {
+        mostrarErro("Preencha todo o endereço do operador (logradouro, número, bairro, cidade e UF).");
+        return;
+      }
+      if (!ehCidadeSaoPaulo(opCidade)) {
+        mostrarErro("No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.");
+        return;
+      }
+
+      const corpo = {
+        responsavel: {
+          nome: document.getElementById("nomeResponsavel").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          telefone: document.getElementById("telefone").value.trim(),
+          cpf: cpfRespDigits,
+          dataNascimento: document.getElementById("dataNascimentoResponsavel").value || null,
+          senha: senha
+        },
+        operadorInicial: {
+          nome: opNome,
+          usuario: opUsuario,
+          senha: opSenha,
+          cpf: opCpfDigits,
+          email: opEmail,
+          telefone: opTelDigits,
+          cep: opCepDigits,
+          logradouro: opLogradouro,
+          numero: opNumero,
+          complemento: opComplemento || null,
+          bairro: opBairro,
+          cidade: opCidade,
+          uf: opUf
+        },
+        estacionamento: {
+          nome: document.getElementById("nomeEstacionamento").value.trim(),
+          cnpj: cnpjDigits,
+          razaoSocial: razaoSocial,
+          nomeFantasia: nomeFantasia || null,
+          endereco: enderecoFinal || null,
+          pixKey: pixKey || null,
+          qtdVagasTotais: qtdVagasTotais,
+          qtdVagasReservaveis: qtdVagasReservaveis,
+          precoHora: Number(document.getElementById("precoHora").value),
+          horarioAbertura: horarioAbertura ? (horarioAbertura.length === 5 ? horarioAbertura + ":00" : horarioAbertura) : null,
+          horarioFechamento: horarioFechamento ? (horarioFechamento.length === 5 ? horarioFechamento + ":00" : horarioFechamento) : null,
+          descricao: document.getElementById("descricao").value.trim(),
+          permiteReserva: permiteReserva,
+
+          cep:          cepDigits || null,
+          logradouro:   logradouro || null,
+          numero:       numero || null,
+          complemento:  document.getElementById("complemento").value.trim() || null,
+          bairro:       bairro || null,
+          cidade:       cidade || null,
+          uf:           uf || null,
+          latitude:     document.getElementById("latitude").value ? Number(document.getElementById("latitude").value) : null,
+          longitude:    document.getElementById("longitude").value ? Number(document.getElementById("longitude").value) : null
+        }
+      };
+
+      const botao = event.target.querySelector("button[type=submit]");
+      const textoOriginal = botao.innerText;
+      botao.disabled = true;
+      botao.innerText = "Cadastrando...";
+
+      try {
+        const erroFotos = validarFotosCadastro(fotosCadastroSelecionadas);
+        if (erroFotos) {
+          throw new Error(erroFotos);
+        }
+
+        let resp;
+        if (fotosCadastroSelecionadas.length) {
+          const fd = new FormData();
+          fd.append("dados", new Blob([JSON.stringify(corpo)], { type: "application/json" }));
+          fotosCadastroSelecionadas.forEach(file => fd.append("fotos", file));
+          botao.innerText = "Cadastrando e enviando fotos...";
+          resp = await pcFetch("/api/admin/cadastro", {
+            method: "POST",
+            body: fd
+          });
+        } else {
+          resp = await pcFetch("/api/admin/cadastro", {
+            method: "POST",
+            body: JSON.stringify(corpo)
+          });
+        }
+
+        if (!resp || !resp.adminId || !resp.estacionamentoId) {
+          throw new Error("Resposta invalida do servidor.");
+        }
+
+        // Ja loga o admin recem-cadastrado.
+        pcSetSession({
+          id: resp.adminId,
+          usuario: resp.usuario,
+          nomeCompleto: resp.nomeCompleto,
+          email: resp.email,
+          estacionamentoId: resp.estacionamentoId,
+          estacionamentoNome: resp.estacionamentoNome
+        });
+
+        pcSucesso("Cadastro realizado com sucesso. Direcionando para a configuração do estacionamento.", 2400);
+        setTimeout(() => { window.location.href = "admin-vagas.html"; }, 1200);
+
+      } catch (e) {
+        console.error("Erro no cadastro:", e);
+        mostrarErro(e.message || "Nao foi possivel realizar o cadastro.");
+      } finally {
+        botao.disabled = false;
+        botao.innerText = textoOriginal;
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -1,24 +1,29 @@
-# Dependencias Node
-node_modules/
-
-# Build outputs
-target/
-build/
-dist/
-out/
-
-# Variaveis de ambiente
+# Environment variables / secrets
 .env
 .env.local
 .env.production
 .env.*
+**/.env
+**/.env.local
+**/.env.production
+**/.env.*
+!.env.example
+!**/.env.example
 
-# Android local
+# Dependencies / build outputs
+node_modules/
+target/
+build/
+dist/
+out/
+.gradle/
+
+# Android local files / signing
 local.properties
 *.keystore
 *.jks
 
-# IDE
+# IDE / OS
 .idea/
 *.iml
 .DS_Store

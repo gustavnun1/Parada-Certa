@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Gerenciar Estacionamentos - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Painel administrativo do estacionamento
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <nav id="pc-navbar" data-page="estacionamentos" class="flex flex-wrap gap-4 text-sm items-center"></nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- TÍTULO -->
+    <section class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <p class="text-green-600 font-semibold mb-2">
+            Gestão de estacionamentos
+          </p>
+
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+            Gerenciar Estacionamentos
+          </h2>
+
+          <p class="text-slate-600 mt-2 max-w-3xl">
+            Visualize seus estacionamentos cadastrados e acompanhe vagas, preços, horários e status de operação.
+          </p>
+        </div>
+
+        <button
+          onclick="abrirNovoEstacionamento()"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition"
+        >
+          Novo Estacionamento
+        </button>
+      </div>
+    </section>
+
+    <!-- ALERTA ERRO -->
+    <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
+      Não foi possível carregar a lista de estacionamentos no momento. Tente novamente em instantes.
+    </section>
+
+    <!-- CARDS -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Total cadastrados</p>
+        <h3 id="cardTotal" class="text-3xl font-bold mt-2 text-slate-900">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Estacionamentos no sistema</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Ativos</p>
+        <h3 id="cardAtivos" class="text-3xl font-bold mt-2 text-green-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Disponíveis para operação</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Total de vagas</p>
+        <h3 id="cardVagas" class="text-3xl font-bold mt-2 text-blue-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Capacidade cadastrada</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Preço médio</p>
+        <h3 id="cardPrecoMedio" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Valor médio por hora</p>
+      </div>
+    </section>
+
+    <!-- FILTROS -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Buscar estacionamento</label>
+          <input
+            id="busca"
+            type="text"
+            placeholder="Nome ou endereço..."
+            onkeyup="filtrarEstacionamentos()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Status</label>
+          <select
+            id="filtroStatus"
+            onchange="filtrarEstacionamentos()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="todos">Todos</option>
+            <option value="ativo">Ativos</option>
+            <option value="inativo">Inativos</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Resumo</label>
+          <div class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700">
+            <span id="totalExibido">0</span> estacionamentos exibidos
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABELA -->
+    <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-6 py-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900">
+            Lista de estacionamentos
+          </h3>
+
+          <p class="text-sm text-slate-500 mt-1">
+            Os estacionamentos vinculados ao seu administrador aparecem nesta lista.
+          </p>
+        </div>
+
+        <button
+          onclick="carregar()"
+          class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-4 py-2 rounded-xl transition text-sm"
+        >
+          Recarregar lista
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="px-6 py-4 text-left font-semibold">Nome</th>
+              <th class="px-6 py-4 text-left font-semibold">Endereço</th>
+              <th class="px-6 py-4 text-left font-semibold">Vagas</th>
+              <th class="px-6 py-4 text-left font-semibold">Reserváveis</th>
+              <th class="px-6 py-4 text-left font-semibold">Preço</th>
+              <th class="px-6 py-4 text-left font-semibold">Horário</th>
+              <th class="px-6 py-4 text-left font-semibold">Status</th>
+              <th class="px-6 py-4 text-left font-semibold">Ações</th>
+            </tr>
+          </thead>
+
+          <tbody id="lista" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+
+      <div id="mensagemVazia" class="hidden px-6 py-10 text-center text-slate-500">
+        Nenhum estacionamento encontrado.
+      </div>
+    </section>
+
+    <!-- FORMULARIO NOVO/EDITAR -->
+    <section id="formBox" class="hidden bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h3 id="formTitulo" class="text-xl font-bold text-slate-900">Novo estacionamento</h3>
+          <p class="text-sm text-slate-500 mt-1">Preencha os campos e clique em Salvar.</p>
+        </div>
+        <button onclick="fecharForm()" class="text-slate-500 hover:text-red-600 text-sm font-semibold">Fechar</button>
+      </div>
+
+      <input type="hidden" id="formId" />
+
+      <!-- Bloco: identificação e operação -->
+      <div class="grid md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Nome</label>
+          <input id="formNome" type="text" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">CNPJ</label>
+          <input id="formCnpj" type="text" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Razao social</label>
+          <input id="formRazaoSocial" type="text" maxlength="200" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Nome fantasia</label>
+          <input id="formNomeFantasia" type="text" maxlength="200" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Preço por hora (R$)</label>
+          <input id="formPreco" type="number" min="0" step="0.01" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas totais</label>
+          <input id="formVagasTotais" type="number" min="1" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div id="grupoVagasReservaveis" class="hidden">
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas reserváveis</label>
+          <input id="formVagasReservaveis" type="number" min="0" value="0" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          <p class="text-xs text-slate-500 mt-1">Informe uma quantidade maior que zero e menor ou igual ao total de vagas.</p>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Horário abertura</label>
+          <input id="formHorarioAbertura" type="time" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Horário fechamento</label>
+          <input id="formHorarioFechamento" type="time" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Chave Pix (para recebimentos)</label>
+          <input id="formPixKey" type="text" maxlength="200" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          <p class="text-xs text-slate-500 mt-1">Aceita CPF (11 dígitos), CNPJ (14 dígitos), e-mail, telefone com DDD ou chave aleatória.</p>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Descrição</label>
+          <textarea id="formDescricao" rows="3" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"></textarea>
+        </div>
+        <label class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+          <input id="formAtivo" type="checkbox" class="w-5 h-5 accent-green-600" checked />
+          <span class="font-medium text-slate-700">Ativo</span>
+        </label>
+        <label class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+          <input id="formPermiteReserva" type="checkbox" class="w-5 h-5 accent-green-600" />
+          <span class="font-medium text-slate-700">Permite reservas</span>
+        </label>
+      </div>
+
+      <!-- Bloco: endereço detalhado + geocoding -->
+      <div class="mt-8 border-t border-slate-200 pt-6">
+        <h4 class="text-lg font-bold text-slate-900 mb-1">Endereço</h4>
+        <p class="text-sm text-slate-500 mb-5">
+          Informe o CEP para que logradouro, bairro, cidade e UF sejam preenchidos automaticamente.
+          Latitude e longitude são calculadas a partir do logradouro e do número.
+        </p>
+
+        <div class="grid md:grid-cols-6 gap-5">
+          <div class="md:col-span-2">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">CEP</label>
+            <input id="formCep" type="text" inputmode="numeric" maxlength="9" placeholder="00000-000"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+            <p id="formCepStatus" class="text-xs text-slate-500 mt-1 min-h-[1rem]"></p>
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Logradouro</label>
+            <input id="formLogradouro" type="text" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Número</label>
+            <input id="formNumero" type="text" maxlength="10" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Complemento</label>
+            <input id="formComplemento" type="text" maxlength="100" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Bairro</label>
+            <input id="formBairro" type="text" maxlength="100" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          </div>
+
+          <div class="md:col-span-4">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Cidade</label>
+            <input id="formCidade" type="text" maxlength="100" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">UF</label>
+            <input id="formUf" type="text" maxlength="2" placeholder="SP"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 uppercase focus:outline-none focus:border-green-500" />
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Latitude (auto)</label>
+            <input id="formLatitude" type="text" readonly placeholder="—"
+              class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 focus:outline-none cursor-not-allowed" />
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Longitude (auto)</label>
+            <input id="formLongitude" type="text" readonly placeholder="—"
+              class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 focus:outline-none cursor-not-allowed" />
+          </div>
+
+          <div class="md:col-span-6">
+            <button type="button" onclick="geocodificarAgora()" class="text-sm font-semibold text-blue-600 hover:text-blue-800">
+              Recalcular coordenadas
+            </button>
+            <p id="formGeoStatus" class="text-xs text-slate-500 mt-1 min-h-[1rem]"></p>
+          </div>
+
+          <div class="md:col-span-6">
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Endereço final (gerado automaticamente; opcional sobrescrever)
+            </label>
+            <input id="formEndereco" type="text" maxlength="300" placeholder="logradouro, número - bairro, cidade - UF"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+            <p class="text-xs text-slate-500 mt-1">
+              Formato padrão: "logradouro, número - bairro, cidade - UF". Deixe vazio para usar o texto montado automaticamente.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div id="formErro" class="hidden mt-4 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm"></div>
+
+      <!-- Bloco: fotos (Item 3 + Item 5) — visível apenas em edição -->
+      <div id="blocoFotos" class="hidden mt-8 border-t border-slate-200 pt-6">
+        <div class="flex items-end justify-between gap-4 mb-3">
+          <div>
+            <h4 class="text-lg font-bold text-slate-900">Fotos do estacionamento</h4>
+            <p id="fotosStatus" class="text-sm text-slate-500">—</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-sm text-slate-600 font-medium">Adicionar foto</label>
+            <input id="inputFoto" type="file" accept="image/jpeg,image/png,image/webp"
+                   onchange="enviarFoto(event)" class="text-sm" />
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mb-4">
+          Aceita JPG, PNG ou WEBP até 5 MB. As imagens passam por verificação automática de segurança
+          antes de serem aceitas.
+        </p>
+        <div id="gridFotos" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+        <p id="fotosVazias" class="hidden text-sm text-slate-500 mt-3">Nenhuma foto enviada ainda.</p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 mt-6">
+        <button onclick="salvarEstacionamento()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition">Salvar</button>
+        <button onclick="fecharForm()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-xl transition">Cancelar</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    const sessao = pcRequireSession();
+    const ADMIN_ID = sessao.id;
+
+    let estacionamentos = [];
+
+    const formatarMoeda = pcFormatarMoeda;
+    const normalizarHora = pcFormatarHora;
+    const normalizarAtivo = pcAtivoValor;
+
+    async function carregar() {
+      try {
+        estacionamentos = await pcFetch("/api/estacionamentos?adminId=" + encodeURIComponent(ADMIN_ID));
+
+        document.getElementById("alertaErro").classList.add("hidden");
+
+        filtrarEstacionamentos();
+        atualizarCards();
+
+      } catch (erro) {
+        console.error("Erro ao carregar estacionamentos:", erro);
+        document.getElementById("alertaErro").classList.remove("hidden");
+
+        estacionamentos = [];
+        filtrarEstacionamentos();
+        atualizarCards();
+      }
+    }
+
+    function carregarTabela(lista = estacionamentos) {
+      const tabela = document.getElementById("lista");
+      const mensagemVazia = document.getElementById("mensagemVazia");
+      const totalExibido = document.getElementById("totalExibido");
+
+      tabela.innerHTML = "";
+      totalExibido.innerText = lista.length;
+
+      if (lista.length === 0) {
+        mensagemVazia.classList.remove("hidden");
+        return;
+      }
+
+      mensagemVazia.classList.add("hidden");
+
+      lista.forEach((e) => {
+        const ativo = normalizarAtivo(e.ativo);
+
+        const qtdTotal = Number(e.qtdVagasTotais || 0);
+        const qtdDisponiveis = Number(e.qtdVagasDisponiveis || 0);
+        const qtdReservaveis = Number(e.qtdVagasReservaveis || 0);
+        const qtdReservadas = Number(e.qtdVagasReservadas || 0);
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition";
+
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-semibold text-slate-900">${e.nome || "-"}</div>
+            <div class="text-xs text-slate-500">ID: ${e.id ?? "-"}</div>
+          </td>
+
+          <td class="px-6 py-4 text-slate-700 max-w-[340px]">
+            ${e.endereco || "-"}
+          </td>
+
+          <td class="px-6 py-4">
+            <div class="font-semibold text-slate-900">${qtdDisponiveis}/${qtdTotal}</div>
+            <div class="text-xs text-slate-500">disponíveis/total</div>
+          </td>
+
+          <td class="px-6 py-4">
+            <div class="font-semibold text-slate-900">${qtdReservadas}/${qtdReservaveis}</div>
+            <div class="text-xs text-slate-500">reservadas/limite</div>
+          </td>
+
+          <td class="px-6 py-4 font-bold text-green-600">
+            ${formatarMoeda(e.precoHora)}
+          </td>
+
+          <td class="px-6 py-4 text-slate-700">
+            ${normalizarHora(e.horarioAbertura) || "-"} às ${normalizarHora(e.horarioFechamento) || "-"}
+          </td>
+
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+              ativo
+                ? "bg-green-100 text-green-700 border border-green-200"
+                : "bg-red-100 text-red-700 border border-red-200"
+            }">
+              ${ativo ? "Ativo" : "Inativo"}
+            </span>
+          </td>
+
+          <td class="px-6 py-4">
+            <div class="flex flex-wrap gap-2">
+              <button
+                onclick="verDetalhes(${e.id})"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
+              >
+                Detalhes
+              </button>
+
+              <button
+                onclick="editarEstacionamento(${e.id})"
+                class="bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-bold px-3 py-2 rounded-xl transition text-xs"
+              >
+                Editar
+              </button>
+
+              <button
+                onclick="excluirEstacionamento(${e.id})"
+                class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
+              >
+                Excluir
+              </button>
+            </div>
+          </td>
+        `;
+
+        tabela.appendChild(tr);
+      });
+    }
+
+    function atualizarCards() {
+      const total = estacionamentos.length;
+
+      const ativos = estacionamentos.filter((e) => normalizarAtivo(e.ativo)).length;
+
+      const totalVagas = estacionamentos.reduce((soma, e) => {
+        return soma + Number(e.qtdVagasTotais || 0);
+      }, 0);
+
+      const somaPrecos = estacionamentos.reduce((soma, e) => {
+        return soma + Number(e.precoHora || 0);
+      }, 0);
+
+      const precoMedio = total > 0 ? somaPrecos / total : 0;
+
+      document.getElementById("cardTotal").innerText = total;
+      document.getElementById("cardAtivos").innerText = ativos;
+      document.getElementById("cardVagas").innerText = totalVagas;
+      document.getElementById("cardPrecoMedio").innerText = formatarMoeda(precoMedio);
+    }
+
+    function filtrarEstacionamentos() {
+      const busca = document.getElementById("busca").value.toLowerCase();
+      const status = document.getElementById("filtroStatus").value;
+
+      const filtrados = estacionamentos.filter((e) => {
+        const ativo = normalizarAtivo(e.ativo);
+
+        const encontrouBusca =
+          String(e.nome || "").toLowerCase().includes(busca) ||
+          String(e.endereco || "").toLowerCase().includes(busca);
+
+        const encontrouStatus =
+          status === "todos" ||
+          (status === "ativo" && ativo) ||
+          (status === "inativo" && !ativo);
+
+        return encontrouBusca && encontrouStatus;
+      });
+
+      carregarTabela(filtrados);
+    }
+
+    async function verDetalhes(id) {
+      if (!id) {
+        pcErro("Estacionamento não encontrado.");
+        return;
+      }
+
+      try {
+        const e = await pcFetch(`/api/estacionamentos/${id}`);
+        const mensagem =
+          `Estacionamento: ${e.nome || "-"}\n` +
+          `Endereço: ${e.endereco || "-"}\n` +
+          `Preço por hora: ${formatarMoeda(e.precoHora)}\n` +
+          `Vagas: ${e.qtdVagasDisponiveis ?? 0}/${e.qtdVagasTotais ?? 0}\n` +
+          `Reserváveis: ${e.qtdVagasReservadas ?? 0}/${e.qtdVagasReservaveis ?? 0}\n` +
+          `Horário: ${normalizarHora(e.horarioAbertura) || "-"} às ${normalizarHora(e.horarioFechamento) || "-"}\n` +
+          `Status: ${normalizarAtivo(e.ativo) ? "Ativo" : "Inativo"}`;
+        pcInfo(mensagem, 8000);
+      } catch (erro) {
+        console.error("Erro ao buscar detalhes:", erro);
+        pcErro(erro.message || "Não foi possível carregar os detalhes.");
+      }
+    }
+
+    // ── Formulario novo/editar ────────────────────────────────────────────
+
+    let formModo = "novo"; // "novo" | "editar"
+
+    function limparFormulario() {
+      ["formNome","formCnpj","formRazaoSocial","formNomeFantasia","formEndereco","formPreco","formVagasTotais","formHorarioAbertura",
+       "formHorarioFechamento","formLatitude","formLongitude","formDescricao","formPixKey",
+       "formCep","formLogradouro","formNumero","formComplemento","formBairro","formCidade","formUf"
+      ].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("formVagasReservaveis").value = "0";
+      document.getElementById("formAtivo").checked = true;
+      document.getElementById("formPermiteReserva").checked = false;
+      atualizarCamposReserva();
+      document.getElementById("formErro").classList.add("hidden");
+      document.getElementById("formCepStatus").innerText = "";
+      document.getElementById("formGeoStatus").innerText = "";
+    }
+
+    function atualizarCamposReserva() {
+      const permite = document.getElementById("formPermiteReserva").checked;
+      const grupo = document.getElementById("grupoVagasReservaveis");
+      const input = document.getElementById("formVagasReservaveis");
+      grupo.classList.toggle("hidden", !permite);
+      input.disabled = !permite;
+      input.required = permite;
+      input.min = permite ? "1" : "0";
+      if (!permite) input.value = "0";
+      const total = Number(document.getElementById("formVagasTotais").value || 0);
+      if (total > 0) input.max = String(total);
+    }
+
+    function abrirNovoEstacionamento() {
+      formModo = "novo";
+      document.getElementById("formTitulo").innerText = "Novo estacionamento";
+      document.getElementById("formId").value = "";
+      limparFormulario();
+
+      // Fotos só aparecem depois que o estacionamento existir (precisa de id).
+      document.getElementById("blocoFotos").classList.add("hidden");
+
+      document.getElementById("formBox").classList.remove("hidden");
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    function editarEstacionamento(id) {
+      const e = estacionamentos.find(x => Number(x.id) === Number(id));
+      if (!e) return;
+      formModo = "editar";
+      document.getElementById("formTitulo").innerText = "Editar estacionamento (#" + e.id + ")";
+      document.getElementById("formId").value = e.id;
+      limparFormulario();
+      document.getElementById("formNome").value = e.nome || "";
+      document.getElementById("formCnpj").value = formatarCnpjInput(somenteDigitos(e.cnpj));
+      document.getElementById("formRazaoSocial").value = e.razaoSocial || "";
+      document.getElementById("formNomeFantasia").value = e.nomeFantasia || "";
+      document.getElementById("formEndereco").value = e.endereco || "";
+      document.getElementById("formPreco").value = e.precoHora ?? "";
+      document.getElementById("formVagasTotais").value = e.qtdVagasTotais ?? 0;
+      document.getElementById("formVagasReservaveis").value = e.qtdVagasReservaveis ?? 0;
+      document.getElementById("formHorarioAbertura").value = normalizarHora(e.horarioAbertura);
+      document.getElementById("formHorarioFechamento").value = normalizarHora(e.horarioFechamento);
+      document.getElementById("formLatitude").value = e.latitude ?? "";
+      document.getElementById("formLongitude").value = e.longitude ?? "";
+      document.getElementById("formDescricao").value = e.descricao || "";
+      document.getElementById("formCep").value = formatarCep(e.cep);
+      document.getElementById("formLogradouro").value = e.logradouro || "";
+      document.getElementById("formNumero").value = e.numero || "";
+      document.getElementById("formComplemento").value = e.complemento || "";
+      document.getElementById("formBairro").value = e.bairro || "";
+      document.getElementById("formCidade").value = e.cidade || "";
+      document.getElementById("formUf").value = (e.uf || "").toUpperCase();
+      document.getElementById("formAtivo").checked = normalizarAtivo(e.ativo);
+      document.getElementById("formPermiteReserva").checked = normalizarAtivo(e.permiteReserva);
+      atualizarCamposReserva();
+      document.getElementById("formPixKey").value = e.pixKey || "";
+
+      document.getElementById("formBox").classList.remove("hidden");
+      // Item 3: carregar fotos do estacionamento na edição
+      document.getElementById("blocoFotos").classList.remove("hidden");
+      carregarFotos(e.id);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    // ── Fotos (Item 3 + Item 5) ───────────────────────────────────────────────
+    const PC_API_HOST = "http://localhost:8080";
+    let _fotosAtuais = [];
+    let _limiteFotos = 3;
+    let _planoAtualUpload = null;
+
+    async function carregarFotos(estId) {
+      try {
+        // Plano (para limite + label)
+        _planoAtualUpload = await pcCarregarPlano(estId);
+        _limiteFotos = (_planoAtualUpload && _planoAtualUpload.limiteFotos != null)
+            ? Number(_planoAtualUpload.limiteFotos)
+            : 3;
+
+        _fotosAtuais = await pcFetch("/api/estacionamentos/" + estId + "/fotos");
+        renderizarFotos();
+      } catch (e) {
+        console.warn("Falha ao carregar fotos:", e.message);
+        _fotosAtuais = [];
+        renderizarFotos();
+      }
+    }
+
+    function renderizarFotos() {
+      const grid = document.getElementById("gridFotos");
+      const vazio = document.getElementById("fotosVazias");
+      const status = document.getElementById("fotosStatus");
+      const input = document.getElementById("inputFoto");
+
+      grid.innerHTML = "";
+      const total = _fotosAtuais.length;
+      const cheio = total >= _limiteFotos;
+      const planoNome = _planoAtualUpload ? (_planoAtualUpload.plano || "—") : "—";
+      const expirado = _planoAtualUpload && _planoAtualUpload.expirado;
+
+      if (expirado) {
+        status.innerHTML = `<span class="text-red-700 font-semibold">Plano ${planoNome} expirado.</span> Renove para enviar fotos.`;
+        input.disabled = true;
+      } else {
+        status.innerHTML = `Plano <strong>${planoNome}</strong> · ${total} de ${_limiteFotos} fotos usadas.`
+            + (cheio ? ` <span class="text-yellow-700 font-semibold">Limite atingido.</span>` : "");
+        input.disabled = cheio;
+      }
+
+      if (total === 0) {
+        vazio.classList.remove("hidden");
+        return;
+      }
+      vazio.classList.add("hidden");
+
+      _fotosAtuais.forEach(f => {
+        const div = document.createElement("div");
+        div.className = "border border-slate-200 rounded-xl overflow-hidden bg-white";
+        const urlAbsoluta = PC_API_HOST + (f.url.startsWith("/") ? f.url : "/" + f.url);
+        div.innerHTML = `
+          <div class="aspect-video bg-slate-100">
+            <img src="${urlAbsoluta}" alt="Foto do estacionamento" class="w-full h-full object-cover" />
+          </div>
+          <div class="p-3 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">${f.tipoMime} · ${formatarKb(f.tamanhoBytes)}</span>
+              ${f.principal
+                ? `<span class="text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-2 py-0.5 rounded-full">Principal</span>`
+                : `<button onclick="marcarPrincipal(${f.id})" class="text-xs font-semibold text-blue-600 hover:text-blue-800">Marcar como principal</button>`
+              }
+            </div>
+            <button onclick="removerFoto(${f.id})" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl text-xs">
+              Remover
+            </button>
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function formatarKb(bytes) {
+      const v = Number(bytes || 0);
+      if (v < 1024) return v + " B";
+      if (v < 1024 * 1024) return (v / 1024).toFixed(1) + " KB";
+      return (v / 1024 / 1024).toFixed(2) + " MB";
+    }
+
+    async function enviarFoto(ev) {
+      const input = ev.target;
+      const file = input.files && input.files[0];
+      const estId = document.getElementById("formId").value;
+      if (!file || !estId) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        pcErro("A imagem é muito grande. O limite é de 5 MB.");
+        input.value = "";
+        return;
+      }
+
+      // Marca a primeira foto enviada como principal automaticamente.
+      const fd = new FormData();
+      fd.append("file", file);
+      const ehPrimeira = _fotosAtuais.length === 0;
+      const url = "/api/estacionamentos/" + estId + "/fotos" + (ehPrimeira ? "?principal=true" : "");
+
+      try {
+        await pcFetch(url, { method: "POST", body: fd });
+        pcSucesso("Foto enviada com sucesso.");
+        carregarFotos(estId);
+      } catch (e) {
+        console.error("Erro ao enviar foto:", e);
+        pcErro(e.message || "Não foi possível enviar a foto.");
+      } finally {
+        input.value = "";
+      }
+    }
+
+    async function marcarPrincipal(fotoId) {
+      const estId = document.getElementById("formId").value;
+      if (!estId) return;
+      try {
+        await pcFetch("/api/estacionamentos/" + estId + "/fotos/" + fotoId + "/principal", { method: "PUT" });
+        pcSucesso("Foto definida como principal.");
+        carregarFotos(estId);
+      } catch (e) {
+        console.error("Erro ao marcar principal:", e);
+        pcErro(e.message || "Não foi possível marcar como principal.");
+      }
+    }
+
+    async function removerFoto(fotoId) {
+      const estId = document.getElementById("formId").value;
+      if (!estId) return;
+      if (!confirm("Remover esta foto?")) return;
+      try {
+        await pcFetch("/api/estacionamentos/" + estId + "/fotos/" + fotoId, { method: "DELETE" });
+        pcSucesso("Foto removida.");
+        carregarFotos(estId);
+      } catch (e) {
+        console.error("Erro ao remover foto:", e);
+        pcErro(e.message || "Não foi possível remover a foto.");
+      }
+    }
+
+    // ── ViaCEP + Nominatim ────────────────────────────────────────────────────
+
+    function formatarCep(v) {
+      const d = String(v || "").replace(/\D/g, "");
+      if (d.length !== 8) return d;
+      return d.substring(0,5) + "-" + d.substring(5);
+    }
+
+    function somenteDigitos(v) { return String(v || "").replace(/\D/g, ""); }
+    function formatarCnpjInput(digitos) {
+      const d = digitos.slice(0, 14);
+      if (d.length <= 2) return d;
+      if (d.length <= 5) return d.substring(0,2) + "." + d.substring(2);
+      if (d.length <= 8) return d.substring(0,2) + "." + d.substring(2,5) + "." + d.substring(5);
+      if (d.length <= 12) return d.substring(0,2) + "." + d.substring(2,5) + "." + d.substring(5,8) + "/" + d.substring(8);
+      return d.substring(0,2) + "." + d.substring(2,5) + "." + d.substring(5,8) + "/" + d.substring(8,12) + "-" + d.substring(12);
+    }
+    function validarCnpjLocal(cnpj) {
+      const d = somenteDigitos(cnpj);
+      if (d.length !== 14 || /^(\d)\1{13}$/.test(d)) return false;
+      const calc = (base) => {
+        const pesos = base === 12 ? [5,4,3,2,9,8,7,6,5,4,3,2] : [6,5,4,3,2,9,8,7,6,5,4,3,2];
+        let soma = 0;
+        for (let i = 0; i < base; i++) soma += Number(d[i]) * pesos[i];
+        const resto = soma % 11;
+        return resto < 2 ? 0 : 11 - resto;
+      };
+      return calc(12) === Number(d[12]) && calc(13) === Number(d[13]);
+    }
+    function normalizarCidade(v) { return String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase(); }
+    function ehCidadeSaoPaulo(v) { return normalizarCidade(v) === "sao paulo"; }
+
+    function validarCpfLocal(cpf) {
+      const d = somenteDigitos(cpf);
+      if (d.length !== 11) return false;
+      if (/^(\d)\1{10}$/.test(d)) return false;
+      let soma = 0;
+      for (let i = 0; i < 9; i++) soma += Number(d[i]) * (10 - i);
+      let dig1 = (soma % 11) < 2 ? 0 : 11 - (soma % 11);
+      if (dig1 !== Number(d[9])) return false;
+      soma = 0;
+      for (let i = 0; i < 10; i++) soma += Number(d[i]) * (11 - i);
+      let dig2 = (soma % 11) < 2 ? 0 : 11 - (soma % 11);
+      return dig2 === Number(d[10]);
+    }
+
+    function validarEmailLocal(email) {
+      return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(String(email || "").trim());
+    }
+
+    function validarChavePixLocal(chave) {
+      const v = String(chave || "").trim();
+      if (!v) return false;
+      const digitos = somenteDigitos(v);
+      if (validarEmailLocal(v)) return true;
+      if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)) return true;
+      if (digitos.length === 11 && validarCpfLocal(digitos)) return true;
+      if (digitos.length === 14 && validarCnpjLocal(digitos)) return true;
+      if (digitos.length === 13 && digitos.startsWith("55")) return true;
+      if (digitos.length === 10 || digitos.length === 11) return true;
+      return false;
+    }
+
+    function lerCepDigits() {
+      return String(document.getElementById("formCep").value || "").replace(/\D/g, "");
+    }
+
+    let _formCepRequestSeq = 0;
+    let _formGeoRequestSeq = 0;
+
+    function limparEnderecoFormPorCep() {
+      ["formLogradouro","formBairro","formCidade","formUf","formComplemento","formLatitude","formLongitude","formEndereco"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      const geoStatusEl = document.getElementById("formGeoStatus");
+      if (geoStatusEl) geoStatusEl.innerText = "";
+      if (_geoTimer) clearTimeout(_geoTimer);
+      _formGeoRequestSeq++;
+    }
+
+    async function consultarCep() {
+      const cep = lerCepDigits();
+      const statusEl = document.getElementById("formCepStatus");
+      const requestSeq = ++_formCepRequestSeq;
+      limparEnderecoFormPorCep();
+      if (cep.length !== 8) {
+        statusEl.innerText = "Informe um CEP com 8 dígitos.";
+        return;
+      }
+      statusEl.innerText = "Buscando CEP no ViaCEP...";
+      try {
+        const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (!r.ok) throw new Error("Falha na consulta ViaCEP");
+        const j = await r.json();
+        if (requestSeq !== _formCepRequestSeq || lerCepDigits() !== cep) return;
+        if (j.erro) {
+          statusEl.innerText = "CEP não encontrado.";
+          return;
+        }
+        if (!ehCidadeSaoPaulo(j.localidade)) {
+          statusEl.innerText = "No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.";
+          return;
+        }
+        document.getElementById("formCep").value = formatarCep(cep);
+        document.getElementById("formLogradouro").value = j.logradouro || "";
+        document.getElementById("formBairro").value     = j.bairro || "";
+        document.getElementById("formCidade").value     = j.localidade || "";
+        document.getElementById("formUf").value         = (j.uf || "").toUpperCase();
+        if (j.complemento) {
+          document.getElementById("formComplemento").value = j.complemento;
+        }
+        if (document.getElementById("formNumero").value.trim()) {
+          agendarGeocoding();
+        }
+        statusEl.innerText = "Endereço preenchido pelo ViaCEP. Confirme o número e o complemento.";
+      } catch (e) {
+        console.error("Erro ViaCEP:", e);
+        if (requestSeq !== _formCepRequestSeq || lerCepDigits() !== cep) return;
+        statusEl.innerText = "Não foi possível consultar o CEP agora.";
+      }
+    }
+
+    /** Debounce simples. */
+    let _geoTimer = null;
+
+    /**
+     * Geocoding via Nominatim (OpenStreetMap). Gratuito, sem chave.
+     * Respeita os termos: User-Agent identificável + debounce + 1 req por intervalo do usuário.
+     * Atualiza apenas se vier resultado; mantém valores anteriores em caso de falha.
+     */
+    async function geocodificarAgora() {
+      const requestSeq = ++_formGeoRequestSeq;
+      const numero      = document.getElementById("formNumero").value.trim();
+      const logradouro  = document.getElementById("formLogradouro").value.trim();
+      const bairro      = document.getElementById("formBairro").value.trim();
+      const cidade      = document.getElementById("formCidade").value.trim();
+      const uf          = document.getElementById("formUf").value.trim().toUpperCase();
+      const cep         = lerCepDigits();
+      const statusEl    = document.getElementById("formGeoStatus");
+      document.getElementById("formLatitude").value = "";
+      document.getElementById("formLongitude").value = "";
+      const enderecoOrigem = { numero, logradouro, bairro, cidade, uf, cep };
+      const enderecoAindaAtual = () =>
+        requestSeq === _formGeoRequestSeq &&
+        document.getElementById("formNumero").value.trim() === enderecoOrigem.numero &&
+        document.getElementById("formLogradouro").value.trim() === enderecoOrigem.logradouro &&
+        document.getElementById("formBairro").value.trim() === enderecoOrigem.bairro &&
+        document.getElementById("formCidade").value.trim() === enderecoOrigem.cidade &&
+        document.getElementById("formUf").value.trim().toUpperCase() === enderecoOrigem.uf &&
+        lerCepDigits() === enderecoOrigem.cep;
+
+      if (!logradouro || !cidade) {
+        statusEl.innerText = "Para calcular as coordenadas, preencha pelo menos logradouro e cidade.";
+        return;
+      }
+      if (!numero) {
+        statusEl.innerText = "Informe o numero do endereco para calcular latitude e longitude.";
+        return;
+      }
+      if (!ehCidadeSaoPaulo(cidade)) {
+        statusEl.innerText = "No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.";
+        return;
+      }
+      const estado = uf || "SP";
+      const contato = "gustavon.o.alegria%40gmail.com";
+      const consultas = [
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&addressdetails=0&email=${contato}&street=${encodeURIComponent(numero + " " + logradouro)}&city=${encodeURIComponent(cidade)}&state=${encodeURIComponent(estado)}&country=${encodeURIComponent("Brasil")}`,
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&addressdetails=0&email=${contato}&q=${encodeURIComponent(`${logradouro}, ${numero}, ${cidade}, ${estado}, Brasil`)}`,
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&addressdetails=0&email=${contato}&q=${encodeURIComponent(`${logradouro}, ${numero}, ${bairro}, ${cidade}, ${estado}, Brasil`)}`,
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&addressdetails=0&email=${contato}&q=${encodeURIComponent(`${logradouro}, ${numero}, ${bairro}, ${cidade}, ${estado}, ${cep}, Brasil`)}`
+      ];
+
+      statusEl.innerText = "Calculando coordenadas via OpenStreetMap...";
+      try {
+        let arr = [];
+        for (const url of consultas) {
+          const r = await fetch(url, {
+            headers: {
+              // Termos do Nominatim exigem User-Agent identificavel.
+              // Em browsers o cabeçalho User-Agent geralmente é mantido pelo navegador,
+              // mas mantemos Accept-Language para resultados em PT-BR.
+              "Accept": "application/json",
+              "Accept-Language": "pt-BR"
+            }
+          });
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          arr = await r.json();
+          if (Array.isArray(arr) && arr.length > 0) break;
+          if (!enderecoAindaAtual()) return;
+        }
+        if (!enderecoAindaAtual()) return;
+        if (!Array.isArray(arr) || arr.length === 0) {
+          statusEl.innerText = "Endereco nao localizado no OpenStreetMap. Confira logradouro, numero, cidade e UF.";
+          return;
+        }
+        const lat = Number(arr[0].lat);
+        const lon = Number(arr[0].lon);
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
+          document.getElementById("formLatitude").value  = lat.toFixed(7);
+          document.getElementById("formLongitude").value = lon.toFixed(7);
+          statusEl.innerText = `Coordenadas atualizadas (${lat.toFixed(5)}, ${lon.toFixed(5)}).`;
+        } else {
+          statusEl.innerText = "Resposta do Nominatim sem coordenadas válidas.";
+        }
+      } catch (e) {
+        console.error("Erro Nominatim:", e);
+        if (!enderecoAindaAtual()) return;
+        statusEl.innerText = "Não foi possível calcular as coordenadas agora. Tente novamente em alguns segundos.";
+      }
+    }
+
+    function agendarGeocoding() {
+      // Debounce de 800ms para não disparar a cada tecla.
+      if (_geoTimer) clearTimeout(_geoTimer);
+      _geoTimer = setTimeout(geocodificarAgora, 800);
+    }
+
+    function fecharForm() {
+      document.getElementById("formBox").classList.add("hidden");
+    }
+
+    function mostrarErroForm(msg) {
+      const el = document.getElementById("formErro");
+      el.innerText = msg;
+      el.classList.remove("hidden");
+    }
+
+    function lerHoraIso(id) {
+      const v = document.getElementById(id).value;
+      if (!v) return null;
+      return v.length === 5 ? v + ":00" : v;
+    }
+
+    async function salvarEstacionamento() {
+      const id = document.getElementById("formId").value;
+
+      // Se o usuario nao gerou coordenadas via Nominatim ainda, tenta antes de salvar.
+      const latVazia = !document.getElementById("formLatitude").value;
+      const lonVazia = !document.getElementById("formLongitude").value;
+      const temBaseGeo = document.getElementById("formLogradouro").value.trim() && document.getElementById("formCidade").value.trim();
+      if ((latVazia || lonVazia) && temBaseGeo) {
+        try { await geocodificarAgora(); } catch (_) {}
+      }
+
+      const cepDigits = lerCepDigits();
+      const cnpjDigits = somenteDigitos(document.getElementById("formCnpj").value);
+      const razaoSocial = document.getElementById("formRazaoSocial").value.trim();
+      const nomeFantasia = document.getElementById("formNomeFantasia").value.trim();
+      if (!validarCnpjLocal(cnpjDigits)) { mostrarErroForm("CNPJ do estacionamento inválido."); return; }
+      if (!razaoSocial) { mostrarErroForm("Informe a razão social do estacionamento."); return; }
+
+      const logradouro = document.getElementById("formLogradouro").value.trim();
+      const numero     = document.getElementById("formNumero").value.trim();
+      const bairro     = document.getElementById("formBairro").value.trim();
+      const cidade     = document.getElementById("formCidade").value.trim();
+      const uf         = document.getElementById("formUf").value.trim().toUpperCase();
+
+      if (!logradouro || !numero || !bairro || !cidade || !uf) {
+        mostrarErroForm("Informe o endereço completo: logradouro, número, bairro, cidade e UF.");
+        return;
+      }
+      if (!ehCidadeSaoPaulo(cidade)) {
+        mostrarErroForm("No momento, atendemos apenas estacionamentos na cidade de São Paulo.");
+        return;
+      }
+
+      const pixKey = document.getElementById("formPixKey").value.trim();
+      if (pixKey && !validarChavePixLocal(pixKey)) {
+        mostrarErroForm("Chave Pix em formato inválido. Use CPF, CNPJ, e-mail, telefone ou chave aleatória.");
+        return;
+      }
+
+      // Endereço no formato padrão "logradouro, numero - bairro, cidade - UF".
+      const enderecoDigitado = document.getElementById("formEndereco").value.trim();
+      const enderecoMontado  = pcMontarEndereco({ logradouro, numero, bairro, cidade, uf });
+      const enderecoFinal    = enderecoDigitado || enderecoMontado;
+
+      const permiteReserva = document.getElementById("formPermiteReserva").checked;
+      const qtdVagasTotais = Number(document.getElementById("formVagasTotais").value);
+      const qtdVagasReservaveis = permiteReserva ? Number(document.getElementById("formVagasReservaveis").value || 0) : 0;
+      if (permiteReserva && (!qtdVagasReservaveis || qtdVagasReservaveis < 1)) {
+        mostrarErroForm("Informe quantas vagas serão reserváveis.");
+        return;
+      }
+      if (qtdVagasReservaveis > qtdVagasTotais) {
+        mostrarErroForm("Vagas reserváveis não pode ser maior que o total de vagas.");
+        return;
+      }
+
+      const corpo = {
+        nome: document.getElementById("formNome").value.trim(),
+        cnpj: cnpjDigits,
+        razaoSocial: razaoSocial,
+        nomeFantasia: nomeFantasia || null,
+        endereco: enderecoFinal,
+        pixKey: pixKey || null,
+        precoHora: Number(document.getElementById("formPreco").value),
+        qtdVagasTotais: qtdVagasTotais,
+        qtdVagasReservaveis: qtdVagasReservaveis,
+        horarioAbertura: lerHoraIso("formHorarioAbertura"),
+        horarioFechamento: lerHoraIso("formHorarioFechamento"),
+        latitude: document.getElementById("formLatitude").value ? Number(document.getElementById("formLatitude").value) : null,
+        longitude: document.getElementById("formLongitude").value ? Number(document.getElementById("formLongitude").value) : null,
+        descricao: document.getElementById("formDescricao").value.trim(),
+        ativo: document.getElementById("formAtivo").checked,
+        permiteReserva: permiteReserva,
+
+        cep:          cepDigits || null,
+        logradouro:   logradouro,
+        numero:       numero,
+        complemento:  document.getElementById("formComplemento").value.trim() || null,
+        bairro:       bairro,
+        cidade:       cidade,
+        uf:           uf
+      };
+
+      if (corpo.cep && corpo.cep.length !== 8) {
+        mostrarErroForm("CEP deve ter 8 dígitos.");
+        return;
+      }
+
+      if (formModo === "novo") {
+        if (!corpo.nome || !corpo.qtdVagasTotais || isNaN(corpo.precoHora)) {
+          mostrarErroForm("Preencha nome, preço por hora e total de vagas.");
+          return;
+        }
+      }
+
+      try {
+        let salvo;
+        if (formModo === "novo") {
+          salvo = await pcFetch("/api/estacionamentos", { method: "POST", body: JSON.stringify(corpo) });
+        } else {
+          // Atualiza dados cadastrais e, em uma segunda chamada, a capacidade de vagas.
+          salvo = await pcFetch("/api/estacionamentos/" + id, {
+            method: "PUT",
+            body: JSON.stringify({
+              adminId: ADMIN_ID,
+              nome: corpo.nome,
+              cnpj: corpo.cnpj,
+              razaoSocial: corpo.razaoSocial,
+              nomeFantasia: corpo.nomeFantasia,
+              endereco: corpo.endereco,
+              pixKey: corpo.pixKey,
+              precoHora: corpo.precoHora,
+              horarioAbertura: corpo.horarioAbertura,
+              horarioFechamento: corpo.horarioFechamento,
+              descricao: corpo.descricao,
+              ativo: corpo.ativo,
+              permiteReserva: corpo.permiteReserva,
+              cep: corpo.cep,
+              logradouro: corpo.logradouro,
+              numero: corpo.numero,
+              complemento: corpo.complemento,
+              bairro: corpo.bairro,
+              cidade: corpo.cidade,
+              uf: corpo.uf
+            })
+          });
+          await pcFetch("/api/estacionamentos/" + id + "/vagas", {
+            method: "PUT",
+            body: JSON.stringify({
+              adminId: ADMIN_ID,
+              qtdVagasTotais: corpo.qtdVagasTotais,
+              qtdVagasReservaveis: corpo.qtdVagasReservaveis
+            })
+          });
+        }
+
+        pcSucesso("Estacionamento salvo com sucesso.");
+        fecharForm();
+        carregar();
+
+      } catch (e) {
+        console.error("Erro ao salvar:", e);
+        mostrarErroForm(e.message || "Não foi possível salvar o estacionamento.");
+      }
+    }
+
+    // ── Wire-up de eventos do form de endereço ────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      const cnpjEl = document.getElementById("formCnpj");
+      if (cnpjEl) cnpjEl.addEventListener("input", e => {
+        e.target.value = formatarCnpjInput(somenteDigitos(e.target.value));
+      });
+
+      const cepEl = document.getElementById("formCep");
+      if (cepEl) {
+        cepEl.addEventListener("blur", consultarCep);
+        cepEl.addEventListener("input", (e) => {
+          const d = e.target.value.replace(/\D/g, "").slice(0, 8);
+          e.target.value = d.length > 5 ? d.substring(0,5) + "-" + d.substring(5) : d;
+          _formCepRequestSeq++;
+          limparEnderecoFormPorCep();
+          const statusEl = document.getElementById("formCepStatus");
+          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dígitos.");
+        });
+      }
+      const ufEl = document.getElementById("formUf");
+      if (ufEl) ufEl.addEventListener("input", (e) => { e.target.value = e.target.value.toUpperCase().slice(0,2); });
+
+      // Geocoding (Nominatim) ao perder foco do número, logradouro ou cidade.
+      const permiteReservaEl = document.getElementById("formPermiteReserva");
+      if (permiteReservaEl) permiteReservaEl.addEventListener("change", atualizarCamposReserva);
+      const vagasTotaisEl = document.getElementById("formVagasTotais");
+      if (vagasTotaisEl) vagasTotaisEl.addEventListener("input", atualizarCamposReserva);
+
+      ["formNumero","formLogradouro","formCidade","formUf"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("blur", agendarGeocoding);
+      });
+    });
+
+    async function excluirEstacionamento(id) {
+      if (!confirm("Desativar este estacionamento? Ele deixará de aparecer no aplicativo.")) return;
+      try {
+        await pcFetch("/api/estacionamentos/" + id, { method: "DELETE" });
+        pcSucesso("Estacionamento desativado.");
+        carregar();
+      } catch (e) {
+        console.error("Erro ao excluir:", e);
+        pcErro(e.message || "Não foi possível desativar o estacionamento.");
+      }
+    }
+
+    const sair = pcSair;
+
+    carregar();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Painel de Operação - Parada Certa</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Painel de Operação do estacionamento
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <nav id="pc-navbar" data-page="reservas" class="flex flex-wrap gap-4 text-sm items-center"></nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- TÍTULO -->
+    <section class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <p class="text-green-600 font-semibold mb-2">
+            Acesso operacional
+          </p>
+
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+            Painel de Operação
+          </h2>
+
+          <p class="text-slate-600 mt-2 max-w-3xl">
+            Acompanhe entradas, reservas, vagas disponíveis, veículos no pátio, validação por QR Code,
+            saída e atendimento dos clientes.
+          </p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+          <p class="text-sm text-slate-500">Perfil conectado</p>
+          <p class="font-semibold text-blue-600">Operador do Estacionamento</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- AVISO -->
+    <section class="mb-8 bg-blue-50 border border-blue-200 rounded-2xl p-5">
+      <p class="text-blue-700 font-bold mb-1">
+        Painel de Operação
+      </p>
+      <p class="text-sm text-slate-700">
+        Esta tela representa a rotina do funcionário responsável por operar o estacionamento:
+        acompanhar vagas, validar QR Code, consultar veículos, finalizar permanências e cancelar entradas quando necessário.
+      </p>
+    </section>
+
+    <section id="bannerPlanoOperacao" class="hidden mb-8 rounded-2xl p-5 border">
+      <p id="bannerPlanoOperacaoTitulo" class="font-bold mb-1"></p>
+      <p id="bannerPlanoOperacaoTexto" class="text-sm"></p>
+      <div id="bannerPlanoOperacaoAcoes" class="mt-3"></div>
+    </section>
+
+    <section id="secaoMapaCalor" class="hidden bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            Mapa de calor operacional
+            <span class="inline-block bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-2 py-1 rounded-full">Premium</span>
+          </h3>
+          <p class="text-sm text-slate-500 mt-1">Regiões de São Paulo com maior volume agregado de entradas no período.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+          <select id="periodoMapaCalor" onchange="carregarMapaCalor()" class="px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500">
+            <option value="hoje">Hoje</option>
+            <option value="semana">Semana</option>
+            <option value="mes" selected>Mês</option>
+            <option value="ano">Ano</option>
+            <option value="todos">Todos</option>
+          </select>
+          <span id="statusMapaCalor" class="text-xs text-slate-500">Aguardando plano...</span>
+        </div>
+      </div>
+
+      <div id="mapaCalorVazio" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-5 text-sm text-slate-600">
+        Não há dados suficientes para gerar o mapa de calor no momento.
+      </div>
+
+      <div id="mapaCalorConteudo" class="hidden grid lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+        <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 min-h-[360px]">
+          <div class="absolute inset-0 opacity-70" style="background-image: linear-gradient(rgba(148,163,184,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.14) 1px, transparent 1px); background-size: 38px 38px;"></div>
+          <div class="absolute inset-x-6 top-6 z-10 pointer-events-none flex items-center justify-between text-xs text-slate-700">
+            <span>São Paulo</span>
+            <span>Dados agregados por região</span>
+          </div>
+          <div id="mapaCalorLeaflet" class="absolute inset-0 z-0"></div>
+          <div class="absolute left-6 bottom-6 right-6 z-10 pointer-events-none flex items-center gap-3 text-xs text-slate-700 bg-white/85 border border-slate-200 rounded-xl px-3 py-2">
+            <span>Menor movimento</span>
+            <div class="h-2 flex-1 rounded-full" style="background: linear-gradient(to right, #1e3a8a 0%, #06b6d4 25%, #22c55e 45%, #facc15 65%, #f97316 82%, #dc2626 100%);"></div>
+            <span>Maior movimento</span>
+            <span class="hidden sm:inline text-slate-400">Base: OSM &middot; Limites: IBGE</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p class="text-xs text-slate-500">Entradas</p>
+              <p id="mapaCalorTotalEntradas" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p class="text-xs text-slate-500">Regiões</p>
+              <p id="mapaCalorTotalRegioes" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+            </div>
+          </div>
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 text-xs font-bold text-slate-500 uppercase">Regiões mais aquecidas</div>
+            <div id="mapaCalorLista" class="divide-y divide-slate-100"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARDS -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Reservas ativas</p>
+        <h3 id="cardAtivas" class="text-3xl font-bold mt-2 text-blue-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Reservas em andamento</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Finalizadas</p>
+        <h3 id="cardFinalizadas" class="text-3xl font-bold mt-2 text-green-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Clientes já atendidos</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Canceladas</p>
+        <h3 id="cardCanceladas" class="text-3xl font-bold mt-2 text-red-600">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Reservas canceladas</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Valor previsto</p>
+        <h3 id="cardValor" class="text-3xl font-bold mt-2 text-yellow-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Somente reservas ativas</p>
+      </div>
+    </section>
+
+    <!-- OPERAÇÃO -->
+    <section class="grid lg:grid-cols-3 gap-6 mb-8">
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">
+          Vagas do estacionamento
+        </h3>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+            <p class="text-sm text-green-700">Disponíveis</p>
+            <p id="vagasDisponíveis" class="text-3xl font-bold text-green-700 mt-1">100</p>
+          </div>
+
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p class="text-sm text-red-700">Ocupadas</p>
+            <p id="vagasOcupadas" class="text-3xl font-bold text-red-700 mt-1">0</p>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <p class="text-sm text-blue-700">Reservadas</p>
+            <p id="vagasReservadas" class="text-3xl font-bold text-blue-700 mt-1">0</p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-sm text-slate-500">Total</p>
+            <p id="vagasTotais" class="text-3xl font-bold text-slate-900 mt-1">100</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm lg:col-span-2">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">
+          Entradas em operação
+        </h3>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+          <p class="text-sm text-slate-700 mb-3">
+            Entradas pelo totem geram uma sessão ativa automaticamente e aparecem nesta lista como
+            <strong>Entrada via totem</strong>. Entradas pelo aplicativo seguem identificadas pelo motorista.
+          </p>
+
+          <ul class="text-sm text-slate-600 list-disc ml-5 space-y-1"> 
+            <li>Quando a entrada vem pelo aplicativo, o motorista aparece identificado por cliente, CPF e veículo.</li>
+            <li>Nesta tela o operador acompanha as sessões ATIVAS, finaliza ou cancela reservas.</li>
+          </ul>
+
+          <button
+            onclick="carregarSessoes()"
+            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-xl transition"
+          >
+            Atualizar lista de sessões
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- FILTROS -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Buscar reserva ou veículo</label>
+          <input
+            id="busca"
+            type="text"
+            placeholder="Cliente, veículo ou placa..."
+            onkeyup="filtrarReservas()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Status</label>
+          <select
+            id="filtroStatus"
+            onchange="aplicarFiltrosServidor()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="todos">Todos</option>
+            <option value="ATIVA">Ativas</option>
+            <option value="ENCERRADA">Encerradas</option>
+            <option value="CANCELADA">Canceladas</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Resumo</label>
+          <div class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700">
+            <span id="totalExibido">0</span> registros exibidos
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABELA -->
+    <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-6 py-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900">
+            Entradas e veículos em operação
+          </h3>
+          <p class="text-sm text-slate-500 mt-1">
+            Controle operacional das vagas, placas, horários, entradas e saídas.
+          </p>
+        </div>
+
+        <span class="bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-bold">
+          Visão do operador
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="px-6 py-4 text-left font-semibold">Cliente</th>
+              <th class="px-6 py-4 text-left font-semibold">Veículo</th>
+              <th class="px-6 py-4 text-left font-semibold">Placa</th>
+              <th class="px-6 py-4 text-left font-semibold">Vaga</th>
+              <th class="px-6 py-4 text-left font-semibold">Entrada</th>
+              <th class="px-6 py-4 text-left font-semibold">Saída prevista</th>
+              <th class="px-6 py-4 text-left font-semibold">Status</th>
+              <th class="px-6 py-4 text-left font-semibold">Valor</th>
+              <th class="px-6 py-4 text-left font-semibold">Ações</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaReservas" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+
+      <div id="mensagemVazia" class="hidden px-6 py-10 text-center text-slate-500">
+        Nenhum registro encontrado.
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <script src="pc-api.js"></script>
+
+  <script>
+    const sessao = pcRequireSession();
+    const ESTACIONAMENTO_ID = sessao.estacionamentoId;
+
+    document.querySelector('p.font-semibold.text-blue-600').innerText =
+        sessao.nomeCompleto + " — " + (sessao.estacionamentoNome || "Estacionamento");
+
+    let sessoes = [];
+
+    const formatarMoeda = pcFormatarMoeda;
+    let planoOperacao = null;
+
+    function planoTipoOperacao(plano) {
+      return String((plano && plano.plano) || "").trim().toUpperCase();
+    }
+
+    function atualizarBannerPlanoOperacao(plano) {
+      const banner = document.getElementById("bannerPlanoOperacao");
+      const titulo = document.getElementById("bannerPlanoOperacaoTitulo");
+      const texto = document.getElementById("bannerPlanoOperacaoTexto");
+      const acoes = document.getElementById("bannerPlanoOperacaoAcoes");
+      const mapa = document.getElementById("secaoMapaCalor");
+      const tipo = planoTipoOperacao(plano);
+
+      banner.classList.add("hidden");
+      mapa.classList.add("hidden");
+
+      if (!plano) return;
+
+      if (tipo === "PREMIUM" && plano.ativo) {
+        carregarMapaCalor();
+        mapa.classList.remove("hidden");
+        return;
+      }
+
+      if (tipo === "BASIC" && plano.expirado) {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-red-50 border-red-300 text-red-800";
+        titulo.innerText = "Seu período de avaliação expirou.";
+        texto.innerText = "Para continuar usando os recursos administrativos, assine um plano pago.";
+        acoes.innerHTML = `<a href="plano-premium.html" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Escolher plano</a>`;
+      } else if (tipo === "BASIC") {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-yellow-50 border-yellow-300 text-yellow-800";
+        titulo.innerText = "Você está no período gratuito.";
+        texto.innerText = "Para continuar usando os recursos administrativos após o período de avaliação, assine o Plano Standard.";
+        acoes.innerHTML = `<a href="pagamento-plano.html?tipo=STANDARD&cobranca=MENSAL" class="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Assinar Standard</a>`;
+      } else if (tipo === "STANDARD" && plano.ativo) {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-blue-50 border-blue-300 text-blue-800";
+        titulo.innerText = "Plano Standard ativo.";
+        texto.innerText = "Desbloqueie recursos estratégicos com o Plano Premium, como mapa de calor, dados regionais e relatórios avançados.";
+        acoes.innerHTML = `<a href="pagamento-plano.html?tipo=PREMIUM&cobranca=MENSAL" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Conhecer Premium</a>`;
+      } else if ((tipo === "STANDARD" || tipo === "PREMIUM") && plano.expirado) {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-red-50 border-red-300 text-red-800";
+        titulo.innerText = "Seu plano expirou.";
+        texto.innerText = "Renove para continuar acessando o painel administrativo.";
+        acoes.innerHTML = `<a href="plano-premium.html" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Renovar plano</a>`;
+      }
+    }
+
+    async function carregarPlanoOperacao() {
+      planoOperacao = await pcCarregarPlano(ESTACIONAMENTO_ID);
+      atualizarBannerPlanoOperacao(planoOperacao);
+    }
+
+    let mapaCalorLeaflet = null;
+    let camadaCalorLeaflet = null;
+    let marcadoresCalorLeaflet = null;
+    let camadaMunicipioLeaflet = null;
+    const cachePoligonoMunicipio = new Map();
+
+    function inicializarMapaCalor() {
+      if (mapaCalorLeaflet) return mapaCalorLeaflet;
+      if (!window.L || !L.heatLayer) {
+        throw new Error("Biblioteca de mapa indisponível. Verifique a conexão com o CDN do Leaflet.");
+      }
+
+      mapaCalorLeaflet = L.map("mapaCalorLeaflet", {
+        center: [-23.5505, -46.6333],
+        zoom: 11,
+        minZoom: 9,
+        maxZoom: 16,
+        scrollWheelZoom: false
+      });
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        opacity: 0.55,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &middot; Limites: <a href="https://servicodados.ibge.gov.br/">IBGE</a>'
+      }).addTo(mapaCalorLeaflet);
+
+      marcadoresCalorLeaflet = L.layerGroup().addTo(mapaCalorLeaflet);
+      return mapaCalorLeaflet;
+    }
+
+    function normalizarNomeMunicipio(nome) {
+      return (nome || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+    }
+
+    async function buscarPoligonoMunicipio(cidade, uf) {
+      if (!cidade || !uf) return null;
+      const chave = normalizarNomeMunicipio(cidade) + "|" + uf.toUpperCase();
+      if (cachePoligonoMunicipio.has(chave)) return cachePoligonoMunicipio.get(chave);
+
+      try {
+        const respLista = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${encodeURIComponent(uf)}/municipios`);
+        if (!respLista.ok) throw new Error("IBGE localidades " + respLista.status);
+        const lista = await respLista.json();
+        const alvo = normalizarNomeMunicipio(cidade);
+        const mun = lista.find(m => normalizarNomeMunicipio(m.nome) === alvo);
+        if (!mun) {
+          cachePoligonoMunicipio.set(chave, null);
+          return null;
+        }
+
+        const respPoly = await fetch(`https://servicodados.ibge.gov.br/api/v3/malhas/municipios/${mun.id}?formato=application/vnd.geo+json&qualidade=intermediaria`);
+        if (!respPoly.ok) throw new Error("IBGE malhas " + respPoly.status);
+        const geojson = await respPoly.json();
+        cachePoligonoMunicipio.set(chave, geojson);
+        return geojson;
+      } catch (err) {
+        console.warn("Polígono do município indisponível:", err);
+        cachePoligonoMunicipio.set(chave, null);
+        return null;
+      }
+    }
+
+    async function carregarMapaCalor() {
+      if (!planoOperacao || planoTipoOperacao(planoOperacao) !== "PREMIUM" || !planoOperacao.ativo) return;
+
+      const periodo = document.getElementById("periodoMapaCalor").value || "mes";
+      const status = document.getElementById("statusMapaCalor");
+      const vazio = document.getElementById("mapaCalorVazio");
+      const conteudo = document.getElementById("mapaCalorConteudo");
+      status.innerText = "Carregando...";
+      vazio.classList.add("hidden");
+      conteudo.classList.add("hidden");
+
+      try {
+        const dados = await pcFetch("/api/operacao/" + ESTACIONAMENTO_ID + "/mapa-calor?periodo=" + encodeURIComponent(periodo));
+        const pontos = Array.isArray(dados.pontos) ? dados.pontos : [];
+        document.getElementById("mapaCalorTotalEntradas").innerText = dados.totalEntradasPeriodo ?? 0;
+        document.getElementById("mapaCalorTotalRegioes").innerText = dados.totalRegioes ?? pontos.length;
+
+        if (!pontos.length) {
+          vazio.classList.remove("hidden");
+          status.innerText = "Sem dados suficientes";
+          return;
+        }
+
+        const lista = document.getElementById("mapaCalorLista");
+        lista.innerHTML = "";
+        conteudo.classList.remove("hidden");
+
+        const mapa = inicializarMapaCalor();
+        setTimeout(() => mapa.invalidateSize(), 0);
+
+        if (camadaCalorLeaflet) {
+          mapa.removeLayer(camadaCalorLeaflet);
+          camadaCalorLeaflet = null;
+        }
+        marcadoresCalorLeaflet.clearLayers();
+
+        const pontosHeat = [];
+        const bounds = [];
+
+        pontos.forEach((p, idx) => {
+          const lat = Number(p.latitude);
+          const lng = Number(p.longitude);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+          const intensidade = Math.max(0.18, Number(p.intensidade || 0));
+          pontosHeat.push([lat, lng, intensidade]);
+          bounds.push([lat, lng]);
+
+          L.circleMarker([lat, lng], {
+            radius: 5 + intensidade * 6,
+            color: "#0f172a",
+            weight: 1,
+            fillColor: "#0f172a",
+            fillOpacity: 0.55
+          }).bindTooltip(
+            `<strong>${p.bairro || "Região não informada"}</strong><br>${p.entradasPeriodo || 0} entradas agregadas<br>${p.quantidadeEstacionamentos || 0} estacionamento(s)`,
+            { direction: "top", sticky: true }
+          ).addTo(marcadoresCalorLeaflet);
+
+          const item = document.createElement("div");
+          item.className = "px-4 py-3 flex items-center justify-between gap-3";
+          item.innerHTML = `
+            <div>
+              <div class="font-semibold text-slate-900">${idx + 1}. ${p.bairro || "Região não informada"}</div>
+              <div class="text-xs text-slate-500">${p.quantidadeEstacionamentos || 0} estacionamento(s)</div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-slate-900">${p.entradasPeriodo || 0}</div>
+              <div class="text-xs text-slate-500">entradas</div>
+            </div>`;
+          lista.appendChild(item);
+        });
+
+        camadaCalorLeaflet = L.heatLayer(pontosHeat, {
+          radius: 60,
+          blur: 45,
+          maxZoom: 14,
+          minOpacity: 0.45,
+          gradient: {
+            0.10: "#1e3a8a",
+            0.30: "#06b6d4",
+            0.50: "#22c55e",
+            0.70: "#facc15",
+            0.85: "#f97316",
+            1.00: "#dc2626"
+          }
+        }).addTo(mapa);
+
+        if (camadaMunicipioLeaflet) {
+          mapa.removeLayer(camadaMunicipioLeaflet);
+          camadaMunicipioLeaflet = null;
+        }
+
+        const geoMunicipio = await buscarPoligonoMunicipio(dados.cidade, dados.uf);
+        if (geoMunicipio) {
+          camadaMunicipioLeaflet = L.geoJSON(geoMunicipio, {
+            style: {
+              color: "#0f172a",
+              weight: 2.5,
+              opacity: 0.9,
+              fillColor: "#ffffff",
+              fillOpacity: 0.08,
+              dashArray: "6 4"
+            },
+            interactive: false
+          }).addTo(mapa);
+          mapa.fitBounds(camadaMunicipioLeaflet.getBounds(), { padding: [24, 24], maxZoom: 13 });
+        } else if (bounds.length > 0) {
+          mapa.fitBounds(bounds, { padding: [42, 42], maxZoom: 13 });
+        } else {
+          mapa.setView([-23.5505, -46.6333], 11);
+        }
+
+        status.innerText = geoMunicipio ? "Atualizado" : "Atualizado (limites do município indisponíveis)";
+      } catch (e) {
+        console.error("Erro ao carregar mapa de calor:", e);
+        vazio.classList.remove("hidden");
+        status.innerText = e.status === 403 ? "Premium necessário" : "Erro ao carregar";
+      }
+    }
+
+    function classeStatus(status) {
+      if (status === "ATIVA") return "bg-blue-100 text-blue-700 border border-blue-200";
+      if (status === "ENCERRADA") return "bg-green-100 text-green-700 border border-green-200";
+      if (status === "CANCELADA") return "bg-red-100 text-red-700 border border-red-200";
+      return "bg-slate-100 text-slate-700 border border-slate-200";
+    }
+
+    function nomeStatus(status) {
+      if (status === "ATIVA") return "Ativa";
+      if (status === "ENCERRADA") return "Encerrada";
+      if (status === "CANCELADA") return "Cancelada";
+      return status || "—";
+    }
+
+    function ehAcessoTotem(s) {
+      return s && (s.clienteId === null || s.clienteId === undefined);
+    }
+
+    function nomeClienteOperacao(s) {
+      if (ehAcessoTotem(s)) return "Entrada via totem";
+      return s.clienteNome || ("Cliente #" + s.clienteId);
+    }
+
+    function detalheClienteOperacao(s) {
+      if (ehAcessoTotem(s)) return "Motorista sem identificação pelo app";
+      return s.clienteCpf ? "CPF " + s.clienteCpf : "Cliente do estacionamento";
+    }
+
+    function veiculoOperacao(s) {
+      if (s.modeloVeiculo) return s.modeloVeiculo;
+      return ehAcessoTotem(s) ? "Veículo não informado" : "-";
+    }
+
+    function placaOperacao(s) {
+      return s.placa || (ehAcessoTotem(s) ? "Totem" : "-");
+    }
+
+    function tipoOperacao(s) {
+      if (s.reservado) return "Reservada";
+      return ehAcessoTotem(s) ? "Totem / balcão" : "Por demanda";
+    }
+
+    async function carregarSessoes() {
+      const status = document.getElementById("filtroStatus").value;
+      const query = status && status !== "todos" ? "?status=" + encodeURIComponent(status) : "";
+      try {
+        sessoes = await pcFetch("/api/operacao/" + ESTACIONAMENTO_ID + "/sessoes" + query);
+        renderTabela();
+      } catch (e) {
+        console.error("Erro ao carregar sessoes:", e);
+        sessoes = [];
+        renderTabela();
+        alert(e.message || "Não foi possível carregar as sessoes.");
+      }
+    }
+
+    function aplicarFiltrosServidor() {
+      carregarSessoes();
+    }
+
+    function renderTabela() {
+      const busca = (document.getElementById("busca").value || "").toLowerCase();
+      const filtradas = sessoes.filter(s =>
+        nomeClienteOperacao(s).toLowerCase().includes(busca) ||
+        detalheClienteOperacao(s).toLowerCase().includes(busca) ||
+        veiculoOperacao(s).toLowerCase().includes(busca) ||
+        placaOperacao(s).toLowerCase().includes(busca) ||
+        tipoOperacao(s).toLowerCase().includes(busca)
+      );
+
+      const tabela = document.getElementById("tabelaReservas");
+      const mensagemVazia = document.getElementById("mensagemVazia");
+      const totalExibido = document.getElementById("totalExibido");
+
+      tabela.innerHTML = "";
+      totalExibido.innerText = filtradas.length;
+
+      if (filtradas.length === 0) {
+        mensagemVazia.classList.remove("hidden");
+      } else {
+        mensagemVazia.classList.add("hidden");
+
+        filtradas.forEach(s => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition";
+
+          const podeFinalizar = s.status === "ATIVA";
+          const podeCancelar  = s.status === "ATIVA";
+
+          tr.innerHTML = `
+            <td class="px-6 py-4">
+              <div class="font-semibold text-slate-900">${nomeClienteOperacao(s)}</div>
+              <div class="text-xs text-slate-500">${detalheClienteOperacao(s)}</div>
+            </td>
+            <td class="px-6 py-4 text-slate-700">${veiculoOperacao(s)}</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-semibold">${placaOperacao(s)}</span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex whitespace-nowrap px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold">${tipoOperacao(s)}</span>
+            </td>
+            <td class="px-6 py-4 text-slate-700">${pcFormatarDataHora(s.horaEntrada)}</td>
+            <td class="px-6 py-4 text-slate-700">${s.horaSaida ? pcFormatarDataHora(s.horaSaida) : (s.status === "ATIVA" ? "Em aberto" : "-")}</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold ${classeStatus(s.status)}">${nomeStatus(s.status)}</span>
+            </td>
+            <td class="px-6 py-4 font-semibold text-green-600">${formatarMoeda(s.valorPago)}</td>
+            <td class="px-6 py-4">
+              <div class="flex flex-wrap gap-2">
+                ${ podeFinalizar ? `<button onclick="finalizarSessao(${s.id})" class="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-xl transition text-xs">Finalizar</button>` : "" }
+                ${ podeCancelar  ? `<button onclick="cancelarSessao(${s.id})" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs">Cancelar</button>` : "" }
+                <button onclick='verDetalhes(${s.id})' class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded-xl transition text-xs">Detalhes</button>
+              </div>
+            </td>
+          `;
+          tabela.appendChild(tr);
+        });
+      }
+    }
+
+    function filtrarReservas() {
+      renderTabela();
+    }
+
+    async function carregarResumo() {
+      try {
+        const r = await pcFetch("/api/operacao/" + ESTACIONAMENTO_ID + "/resumo");
+        document.getElementById("cardAtivas").innerText      = r.reservasAtivas ?? 0;
+        document.getElementById("cardFinalizadas").innerText = r.encerradasHoje ?? 0;
+        document.getElementById("cardCanceladas").innerText  = r.canceladasHoje ?? 0;
+        document.getElementById("cardValor").innerText       = formatarMoeda(r.receitaPrevista);
+
+        document.getElementById("vagasTotais").innerText      = r.vagasTotais ?? 0;
+        document.getElementById("vagasDisponíveis").innerText = r.vagasDisponiveis ?? 0;
+        document.getElementById("vagasReservadas").innerText  = r.vagasReservadas ?? 0;
+        const ocupadas = Math.max((r.vagasTotais ?? 0) - (r.vagasDisponiveis ?? 0), 0);
+        document.getElementById("vagasOcupadas").innerText = ocupadas;
+      } catch (e) {
+        console.error("Erro ao carregar resumo:", e);
+        ["cardAtivas","cardFinalizadas","cardCanceladas"].forEach(id => document.getElementById(id).innerText = "-");
+        document.getElementById("cardValor").innerText = "-";
+        ["vagasTotais","vagasDisponíveis","vagasReservadas","vagasOcupadas"].forEach(id => document.getElementById(id).innerText = "-");
+      }
+    }
+
+    async function finalizarSessao(sessaoId) {
+      if (!confirm("Finalizar a sessão #" + sessaoId + "?")) return;
+      try {
+        await pcFetch("/api/operacao/" + sessaoId + "/finalizar", { method: "POST" });
+        alert("Sessão finalizada.");
+        await Promise.all([carregarSessoes(), carregarResumo()]);
+      } catch (e) {
+        console.error(e);
+        alert(e.message || "Não foi possível finalizar.");
+      }
+    }
+
+    function pedirSenhaAdminCancelamento() {
+      return new Promise(resolve => {
+        const anterior = document.getElementById("modalSenhaCancelamento");
+        if (anterior) anterior.remove();
+
+        const overlay = document.createElement("div");
+        overlay.id = "modalSenhaCancelamento";
+        overlay.className = "fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center px-4";
+        overlay.innerHTML = `
+          <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6">
+            <h3 class="text-lg font-bold text-slate-900">Confirmar cancelamento</h3>
+            <p class="text-sm text-slate-600 mt-2">
+              Esta ação altera a ocupação e os relatórios. Informe a senha do administrador para prosseguir.
+            </p>
+            <label class="block text-sm text-slate-600 mt-5 mb-2 font-medium">Senha do administrador</label>
+            <input id="senhaCancelamentoAdmin" type="password" autocomplete="current-password"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-red-500" />
+            <div class="flex justify-end gap-3 mt-5">
+              <button id="btnCancelarSenhaAdmin" type="button" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-4 py-2 rounded-xl transition">
+                Voltar
+              </button>
+              <button id="btnConfirmarSenhaAdmin" type="button" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition">
+                Confirmar
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const input = document.getElementById("senhaCancelamentoAdmin");
+        const fechar = valor => {
+          overlay.remove();
+          resolve(valor);
+        };
+        document.getElementById("btnCancelarSenhaAdmin").addEventListener("click", () => fechar(null));
+        document.getElementById("btnConfirmarSenhaAdmin").addEventListener("click", () => fechar(input.value));
+        input.addEventListener("keydown", ev => {
+          if (ev.key === "Enter") fechar(input.value);
+          if (ev.key === "Escape") fechar(null);
+        });
+        setTimeout(() => input.focus(), 0);
+      });
+    }
+
+    async function cancelarSessao(sessaoId) {
+      const s = sessoes.find(x => Number(x.id) === Number(sessaoId));
+      const tipo = s && s.reservado ? "reserva" : "entrada";
+      if (!confirm("Cancelar a " + tipo + " #" + sessaoId + "? Use apenas em casos extremos.")) return;
+      const senhaAdmin = await pedirSenhaAdminCancelamento();
+      if (!senhaAdmin) return;
+      try {
+        // A API devolve { sucesso, mensagem } — usamos a mensagem para refletir
+        // se a notificação por e-mail ao motorista foi entregue ou não.
+        const resp = await pcFetch("/api/operacao/" + sessaoId + "/cancelar", {
+          method: "POST",
+          body: JSON.stringify({
+            adminId: sessao.id,
+            senhaAdmin: senhaAdmin
+          })
+        });
+        const fallback = (tipo === "reserva" ? "Reserva" : "Entrada") + " cancelada.";
+        alert((resp && resp.mensagem) ? resp.mensagem : fallback);
+        await Promise.all([carregarSessoes(), carregarResumo()]);
+      } catch (e) {
+        console.error(e);
+        alert(e.message || "Não foi possível cancelar.");
+      }
+    }
+
+    function verDetalhes(sessaoId) {
+      const s = sessoes.find(x => Number(x.id) === Number(sessaoId));
+      if (!s) return;
+      alert(
+        "Sessão #" + s.id + "\n" +
+        "Origem: " + (ehAcessoTotem(s) ? "Totem / kiosk" : "Aplicativo") + "\n" +
+        "Cliente: " + nomeClienteOperacao(s) + "\n" +
+        "CPF: " + (ehAcessoTotem(s) ? "Não informado" : (s.clienteCpf || "-")) + "\n" +
+        "Veículo: " + veiculoOperacao(s) + " (" + placaOperacao(s) + ")\n" +
+        "Entrada: " + pcFormatarDataHora(s.horaEntrada) + "\n" +
+        "Saída: " + (s.horaSaida ? pcFormatarDataHora(s.horaSaida) : "-") + "\n" +
+        "Pagamento: " + (s.horaPagamento ? pcFormatarDataHora(s.horaPagamento) : "-") + "\n" +
+        "Valor pago: " + formatarMoeda(s.valorPago) + "\n" +
+        "Reservado: " + (s.reservado ? "Sim" : "Não") + "\n" +
+        "Status: " + nomeStatus(s.status) + "\n" +
+        "QR: " + (s.qrCode || "-")
+      );
+    }
+
+    const sair = pcSair;
+
+    carregarPlanoOperacao();
+    carregarResumo();
+    carregarSessoes();
+  </script>
+
+</body>
+</html>

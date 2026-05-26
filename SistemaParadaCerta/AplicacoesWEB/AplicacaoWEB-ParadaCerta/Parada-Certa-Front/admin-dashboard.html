@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Dashboard - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Item 4: Chart.js via CDN (grafico de linhas com filtros interativos) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+
+        <p class="text-sm text-slate-500 mt-1">
+          Painel administrativo do estacionamento
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <nav id="pc-navbar" data-page="dashboard" class="flex flex-wrap gap-4 text-sm items-center"></nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- CABEÇALHO -->
+    <section class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <p class="text-green-600 font-semibold mb-2">
+            Painel administrativo
+          </p>
+
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+            Dashboard do Estacionamento
+          </h2>
+
+          <p class="text-slate-600 mt-2 max-w-3xl">
+            Acompanhe vagas, estacionamentos cadastrados, reservas, financeiro, avaliações e desempenho da operação.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+          <div id="statusPlano" class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+            <p class="text-slate-500 text-sm">Plano atual</p>
+
+            <div class="flex items-center gap-2 mt-1">
+              <span id="bolinhaPlano" class="w-3 h-3 rounded-full bg-yellow-400"></span>
+              <span id="textoPlano" class="font-semibold text-yellow-600">
+                Gratuito
+              </span>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+            <p class="text-slate-500 text-sm">Status do sistema</p>
+
+            <div class="flex items-center gap-2 mt-1">
+              <span class="w-3 h-3 rounded-full bg-green-500"></span>
+              <span class="font-semibold text-green-600">
+                Operando normalmente
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALERTA ERRO -->
+    <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
+      Não foi possível carregar os dados do painel agora. Tente novamente em instantes.
+    </section>
+
+    <!-- BANNER DE PLANO (Item 5) -->
+    <section id="bannerPlano" class="hidden mb-8 rounded-2xl p-5 border">
+      <p id="bannerPlanoTitulo" class="font-bold mb-1"></p>
+      <p id="bannerPlanoTexto" class="text-sm"></p>
+      <div id="bannerPlanoAcoes" class="mt-3"></div>
+    </section>
+
+    <!-- BLOQUEIO TRIAL EXPIRADO (Item 5) -->
+    <section id="bloqueioTrialExpirado" class="hidden mb-8 bg-red-50 border border-red-300 rounded-2xl p-6">
+      <p class="text-red-700 font-bold text-lg mb-1">Seu período de avaliação expirou.</p>
+      <p class="text-sm text-slate-700 mb-4">
+        Faça upgrade para o plano Standard ou Premium para continuar usando o painel administrativo.
+        Os dados do estacionamento estão preservados e voltarão a aparecer assim que o plano for ativado.
+      </p>
+      <a href="plano-premium.html" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-3 rounded-xl transition">
+        Escolher um plano
+      </a>
+    </section>
+
+    <!-- CARD PREMIUM -->
+    <section id="cardPremiumDashboard" class="mb-8 bg-green-50 border border-green-200 rounded-2xl p-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+        <div>
+          <p class="text-green-700 font-semibold mb-2">
+            Plano Premium para administradores
+          </p>
+
+          <h3 class="text-2xl font-bold text-slate-900">
+            Libere o gerenciamento completo do estacionamento
+          </h3>
+
+          <p class="text-slate-700 text-sm mt-2 max-w-3xl">
+            Com o Premium, o administrador pode gerenciar estacionamentos, vagas, reservas,
+            relatórios, avaliações, preços e faturamento em um único painel.
+          </p>
+
+          <div class="flex flex-wrap gap-3 mt-4 text-sm">
+            <span class="bg-white text-green-700 border border-green-200 px-3 py-1 rounded-full font-semibold">
+              Gestão de vagas
+            </span>
+
+            <span class="bg-white text-blue-700 border border-blue-200 px-3 py-1 rounded-full font-semibold">
+              Relatórios
+            </span>
+
+            <span class="bg-white text-yellow-700 border border-yellow-200 px-3 py-1 rounded-full font-semibold">
+              Faturamento
+            </span>
+
+            <span class="bg-white text-purple-700 border border-purple-200 px-3 py-1 rounded-full font-semibold">
+              Avaliações
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 min-w-[220px]">
+          <a
+            href="plano-premium.html"
+            class="bg-green-600 hover:bg-green-700 text-white text-center px-5 py-3 rounded-xl font-bold transition"
+          >
+            Ver Plano Premium
+          </a>
+
+          <button
+            onclick="ativarPremiumRapido()"
+            class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 px-5 py-3 rounded-xl font-bold transition"
+          >
+            Ativar demonstração
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELETOR DE ESTACIONAMENTO + PERÍODO + MÉTRICA -->
+    <section id="seletoresAnalitico" class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
+      <div class="grid md:grid-cols-4 gap-4">
+        <div id="boxSelectEstacionamento" class="hidden">
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Estacionamento</label>
+          <select id="selectEstacionamento" onchange="onEstacionamentoSelecionado()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500">
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Período</label>
+          <select id="selectPeriodo" onchange="onPeriodoMudou()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500">
+            <option value="hoje">Hoje</option>
+            <option value="semana">Esta semana</option>
+            <option value="mes">Este mês</option>
+            <option value="ano">Este ano</option>
+            <option value="todos">Todos os períodos</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Métrica do gráfico</label>
+          <select id="selectMetrica" onchange="onMetricaMudou()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500">
+            <option value="receita">Receita por dia</option>
+            <option value="ocupacao">Ocupação por hora</option>
+            <option value="sessoes">Sessões por hora</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Estacionamento atual</label>
+          <div id="nomeEstacionamentoAtual" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRÁFICO INTERATIVO (Item 4) -->
+    <section id="cardGraficoInterativo" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 id="graficoTitulo" class="text-lg font-bold text-slate-900">Receita por dia</h3>
+          <p id="graficoSubtitulo" class="text-xs text-slate-500">Período: hoje</p>
+        </div>
+        <span id="graficoStatus" class="text-xs text-slate-500">Carregando...</span>
+      </div>
+      <div class="relative" style="height: 280px; max-width: 100%;">
+        <canvas id="graficoInterativo"></canvas>
+      </div>
+      <p id="graficoVazio" class="hidden text-sm text-slate-500 mt-4 text-center">Sem dados para o período selecionado.</p>
+    </section>
+
+    <!-- CARDS PRINCIPAIS (KPIs do estado atual) -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Vagas totais</p>
+        <h3 id="cardVagasTotais" class="text-3xl font-bold mt-2 text-blue-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Capacidade cadastrada</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Vagas disponíveis</p>
+        <h3 id="cardVagasDisponiveis" class="text-3xl font-bold mt-2 text-green-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Disponibilidade atual</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Preço por hora</p>
+        <h3 id="cardPrecoHora" class="text-3xl font-bold mt-2 text-green-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Estacionamento selecionado</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Status</p>
+        <h3 id="cardAtivos" class="text-3xl font-bold mt-2 text-yellow-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Cadastro</p>
+      </div>
+    </section>
+
+    <!-- CARDS ANALÍTICOS DO PERÍODO -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Sessões no período</p>
+        <h3 id="cardTotalSessoes" class="text-3xl font-bold mt-2 text-blue-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Total de entradas</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Ticket médio</p>
+        <h3 id="cardTicketMedio" class="text-3xl font-bold mt-2 text-green-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Receita / pagamento</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Ocupação média</p>
+        <h3 id="cardOcupacaoMedia" class="text-3xl font-bold mt-2 text-yellow-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Sessões / vagas totais</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Canceladas</p>
+        <h3 id="cardCanceladas" class="text-3xl font-bold mt-2 text-red-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Sessões canceladas</p>
+      </div>
+    </section>
+
+    <!-- CARDS SECUNDÁRIOS -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Reservas ativas</p>
+        <h3 id="cardReservasAtivas" class="text-3xl font-bold mt-2 text-blue-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Reservas em andamento agora</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Receita prevista</p>
+        <h3 id="cardReceitaPrevista" class="text-3xl font-bold mt-2 text-green-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Soma das reservas ativas</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Reservas no período</p>
+        <h3 id="cardReservasPeriodo" class="text-3xl font-bold mt-2 text-yellow-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Entradas com reserva</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Avaliação média</p>
+        <h3 id="cardAvaliacaoMedia" class="text-3xl font-bold mt-2 text-yellow-600">—</h3>
+        <p class="text-xs text-slate-500 mt-2">Média do estacionamento</p>
+      </div>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section class="grid lg:grid-cols-2 gap-6 mb-8">
+      <!-- Receita por dia -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-900">Receita por dia</h3>
+          <span class="text-xs text-slate-500">Pagamentos confirmados</span>
+        </div>
+        <div id="graficoReceita" class="space-y-2">
+          <p class="text-sm text-slate-500">Sem dados para este período.</p>
+        </div>
+      </div>
+
+      <!-- Ocupação por hora -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-900">Entradas por hora do dia</h3>
+          <span class="text-xs text-slate-500">0h - 23h</span>
+        </div>
+        <div id="graficoHoras" class="grid grid-cols-12 gap-1 items-end h-40">
+          <p class="text-sm text-slate-500 col-span-12">Sem dados para este período.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOP HORÁRIOS -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Top 5 horários com mais entradas</h3>
+        <span class="text-xs text-slate-500">No período selecionado</span>
+      </div>
+      <div id="listaTopHorarios" class="space-y-2">
+        <p class="text-sm text-slate-500">Sem dados para este período.</p>
+      </div>
+    </section>
+
+    <!-- AÇÕES RÁPIDAS -->
+    <section class="grid md:grid-cols-4 gap-6 mb-8">
+      <a href="admin-vagas.html" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:border-green-400 hover:scale-[1.01] transition block">
+        <h3 class="text-xl font-bold text-green-600 mb-2">
+          Estacionamentos
+        </h3>
+        <p class="text-slate-600 text-sm">
+          Consulte unidades, vagas, preços, horários e status.
+        </p>
+      </a>
+
+      <a href="reserva.html" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:border-blue-400 hover:scale-[1.01] transition block">
+        <h3 class="text-xl font-bold text-blue-600 mb-2">
+          Painel de Operação
+        </h3>
+        <p class="text-slate-600 text-sm">
+          Veja clientes, placas, vagas, QR Code, entrada e saída.
+        </p>
+      </a>
+
+      <a href="pagamento.html" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:border-yellow-400 hover:scale-[1.01] transition block">
+        <h3 class="text-xl font-bold text-yellow-600 mb-2">
+          Financeiro
+        </h3>
+        <p class="text-slate-600 text-sm">
+          Acompanhe faturamento, pagamentos, taxas e repasses.
+        </p>
+      </a>
+
+      <a href="usuarios.html" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:border-purple-400 hover:scale-[1.01] transition block">
+        <h3 class="text-xl font-bold text-purple-600 mb-2">
+          Usuários
+        </h3>
+        <p class="text-slate-600 text-sm">
+          Gerencie administradores e operadores do estacionamento.
+        </p>
+      </a>
+    </section>
+
+    <!-- RELATÓRIO REGIONAL (Item 5 - Premium) -->
+    <section id="secaoRegional" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            Relatório regional
+            <span class="inline-block bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-2 py-1 rounded-full">
+              Premium
+            </span>
+          </h3>
+          <p class="text-sm text-slate-500 mt-1">Dados agregados e anonimizados da sua região (LGPD).</p>
+        </div>
+        <span id="regionalStatus" class="text-xs text-slate-500">—</span>
+      </div>
+
+      <div id="regionalBloqueado" class="hidden bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+        <p class="text-yellow-700 font-bold mb-1">Recurso disponível apenas no plano Premium</p>
+        <p class="text-sm text-slate-700 mb-3">
+          Assine o Premium para ver estatísticas dos estacionamentos da sua cidade,
+          preço médio por bairro e demanda regional anonimizada.
+        </p>
+        <a href="plano-premium.html" class="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-4 py-2 rounded-xl transition text-sm">
+          Ver plano Premium
+        </a>
+      </div>
+
+      <div id="regionalDados" class="hidden">
+        <div class="grid md:grid-cols-4 gap-4 mb-5">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs text-slate-500">Estacionamentos na cidade</p>
+            <p id="regTotalEst" class="text-2xl font-bold text-slate-900 mt-1">—</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs text-slate-500">Preço médio (h)</p>
+            <p id="regPrecoMedio" class="text-2xl font-bold text-green-600 mt-1">—</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs text-slate-500">Avaliação média</p>
+            <p id="regAvalMedia" class="text-2xl font-bold text-yellow-600 mt-1">—</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs text-slate-500">Sessões no período</p>
+            <p id="regSessoes" class="text-2xl font-bold text-blue-600 mt-1">—</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr>
+                <th class="px-6 py-3 text-left font-semibold">Bairro</th>
+                <th class="px-6 py-3 text-left font-semibold">Estacionamentos</th>
+                <th class="px-6 py-3 text-left font-semibold">Preço médio</th>
+                <th class="px-6 py-3 text-left font-semibold">Sessões</th>
+              </tr>
+            </thead>
+            <tbody id="regBairros" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTEÚDO INFERIOR -->
+    <section class="grid xl:grid-cols-3 gap-8">
+
+      <!-- TABELA -->
+      <div class="xl:col-span-2 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div class="px-6 py-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h3 class="text-xl font-bold text-slate-900">
+              Estacionamentos cadastrados
+            </h3>
+
+            <p class="text-sm text-slate-500 mt-1">
+              Resumo dos seus estacionamentos em operação.
+            </p>
+          </div>
+
+          <a
+            href="admin-vagas.html"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-bold transition text-center text-sm"
+          >
+            Gerenciar
+          </a>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr>
+                <th class="px-6 py-4 text-left font-semibold">Nome</th>
+                <th class="px-6 py-4 text-left font-semibold">Endereço</th>
+                <th class="px-6 py-4 text-left font-semibold">Vagas</th>
+                <th class="px-6 py-4 text-left font-semibold">Preço</th>
+                <th class="px-6 py-4 text-left font-semibold">Status</th>
+              </tr>
+            </thead>
+
+            <tbody id="tabelaEstacionamentos" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="5" class="px-6 py-8 text-center text-slate-500">
+                  Carregando dados...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RESUMO OPERACIONAL -->
+      <aside class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold text-slate-900 mb-5">
+          Resumo operacional
+        </h3>
+
+        <div class="space-y-5">
+          <div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-slate-500">Ocupação estimada</span>
+              <span id="ocupacaoTexto" class="font-semibold text-slate-900">0%</span>
+            </div>
+
+            <div class="w-full bg-slate-200 rounded-full h-3">
+              <div id="barraOcupacao" class="bg-green-600 h-3 rounded-full transition-all" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 pt-5">
+            <p class="text-slate-500 text-sm">Horário de funcionamento</p>
+            <p id="horarioFuncionamento" class="font-semibold mt-1 text-slate-900">-</p>
+          </div>
+
+          <div class="border-t border-slate-200 pt-5">
+            <p class="text-slate-500 text-sm">Localização principal</p>
+            <p id="localizacaoPrincipal" class="font-semibold mt-1 text-slate-900">-</p>
+          </div>
+
+          <div class="border-t border-slate-200 pt-5">
+            <p class="text-slate-500 text-sm">Avaliação média</p>
+            <p id="avaliacaoMedia" class="font-semibold mt-1 text-yellow-600">-</p>
+          </div>
+
+          <div class="border-t border-slate-200 pt-5">
+            <p class="text-slate-500 text-sm">Diagnóstico</p>
+            <p id="diagnostico" class="font-semibold mt-1 text-green-600">-</p>
+          </div>
+        </div>
+      </aside>
+
+    </section>
+
+  </main>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    const sessao = pcRequireSession();
+    const ESTACIONAMENTO_ID = sessao.estacionamentoId;
+
+    // Personaliza o cabecalho com o estacionamento logado
+    document.querySelector("header p.text-sm.text-slate-500").innerText =
+        "Painel administrativo - " + (sessao.estacionamentoNome || "Estacionamento") + " (admin: " + (sessao.nomeCompleto || sessao.usuario) + ")";
+
+    // ── Item 5: status + gating do plano (consulta API real) ────────────────
+    let _planoAtual = null;
+
+    const PLANO_LABEL = { BASIC: "Basic", STANDARD: "Standard", PREMIUM: "Premium" };
+
+    async function atualizarStatusPlano() {
+      _planoAtual = await pcCarregarPlano(estIdSelecionado);
+
+      const textoPlano = document.getElementById("textoPlano");
+      const bolinhaPlano = document.getElementById("bolinhaPlano");
+      const statusPlano  = document.getElementById("statusPlano");
+      const botaoPremiumMenu = document.getElementById("botaoPremiumMenu");
+
+      if (!_planoAtual) {
+        textoPlano.innerText = "—";
+        textoPlano.className = "font-semibold text-slate-500";
+        bolinhaPlano.className = "w-3 h-3 rounded-full bg-slate-400";
+        return;
+      }
+
+      const nome = PLANO_LABEL[_planoAtual.plano] || _planoAtual.plano || "—";
+      textoPlano.innerText = nome + (_planoAtual.expirado ? " (expirado)" : "");
+      if (_planoAtual.plano) localStorage.setItem("planoTipoAtual", String(_planoAtual.plano).toUpperCase());
+      const tipoAtual = planoTipo(_planoAtual);
+
+      if (tipoAtual === "PREMIUM" && _planoAtual.ativo) {
+        textoPlano.className = "font-semibold text-yellow-600";
+        bolinhaPlano.className = "w-3 h-3 rounded-full bg-yellow-500";
+        statusPlano.className  = "bg-white border border-yellow-300 rounded-2xl px-5 py-4 shadow-sm";
+        if (botaoPremiumMenu) {
+          botaoPremiumMenu.innerText = "Premium ativo";
+          botaoPremiumMenu.className = "bg-yellow-100 text-yellow-700 border border-yellow-200 font-bold px-4 py-2 rounded-xl";
+        }
+        // Mantém a chave legacy para a navbar refletir Premium
+        localStorage.setItem("planoAtivo", "true");
+      } else if (tipoAtual === "STANDARD" && _planoAtual.ativo) {
+        textoPlano.className = "font-semibold text-green-600";
+        bolinhaPlano.className = "w-3 h-3 rounded-full bg-green-500";
+        statusPlano.className  = "bg-white border border-green-300 rounded-2xl px-5 py-4 shadow-sm";
+        if (botaoPremiumMenu) {
+          botaoPremiumMenu.innerText = "Plano Standard";
+          botaoPremiumMenu.className = "bg-green-100 text-green-700 border border-green-200 font-bold px-4 py-2 rounded-xl";
+        }
+        localStorage.setItem("planoAtivo", "true");
+      } else {
+        // Basic ou expirado
+        textoPlano.className = "font-semibold text-yellow-600";
+        bolinhaPlano.className = _planoAtual.expirado
+            ? "w-3 h-3 rounded-full bg-red-500"
+            : "w-3 h-3 rounded-full bg-blue-400";
+        localStorage.setItem("planoAtivo", "false");
+      }
+
+      atualizarBannerPlano(_planoAtual);
+      atualizarCardPlano(_planoAtual);
+      atualizarGatingUi(_planoAtual);
+    }
+
+    function planoTipo(plano) {
+      return String((plano && plano.plano) || "").trim().toUpperCase();
+    }
+
+    function atualizarBannerPlano(plano) {
+      const banner = document.getElementById("bannerPlano");
+      const titulo = document.getElementById("bannerPlanoTitulo");
+      const texto  = document.getElementById("bannerPlanoTexto");
+      const acoes  = document.getElementById("bannerPlanoAcoes");
+      banner.classList.add("hidden");
+
+      const dias = plano.diasRestantes;
+      const tipo = planoTipo(plano);
+
+      if (tipo === "BASIC" && plano.expirado) {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-red-50 border-red-300 text-red-800";
+        titulo.innerText = "Seu período de avaliação expirou.";
+        texto.innerText  = "Para continuar usando os recursos administrativos, assine um plano pago.";
+        acoes.innerHTML  = `<a href="plano-premium.html" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Escolher plano</a>`;
+      } else if (tipo === "BASIC" && !plano.expirado) {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-yellow-50 border-yellow-300 text-yellow-800";
+        titulo.innerText = "Você está no período gratuito.";
+        texto.innerText  = (dias != null)
+            ? "Restam " + dias + " dia(s). Para continuar usando os recursos administrativos após a avaliação, assine o Plano Standard."
+            : "Para continuar usando os recursos administrativos após a avaliação, assine o Plano Standard.";
+        acoes.innerHTML  = `<a href="pagamento-plano.html?tipo=STANDARD&cobranca=MENSAL" class="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Assinar Standard</a>`;
+      } else if (tipo === "STANDARD" && !plano.expirado) {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-blue-50 border-blue-300 text-blue-800";
+        titulo.innerText = "Plano Standard ativo.";
+        texto.innerText  = "Desbloqueie recursos estratégicos com o Plano Premium, como mapa de calor, dados regionais e relatórios avançados.";
+        acoes.innerHTML  = `<a href="pagamento-plano.html?tipo=PREMIUM&cobranca=MENSAL" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Conhecer Premium</a>`;
+      } else if ((tipo === "STANDARD" || tipo === "PREMIUM") && plano.expirado) {
+        banner.classList.remove("hidden");
+        banner.className = "mb-8 rounded-2xl p-5 border bg-red-50 border-red-300 text-red-800";
+        titulo.innerText = "Seu plano expirou.";
+        texto.innerText  = "Renove para continuar acessando o painel administrativo.";
+        acoes.innerHTML  = `<a href="plano-premium.html" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Renovar plano</a>`;
+      }
+    }
+
+    function atualizarCardPlano(plano) {
+      const card = document.getElementById("cardPremiumDashboard");
+      if (!card || !plano) return;
+      const tipo = planoTipo(plano);
+      if (tipo === "PREMIUM" && plano.ativo) {
+        card.className = "mb-8 bg-emerald-50 border border-emerald-200 rounded-2xl p-6";
+        card.innerHTML = `
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+            <div>
+              <p class="text-emerald-700 font-semibold mb-2">Plano Premium ativo</p>
+              <h3 class="text-2xl font-bold text-slate-900">Recursos estratégicos liberados</h3>
+              <p class="text-slate-700 text-sm mt-2 max-w-3xl">
+                Mapa de calor, dados regionais agregados, relatórios avançados e visão completa da operação estão disponíveis para este estacionamento.
+              </p>
+            </div>
+            <a href="reserva.html" class="bg-emerald-600 hover:bg-emerald-700 text-white text-center px-5 py-3 rounded-xl font-bold transition">
+              Abrir Painel de Operação
+            </a>
+          </div>`;
+      } else if (tipo === "STANDARD" && plano.ativo) {
+        card.classList.remove("hidden");
+      } else if (tipo === "BASIC") {
+        card.classList.add("hidden");
+      }
+    }
+
+    function atualizarGatingUi(plano) {
+      // Trial expirado (Basic) bloqueia o conteúdo do dashboard.
+      const bloqueio = document.getElementById("bloqueioTrialExpirado");
+      const trialExpirado = planoTipo(plano) === "BASIC" && plano.expirado;
+      bloqueio.classList.toggle("hidden", !trialExpirado);
+
+      // Esconde gráficos/KPIs/seções quando expirado.
+      ["cardGraficoInterativo","secaoRegional"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle("hidden", trialExpirado);
+      });
+
+      // Relatórios regionais só Premium (item 5)
+      const regional = document.getElementById("secaoRegional");
+      const regionalBloqueado = document.getElementById("regionalBloqueado");
+      const regionalDados = document.getElementById("regionalDados");
+      if (regional && !trialExpirado) {
+        const tipo = planoTipo(plano);
+        if (tipo === "BASIC") {
+          regional.classList.add("hidden");
+          return;
+        }
+        regional.classList.remove("hidden");
+        if (tipo === "PREMIUM" && plano.ativo) {
+          regionalBloqueado.classList.add("hidden");
+          regionalDados.classList.remove("hidden");
+        } else {
+          regionalBloqueado.classList.remove("hidden");
+          regionalDados.classList.add("hidden");
+        }
+      }
+    }
+
+    function ativarPremiumRapido() {
+      // Atalho de UI: leva à página de planos (cobrança real está no backend agora).
+      window.location.href = "plano-premium.html";
+    }
+
+    const formatarMoeda = pcFormatarMoeda;
+    const formatarHora  = (v) => pcFormatarHora(v) || "—";
+    const ativoValor    = pcAtivoValor;
+
+    /** Estacionamentos do admin (1+); estId selecionado no momento. */
+    let estacionamentosDoAdmin = [];
+    let estIdSelecionado = ESTACIONAMENTO_ID;
+
+    function renderizarTabelaVazia(texto) {
+      const tabela = document.getElementById("tabelaEstacionamentos");
+      tabela.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-6 py-8 text-center text-slate-500">
+            ${texto}
+          </td>
+        </tr>
+      `;
+    }
+
+    function preencherCardsZerados() {
+      [
+        "cardVagasTotais","cardVagasDisponiveis","cardPrecoHora","cardAtivos",
+        "cardAvaliacaoMedia","cardReservasAtivas","cardReceitaPrevista",
+        "cardTotalSessoes","cardTicketMedio","cardOcupacaoMedia","cardCanceladas","cardReservasPeriodo"
+      ].forEach(id => { const el = document.getElementById(id); if (el) el.innerText = "—"; });
+
+      document.getElementById("ocupacaoTexto").innerText = "0%";
+      document.getElementById("barraOcupacao").style.width = "0%";
+      document.getElementById("horarioFuncionamento").innerText = "—";
+      document.getElementById("localizacaoPrincipal").innerText = "—";
+      document.getElementById("avaliacaoMedia").innerText = "Sem avaliações";
+      document.getElementById("diagnostico").innerText = "Nenhum dado disponível.";
+
+      // Limpa gráficos
+      document.getElementById("graficoReceita").innerHTML  = '<p class="text-sm text-slate-500">Sem dados para este período.</p>';
+      document.getElementById("graficoHoras").innerHTML    = '<p class="text-sm text-slate-500 col-span-12">Sem dados para este período.</p>';
+      document.getElementById("listaTopHorarios").innerHTML = '<p class="text-sm text-slate-500">Sem dados para este período.</p>';
+    }
+
+    function preencherSelectEstacionamentos(lista) {
+      const box    = document.getElementById("boxSelectEstacionamento");
+      const select = document.getElementById("selectEstacionamento");
+      if (!Array.isArray(lista) || lista.length <= 1) {
+        // Só aparece quando há mais de um estacionamento.
+        box.classList.add("hidden");
+        return;
+      }
+      box.classList.remove("hidden");
+      select.innerHTML = lista.map(e =>
+        `<option value="${e.id}" ${Number(e.id) === Number(estIdSelecionado) ? "selected" : ""}>${e.nome || "Estacionamento #"+e.id}</option>`
+      ).join("");
+    }
+
+    function onEstacionamentoSelecionado() {
+      const sel = document.getElementById("selectEstacionamento");
+      estIdSelecionado = Number(sel.value) || ESTACIONAMENTO_ID;
+      // Plano e regional dependem do estacionamento selecionado.
+      pcInvalidarPlano(estIdSelecionado);
+      carregarDashboard();
+    }
+
+    function onPeriodoMudou() {
+      carregarDashboard();
+    }
+
+    function onMetricaMudou() {
+      renderizarGraficoInterativo(_ultimoAnalitico);
+    }
+
+    // ── Gráfico interativo (Item 4) ─────────────────────────────────────────
+    let _chartInterativo = null;
+    let _ultimoAnalitico = null;
+
+    const METRICA_LABEL = {
+      receita:  "Receita por dia",
+      ocupacao: "Ocupação por hora (entradas)",
+      sessoes:  "Sessões por hora"
+    };
+    const PERIODO_LABEL = {
+      hoje: "hoje", semana: "esta semana", mes: "este mês",
+      ano: "este ano", todos: "todos os períodos"
+    };
+
+    function renderizarGraficoInterativo(analitico) {
+      const canvas = document.getElementById("graficoInterativo");
+      const status = document.getElementById("graficoStatus");
+      const vazio  = document.getElementById("graficoVazio");
+      const tituloEl    = document.getElementById("graficoTitulo");
+      const subtituloEl = document.getElementById("graficoSubtitulo");
+      const metrica  = document.getElementById("selectMetrica").value;
+      const periodo  = document.getElementById("selectPeriodo").value;
+
+      tituloEl.innerText    = METRICA_LABEL[metrica] || "—";
+      subtituloEl.innerText = "Período: " + (PERIODO_LABEL[periodo] || periodo);
+
+      if (!analitico) {
+        status.innerText = "Sem dados";
+        vazio.classList.remove("hidden");
+        if (_chartInterativo) { _chartInterativo.destroy(); _chartInterativo = null; }
+        return;
+      }
+
+      let labels = [];
+      let dados  = [];
+      let label  = "";
+      let cor    = "#16a34a"; // verde
+
+      if (metrica === "receita") {
+        label = "Receita (R$)";
+        cor = "#16a34a";
+        (analitico.receitaPorDia || []).forEach(r => {
+          labels.push(formatarDataDia(r.data));
+          dados.push(Number(r.receita || 0));
+        });
+      } else if (metrica === "ocupacao" || metrica === "sessoes") {
+        label = metrica === "ocupacao" ? "Entradas" : "Sessões";
+        cor = "#2563eb";
+        (analitico.ocupacaoPorHora || []).forEach(o => {
+          labels.push(String(o.hora).padStart(2,"0") + "h");
+          dados.push(Number(o.qtdSessoes || 0));
+        });
+      }
+
+      const temDados = dados.some(v => v > 0);
+      if (!temDados) {
+        vazio.classList.remove("hidden");
+        status.innerText = "Sem dados";
+      } else {
+        vazio.classList.add("hidden");
+        status.innerText = analitico.totalSessoes != null
+            ? (analitico.totalSessoes + " sessões no período")
+            : "";
+      }
+
+      if (_chartInterativo) _chartInterativo.destroy();
+
+      _chartInterativo = new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: label,
+            data: dados,
+            borderColor: cor,
+            backgroundColor: cor + "33",
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: "bottom", labels: { color: "#475569" } },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  const v = ctx.raw || 0;
+                  return metrica === "receita"
+                      ? label + ": " + Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                      : label + ": " + v;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { color: "#64748b" }, grid: { color: "#e2e8f0" } },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: "#64748b",
+                callback: function(value) {
+                  return metrica === "receita"
+                      ? Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
+                      : value;
+                }
+              },
+              grid: { color: "#e2e8f0" }
+            }
+          }
+        }
+      });
+    }
+
+    // ── Item 5: relatório regional (PREMIUM) ─────────────────────────────────
+    async function carregarRegional() {
+      if (!_planoAtual || planoTipo(_planoAtual) !== "PREMIUM" || !_planoAtual.ativo) {
+        document.getElementById("regionalStatus").innerText = "Premium necessário";
+        return;
+      }
+      const periodo = document.getElementById("selectPeriodo").value || "mes";
+      document.getElementById("regionalStatus").innerText = "Carregando...";
+      try {
+        const r = await pcFetch("/api/operacao/" + estIdSelecionado + "/regional?periodo=" + encodeURIComponent(periodo));
+        document.getElementById("regTotalEst").innerText   = r.totalEstacionamentosNaRegiao ?? "—";
+        document.getElementById("regPrecoMedio").innerText = r.precoMedioHora != null ? formatarMoeda(r.precoMedioHora) : "—";
+        document.getElementById("regAvalMedia").innerText  = r.avaliacaoMedia != null ? Number(r.avaliacaoMedia).toFixed(1) : "—";
+        document.getElementById("regSessoes").innerText    = r.totalSessoesPeriodo ?? "—";
+        const tbody = document.getElementById("regBairros");
+        tbody.innerHTML = "";
+        (r.distribuicaoPorBairro || []).forEach(b => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50";
+          tr.innerHTML = `
+            <td class="px-6 py-3 text-slate-700">${b.bairro || "—"}</td>
+            <td class="px-6 py-3 text-slate-900 font-semibold">${b.quantidadeEstacionamentos ?? 0}</td>
+            <td class="px-6 py-3 text-green-700 font-semibold">${b.precoMedio != null ? formatarMoeda(b.precoMedio) : "—"}</td>
+            <td class="px-6 py-3 text-blue-700 font-semibold">${b.sessoesPeriodo ?? 0}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        if (!r.distribuicaoPorBairro || r.distribuicaoPorBairro.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-slate-500">Sem dados regionais no período.</td></tr>`;
+        }
+        document.getElementById("regionalStatus").innerText = r.cidade + " · " + (r.bairro || "—");
+      } catch (e) {
+        document.getElementById("regionalStatus").innerText = e.status === 403
+            ? "Premium necessário"
+            : (e.message || "Erro ao carregar regional");
+      }
+    }
+
+    function formatarHoraDoBucket(h) {
+      const a = String(h).padStart(2, "0");
+      const b = String((h + 1) % 24).padStart(2, "0");
+      return `${a}h - ${b}h`;
+    }
+
+    function formatarDataDia(iso) {
+      // Aceita 'YYYY-MM-DD' ou ISO datetime; retorna dd/mm.
+      if (!iso) return "—";
+      const s = String(iso);
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (!m) return s;
+      return `${m[3]}/${m[2]}`;
+    }
+
+    function renderizarGraficoReceita(receitaPorDia) {
+      const el = document.getElementById("graficoReceita");
+      if (!Array.isArray(receitaPorDia) || receitaPorDia.length === 0) {
+        el.innerHTML = '<p class="text-sm text-slate-500">Sem dados para este período.</p>';
+        return;
+      }
+      const max = Math.max(...receitaPorDia.map(r => Number(r.receita || 0)), 1);
+      el.innerHTML = receitaPorDia.map(r => {
+        const v = Number(r.receita || 0);
+        const pct = Math.round((v / max) * 100);
+        return `
+          <div>
+            <div class="flex justify-between text-xs text-slate-600 mb-1">
+              <span>${formatarDataDia(r.data)}</span>
+              <span class="font-semibold text-slate-900">${formatarMoeda(v)}</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-3">
+              <div class="bg-green-600 h-3 rounded-full transition-all" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderizarGraficoHoras(ocupacaoPorHora) {
+      const el = document.getElementById("graficoHoras");
+      if (!Array.isArray(ocupacaoPorHora) || ocupacaoPorHora.length === 0) {
+        el.innerHTML = '<p class="text-sm text-slate-500 col-span-12">Sem dados para este período.</p>';
+        return;
+      }
+      const max = Math.max(...ocupacaoPorHora.map(o => Number(o.qtdSessoes || 0)), 1);
+      // Mostra 0..23 com barras verticais simples (24 colunas em 2 linhas de 12).
+      el.className = "grid grid-cols-12 gap-1 items-end h-40";
+      el.innerHTML = ocupacaoPorHora.map(o => {
+        const v = Number(o.qtdSessoes || 0);
+        const pct = Math.round((v / max) * 100);
+        const altura = Math.max(pct, v > 0 ? 6 : 0); // mostra ao menos uma barra fina quando v>0
+        return `
+          <div class="flex flex-col items-center" title="${o.hora}h - ${(o.hora+1)%24}h: ${v} entradas">
+            <div class="w-full bg-blue-500 rounded-t" style="height:${altura}%"></div>
+            <span class="text-[10px] text-slate-500 mt-1">${String(o.hora).padStart(2,"0")}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderizarTopHorarios(top) {
+      const el = document.getElementById("listaTopHorarios");
+      if (!Array.isArray(top) || top.length === 0) {
+        el.innerHTML = '<p class="text-sm text-slate-500">Sem dados para este período.</p>';
+        return;
+      }
+      el.innerHTML = top.map((t, i) => `
+        <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">${i+1}</span>
+            <span class="font-semibold text-slate-900">${formatarHoraDoBucket(t.hora)}</span>
+          </div>
+          <span class="text-sm font-bold text-blue-700">${t.qtdSessoes} entradas</span>
+        </div>
+      `).join("");
+    }
+
+    async function carregarDashboard() {
+      try {
+        // Atualiza plano + UI (banner, gating) antes do resto
+        await atualizarStatusPlano();
+        // Se trial expirado, bloqueio já cobre — não faz mais nada
+        if (_planoAtual && planoTipo(_planoAtual) === "BASIC" && _planoAtual.expirado) {
+          return;
+        }
+
+        // 1) Estacionamentos do admin (para seletor e tabela inferior)
+        if (estacionamentosDoAdmin.length === 0) {
+          const lista = await pcFetch(`/api/estacionamentos?adminId=${encodeURIComponent(sessao.id)}`).catch(() => []);
+          estacionamentosDoAdmin = Array.isArray(lista) ? lista : [];
+          preencherSelectEstacionamentos(estacionamentosDoAdmin);
+          // Se a sessão vier com um estId que não está na lista, mantém ESTACIONAMENTO_ID como fallback.
+          if (estacionamentosDoAdmin.length > 0 &&
+              !estacionamentosDoAdmin.find(e => Number(e.id) === Number(estIdSelecionado))) {
+            estIdSelecionado = estacionamentosDoAdmin[0].id;
+          }
+        }
+
+        const periodo = document.getElementById("selectPeriodo").value || "hoje";
+
+        // 2) Dados do estacionamento selecionado + analítico + resumo operacional (cards "ao vivo")
+        const [meu, analitico, opResumo] = await Promise.all([
+          pcFetch(`/api/estacionamentos/${estIdSelecionado}`),
+          pcFetch(`/api/operacao/${estIdSelecionado}/analitico?periodo=${encodeURIComponent(periodo)}`).catch(() => null),
+          pcFetch(`/api/operacao/${estIdSelecionado}/resumo`).catch(() => null)
+        ]);
+
+        document.getElementById("alertaErro").classList.add("hidden");
+
+        if (!meu) {
+          renderizarTabelaVazia("Estacionamento nao encontrado.");
+          preencherCardsZerados();
+          return;
+        }
+
+        // Cabeçalho informativo
+        document.getElementById("nomeEstacionamentoAtual").innerText = meu.nome || "—";
+
+        const totalVagas       = Number(meu.qtdVagasTotais || 0);
+        const vagasDisponiveis = Number(meu.qtdVagasDisponiveis || 0);
+        const precoHora        = Number(meu.precoHora || 0);
+        const ativo            = ativoValor(meu.ativo);
+        const media            = Number(meu.avaliacaoMedia || 0);
+
+        document.getElementById("cardVagasTotais").innerText       = totalVagas > 0 ? totalVagas : "—";
+        document.getElementById("cardVagasDisponiveis").innerText  = totalVagas > 0 ? vagasDisponiveis : "—";
+        document.getElementById("cardPrecoHora").innerText         = precoHora > 0 ? formatarMoeda(precoHora) : "—";
+        document.getElementById("cardAtivos").innerText            = ativo ? "Ativo" : "Inativo";
+        document.getElementById("cardAvaliacaoMedia").innerText    = media > 0 ? media.toFixed(1) : "—";
+
+        // Resumo operacional (estado atual)
+        if (opResumo) {
+          document.getElementById("cardReservasAtivas").innerText   = opResumo.reservasAtivas ?? "—";
+          document.getElementById("cardReceitaPrevista").innerText  = opResumo.receitaPrevista != null
+              ? formatarMoeda(opResumo.receitaPrevista) : "—";
+        }
+
+        // Analítico (período selecionado)
+        _ultimoAnalitico = analitico;
+        if (analitico) {
+          document.getElementById("cardTotalSessoes").innerText  = analitico.totalSessoes ?? "—";
+          document.getElementById("cardTicketMedio").innerText   = analitico.ticketMedio != null
+              ? formatarMoeda(analitico.ticketMedio) : "—";
+          document.getElementById("cardOcupacaoMedia").innerText = analitico.ocupacaoMediaPct != null
+              ? Number(analitico.ocupacaoMediaPct).toFixed(1) + "%" : "—";
+          document.getElementById("cardCanceladas").innerText    = analitico.sessoesCanceladas ?? "—";
+          document.getElementById("cardReservasPeriodo").innerText = analitico.totalReservas ?? "—";
+
+          renderizarGraficoReceita(analitico.receitaPorDia);
+          renderizarGraficoHoras(analitico.ocupacaoPorHora);
+          renderizarTopHorarios(analitico.topHorarios);
+        } else {
+          ["cardTotalSessoes","cardTicketMedio","cardOcupacaoMedia","cardCanceladas","cardReservasPeriodo"]
+              .forEach(id => document.getElementById(id).innerText = "—");
+          renderizarGraficoReceita([]);
+          renderizarGraficoHoras([]);
+          renderizarTopHorarios([]);
+        }
+
+        // Item 4: Chart.js interativo (depende da métrica selecionada)
+        renderizarGraficoInterativo(analitico);
+
+        // Item 5: Relatório regional (somente PREMIUM ativo)
+        carregarRegional();
+
+        const ocupacaoInstantanea = totalVagas > 0
+          ? Math.round(((totalVagas - vagasDisponiveis) / totalVagas) * 100)
+          : 0;
+
+        document.getElementById("ocupacaoTexto").innerText = (totalVagas > 0 ? ocupacaoInstantanea + "%" : "—");
+        document.getElementById("barraOcupacao").style.width = ocupacaoInstantanea + "%";
+
+        document.getElementById("horarioFuncionamento").innerText =
+          (meu.horarioAbertura || meu.horarioFechamento)
+            ? `${formatarHora(meu.horarioAbertura)} às ${formatarHora(meu.horarioFechamento)}`
+            : "—";
+        document.getElementById("localizacaoPrincipal").innerText = meu.endereco || "—";
+
+        document.getElementById("avaliacaoMedia").innerText = media > 0
+          ? `★ ${media.toFixed(1)}`
+          : "Sem avaliações";
+
+        if (totalVagas === 0) {
+          document.getElementById("diagnostico").innerText = "Nenhuma vaga cadastrada.";
+        } else if (ocupacaoInstantanea >= 80) {
+          document.getElementById("diagnostico").innerText = "Alta ocupação no momento.";
+        } else if (ocupacaoInstantanea >= 40) {
+          document.getElementById("diagnostico").innerText = "Ocupação moderada.";
+        } else {
+          document.getElementById("diagnostico").innerText = "Baixa ocupação no momento.";
+        }
+
+        preencherTabela(estacionamentosDoAdmin.length > 0 ? estacionamentosDoAdmin : [meu]);
+
+      } catch (erro) {
+        console.error("Erro ao carregar dashboard:", erro);
+        document.getElementById("alertaErro").classList.remove("hidden");
+        renderizarTabelaVazia(erro.message || "Nao foi possivel carregar os dados.");
+        preencherCardsZerados();
+      }
+    }
+
+    function preencherTabela(estacionamentos) {
+      const tabela = document.getElementById("tabelaEstacionamentos");
+      tabela.innerHTML = "";
+
+      if (!estacionamentos || estacionamentos.length === 0) {
+        renderizarTabelaVazia("Nenhum estacionamento cadastrado.");
+        return;
+      }
+
+      estacionamentos.slice(0, 5).forEach((e) => {
+        const ativo = ativoValor(e.ativo);
+        const ehMeu = String(e.id) === String(estIdSelecionado);
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition" + (ehMeu ? " bg-green-50" : "");
+
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-semibold text-slate-900">${e.nome || "—"}${ehMeu ? ' <span class="ml-2 text-xs bg-green-100 text-green-700 border border-green-200 rounded-full px-2 py-0.5">Selecionado</span>' : ""}</div>
+            <div class="text-xs text-slate-500">ID: ${e.id ?? "—"}</div>
+          </td>
+          <td class="px-6 py-4 text-slate-700 max-w-[320px]">${e.endereco || "—"}</td>
+          <td class="px-6 py-4">
+            <div class="font-semibold text-slate-900">${e.qtdVagasDisponiveis ?? 0}/${e.qtdVagasTotais ?? 0}</div>
+            <div class="text-xs text-slate-500">disponíveis/total</div>
+          </td>
+          <td class="px-6 py-4 font-semibold text-green-600">${formatarMoeda(e.precoHora)}</td>
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+              ativo ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-700 border border-red-200"
+            }">${ativo ? "Ativo" : "Inativo"}</span>
+          </td>
+        `;
+        tabela.appendChild(tr);
+      });
+    }
+
+    const sair = pcSair;
+
+    // O carregarDashboard ja invoca atualizarStatusPlano internamente,
+    // garantindo banner e gating consistentes a partir da API real.
+    carregarDashboard();
+  </script>
+
+</body>
+</html>

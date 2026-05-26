@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Preços - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Painel administrativo do estacionamento
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <nav id="pc-navbar" data-page="precos" class="flex flex-wrap gap-4 text-sm items-center"></nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- TÍTULO -->
+    <section class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <p class="text-green-600 font-semibold mb-2">
+            Gestão de valores
+          </p>
+
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+            Tabela de Preços
+          </h2>
+
+          <p class="text-slate-600 mt-2 max-w-3xl">
+            Consulte os preços por hora cadastrados e simule regras de cobrança no painel administrativo.
+          </p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+          <p class="text-sm text-slate-500">Módulo</p>
+          <p class="font-semibold text-slate-900">Tabela de preços</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALERTA ERRO -->
+    <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
+      Não foi possível carregar os preços agora. Tente novamente em instantes.
+    </section>
+
+    <!-- CARDS -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Preço médio por hora</p>
+        <h3 id="cardHora" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Média dos estacionamentos</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Menor preço</p>
+        <h3 id="cardMenor" class="text-3xl font-bold mt-2 text-blue-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Valor mais acessível</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Maior preço</p>
+        <h3 id="cardMaior" class="text-3xl font-bold mt-2 text-yellow-600">R$ 0,00</h3>
+        <p class="text-xs text-slate-500 mt-2">Valor premium</p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Estacionamentos ativos</p>
+        <h3 id="cardAtivos" class="text-3xl font-bold mt-2 text-slate-900">0</h3>
+        <p class="text-xs text-slate-500 mt-2">Com preço cadastrado</p>
+      </div>
+    </section>
+
+    <!-- SELEÇÃO -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+      <div class="grid lg:grid-cols-3 gap-5 items-end">
+        <div class="lg:col-span-2">
+          <label class="block text-sm text-slate-600 mb-2 font-medium">
+            Estacionamento
+          </label>
+
+          <select
+            id="selectEstacionamento"
+            onchange="selecionarEstacionamento()"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="">Carregando estacionamentos...</option>
+          </select>
+        </div>
+
+        <button
+          onclick="carregarEstacionamentos()"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition"
+        >
+          Recarregar preços
+        </button>
+      </div>
+    </section>
+
+    <!-- FORMULÁRIO E RESUMO -->
+    <section class="grid lg:grid-cols-2 gap-8 mb-8">
+
+      <!-- PREÇO PRINCIPAL -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold mb-6 text-slate-900">
+          Preço do Estacionamento
+        </h3>
+
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Nome do estacionamento
+            </label>
+            <input
+              id="nomeEstacionamento"
+              type="text"
+              readonly
+              class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">
+              Preço por hora
+            </label>
+            <input
+              id="precoHora"
+              type="number"
+              min="0"
+              step="0.01"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+            />
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Horário de abertura
+              </label>
+              <input
+                id="horarioAbertura"
+                type="time"
+                readonly
+                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Horário de fechamento
+              </label>
+              <input
+                id="horarioFechamento"
+                type="time"
+                readonly
+                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-slate-700 text-sm">
+              O botão <strong>Salvar preço</strong> grava o novo valor para o estacionamento selecionado.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMULAÇÃO -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xl font-bold mb-6 text-slate-900">
+          Simulação de Cobrança
+        </h3>
+
+        <div class="space-y-5">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Tempo simulado
+              </label>
+              <select
+                id="tempoSimulado"
+                onchange="atualizarSimulacao()"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+              >
+                <option value="1">1 hora</option>
+                <option value="2">2 horas</option>
+                <option value="3">3 horas</option>
+                <option value="4">4 horas</option>
+                <option value="8">Diária de 8 horas</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">
+                Taxa da plataforma
+              </label>
+              <select
+                id="taxaPlataforma"
+                onchange="atualizarSimulacao()"
+                class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+              >
+                <option value="0.05">5%</option>
+                <option value="0.08">8%</option>
+                <option value="0.10">10%</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-4">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p class="text-sm text-slate-500">Valor bruto</p>
+              <p id="simBruto" class="text-2xl font-bold text-slate-900 mt-1">R$ 0,00</p>
+            </div>
+
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+              <p class="text-sm text-red-600">Taxa</p>
+              <p id="simTaxa" class="text-2xl font-bold text-red-600 mt-1">R$ 0,00</p>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+              <p class="text-sm text-green-700">Líquido</p>
+              <p id="simLiquido" class="text-2xl font-bold text-green-700 mt-1">R$ 0,00</p>
+            </div>
+          </div>
+      </div>
+    </section>
+
+    <!-- TABELA -->
+    <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm mb-8">
+      <div class="px-6 py-5 border-b border-slate-200">
+        <h3 class="text-xl font-bold text-slate-900">
+          Preços cadastrados
+        </h3>
+        <p class="text-sm text-slate-500 mt-1">
+          Valores por hora cadastrados nos seus estacionamentos.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="px-6 py-4 text-left font-semibold">Estacionamento</th>
+              <th class="px-6 py-4 text-left font-semibold">Endereço</th>
+              <th class="px-6 py-4 text-left font-semibold">Preço/hora</th>
+              <th class="px-6 py-4 text-left font-semibold">Horário</th>
+              <th class="px-6 py-4 text-left font-semibold">Status</th>
+              <th class="px-6 py-4 text-left font-semibold">Ação</th>
+            </tr>
+          </thead>
+
+          <tbody id="listaPrecos" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+
+      <div id="mensagemVazia" class="hidden px-6 py-10 text-center text-slate-500">
+        Nenhum estacionamento encontrado.
+      </div>
+    </section>
+
+    <!-- BOTÕES -->
+    <section class="flex flex-col sm:flex-row gap-4 justify-end">
+      <button
+        onclick="restaurarPrecoApi()"
+        class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-6 py-3 rounded-xl transition"
+      >
+        Restaurar valor salvo
+      </button>
+
+      <button
+        onclick="salvarPrecoDemo()"
+        class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition"
+      >
+        Salvar preço
+      </button>
+    </section>
+
+  </main>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    const sessao = pcRequireSession();
+    const ADMIN_ID = sessao.id;
+
+    let estacionamentos = [];
+    let estacionamentoSelecionado = null;
+
+    const formatarMoeda = pcFormatarMoeda;
+    const normalizarHora = pcFormatarHora;
+    const normalizarAtivo = pcAtivoValor;
+
+    async function carregarEstacionamentos() {
+      try {
+        estacionamentos = await pcFetch("/api/estacionamentos?adminId=" + encodeURIComponent(ADMIN_ID));
+        document.getElementById("alertaErro").classList.add("hidden");
+
+        preencherSelect();
+        preencherTabela();
+        atualizarCards();
+
+        if (estacionamentos.length > 0) {
+          estacionamentoSelecionado = estacionamentos.find(e => Number(e.id) === Number(sessao.estacionamentoId)) || estacionamentos[0];
+          document.getElementById("selectEstacionamento").value = estacionamentoSelecionado.id;
+          preencherFormulario(estacionamentoSelecionado);
+          atualizarSimulacao();
+        }
+
+      } catch (erro) {
+        console.error("Erro:", erro);
+        document.getElementById("alertaErro").classList.remove("hidden");
+        estacionamentos = [];
+        preencherTabela();
+        atualizarCards();
+      }
+    }
+
+    function preencherSelect() {
+      const select = document.getElementById("selectEstacionamento");
+      select.innerHTML = "";
+
+      if (estacionamentos.length === 0) {
+        select.innerHTML = `<option value="">Nenhum estacionamento encontrado</option>`;
+        return;
+      }
+
+      estacionamentos.forEach((e) => {
+        const option = document.createElement("option");
+        option.value = e.id;
+        option.textContent = `${e.nome || "Sem nome"} - ${formatarMoeda(e.precoHora)}/h`;
+        select.appendChild(option);
+      });
+    }
+
+    function selecionarEstacionamento() {
+      const id = Number(document.getElementById("selectEstacionamento").value);
+      estacionamentoSelecionado = estacionamentos.find((e) => Number(e.id) === id);
+
+      if (!estacionamentoSelecionado) return;
+
+      preencherFormulario(estacionamentoSelecionado);
+      atualizarSimulacao();
+    }
+
+    function preencherFormulario(e) {
+      document.getElementById("nomeEstacionamento").value = e.nome || "";
+      document.getElementById("precoHora").value = e.precoHora ?? 0;
+      document.getElementById("horarioAbertura").value = normalizarHora(e.horarioAbertura);
+      document.getElementById("horarioFechamento").value = normalizarHora(e.horarioFechamento);
+    }
+
+    function preencherTabela() {
+      const tbody = document.getElementById("listaPrecos");
+      const mensagemVazia = document.getElementById("mensagemVazia");
+
+      tbody.innerHTML = "";
+
+      if (estacionamentos.length === 0) {
+        mensagemVazia.classList.remove("hidden");
+        return;
+      }
+
+      mensagemVazia.classList.add("hidden");
+
+      estacionamentos.forEach((e) => {
+        const ativo = normalizarAtivo(e.ativo);
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition";
+
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-semibold text-slate-900">${e.nome || "-"}</div>
+            <div class="text-xs text-slate-500">ID: ${e.id ?? "-"}</div>
+          </td>
+
+          <td class="px-6 py-4 text-slate-700 max-w-[360px]">
+            ${e.endereco || "-"}
+          </td>
+
+          <td class="px-6 py-4 font-bold text-green-600">
+            ${formatarMoeda(e.precoHora)}
+          </td>
+
+          <td class="px-6 py-4 text-slate-700">
+            ${normalizarHora(e.horarioAbertura) || "-"} às ${normalizarHora(e.horarioFechamento) || "-"}
+          </td>
+
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+              ativo
+                ? "bg-green-100 text-green-700 border border-green-200"
+                : "bg-red-100 text-red-700 border border-red-200"
+            }">
+              ${ativo ? "Ativo" : "Inativo"}
+            </span>
+          </td>
+
+          <td class="px-6 py-4">
+            <button
+              onclick="selecionarPelaTabela(${e.id})"
+              class="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
+            >
+              Editar preço
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function selecionarPelaTabela(id) {
+      const select = document.getElementById("selectEstacionamento");
+      select.value = id;
+      selecionarEstacionamento();
+
+      window.scrollTo({
+        top: 260,
+        behavior: "smooth"
+      });
+    }
+
+    function atualizarCards() {
+      const ativos = estacionamentos.filter((e) => normalizarAtivo(e.ativo));
+      const precos = ativos.map((e) => Number(e.precoHora || 0)).filter((v) => v > 0);
+
+      const media = precos.length
+        ? precos.reduce((soma, valor) => soma + valor, 0) / precos.length
+        : 0;
+
+      const menor = precos.length ? Math.min(...precos) : 0;
+      const maior = precos.length ? Math.max(...precos) : 0;
+
+      document.getElementById("cardHora").innerText = formatarMoeda(media);
+      document.getElementById("cardMenor").innerText = formatarMoeda(menor);
+      document.getElementById("cardMaior").innerText = formatarMoeda(maior);
+      document.getElementById("cardAtivos").innerText = ativos.length;
+    }
+
+    function atualizarSimulacao() {
+      const precoHora = Number(document.getElementById("precoHora").value || 0);
+      const horas = Number(document.getElementById("tempoSimulado").value || 1);
+      const taxaPercentual = Number(document.getElementById("taxaPlataforma").value || 0);
+
+      const bruto = precoHora * horas;
+      const taxa = bruto * taxaPercentual;
+      const liquido = bruto - taxa;
+
+      document.getElementById("simBruto").innerText = formatarMoeda(bruto);
+      document.getElementById("simTaxa").innerText = formatarMoeda(taxa);
+      document.getElementById("simLiquido").innerText = formatarMoeda(liquido);
+    }
+
+    function restaurarPrecoApi() {
+      if (!estacionamentoSelecionado) {
+        pcAviso("Selecione um estacionamento antes de restaurar o preço.");
+        return;
+      }
+
+      preencherFormulario(estacionamentoSelecionado);
+      atualizarSimulacao();
+
+      pcSucesso("Preço restaurado com o valor atualmente salvo.");
+    }
+
+    async function salvarPrecoDemo() {
+      if (!estacionamentoSelecionado) {
+        pcAviso("Selecione um estacionamento antes de salvar.");
+        return;
+      }
+
+      const preco = Number(document.getElementById("precoHora").value || 0);
+      if (preco <= 0) {
+        pcAviso("Informe um preço por hora maior que zero.");
+        return;
+      }
+
+      try {
+        await pcFetch("/api/estacionamentos/" + estacionamentoSelecionado.id, {
+          method: "PUT",
+          body: JSON.stringify({ adminId: ADMIN_ID, precoHora: preco })
+        });
+        pcSucesso("Preço atualizado com sucesso.");
+        estacionamentoSelecionado.precoHora = preco;
+        const idx = estacionamentos.findIndex(e => Number(e.id) === Number(estacionamentoSelecionado.id));
+        if (idx >= 0) estacionamentos[idx].precoHora = preco;
+        preencherTabela();
+        atualizarCards();
+      } catch (e) {
+        console.error(e);
+        pcErro(e.message || "Não foi possível salvar o preço.");
+      }
+    }
+
+    const sair = pcSair;
+
+    carregarEstacionamentos();
+  </script>
+
+</body>
+</html>

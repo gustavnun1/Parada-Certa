@@ -1,0 +1,29 @@
+# Dependencias Node
+node_modules/
+
+# Build outputs
+target/
+build/
+dist/
+out/
+
+# Variaveis de ambiente
+.env
+.env.local
+.env.production
+.env.*
+
+# Android local
+local.properties
+*.keystore
+*.jks
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

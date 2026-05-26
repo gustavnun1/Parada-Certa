@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Pagamento de Plano - Parada Certa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">
+          Parada<span class="text-green-600">Certa</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Contratação de plano administrativo
+        </p>
+      </div>
+
+      <nav id="pc-navbar" data-page="financeiro" class="flex flex-wrap gap-4 text-sm items-center"></nav>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-4xl mx-auto px-6 py-10">
+
+    <section class="mb-8">
+      <p class="text-green-600 font-semibold mb-2">Pagamento seguro</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
+        Confirme a contratação do plano
+      </h2>
+      <p class="text-slate-600 mt-2 max-w-2xl">
+        Preencha os dados do cartão para ativar o plano selecionado. Apenas os últimos 4 dígitos do cartão
+        são armazenados; o número completo e o CVV não são salvos em momento algum.
+      </p>
+    </section>
+
+    <section id="mensagemInline" class="hidden"></section>
+
+    <section class="grid lg:grid-cols-3 gap-6">
+
+      <!-- FORMULÁRIO -->
+      <form id="formPagamento" onsubmit="processarPagamento(event)" class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
+        <h3 class="text-xl font-bold text-slate-900">Dados do cartão</h3>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Nome impresso no cartão</label>
+          <input id="nomeCartao" type="text" maxlength="100" placeholder="Como aparece no cartão"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Número do cartão</label>
+          <input id="numeroCartao" type="text" inputmode="numeric" maxlength="23" placeholder="0000 0000 0000 0000"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500 font-mono tracking-widest" required />
+          <p id="bandeiraInfo" class="text-xs text-slate-500 mt-1 min-h-[1rem]">Bandeira: —</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Validade (MM/AA)</label>
+            <input id="validade" type="text" inputmode="numeric" maxlength="5" placeholder="MM/AA"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">CVV</label>
+            <input id="cvv" type="password" inputmode="numeric" maxlength="4" placeholder="123"
+              class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">CPF/CNPJ do titular (opcional)</label>
+          <input id="cpfCnpjTitular" type="text" inputmode="numeric" maxlength="18" placeholder="Somente se diferente do estacionamento"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700">
+          O pagamento é simulado para fins do projeto. Em produção, os dados seriam enviados para o
+          adquirente sem nunca serem armazenados pela plataforma.
+        </div>
+
+        <label class="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-slate-700">
+          <input id="aceiteLegalPlano" type="checkbox" class="mt-1 w-5 h-5 accent-green-600" required />
+          <span>
+            Li e aceito os
+            <a href="termos-de-uso.html" target="_blank" class="font-semibold text-green-700 hover:underline">Termos de Uso</a>
+            e a
+            <a href="politica-privacidade.html" target="_blank" class="font-semibold text-green-700 hover:underline">Politica de Privacidade</a>
+            do Parada Certa para a contratacao do plano.
+          </span>
+        </label>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="plano-premium.html"
+             class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-xl transition text-center">
+            Voltar
+          </a>
+          <button id="botaoConfirmar" type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition flex-1">
+            Confirmar pagamento
+          </button>
+        </div>
+      </form>
+
+      <!-- RESUMO -->
+      <aside class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm h-fit">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Resumo do pedido</h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between border-b border-slate-200 pb-3">
+            <span class="text-slate-500">Estacionamento</span>
+            <span id="resumoEstacionamento" class="font-semibold text-slate-900 text-right max-w-[160px]">—</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-200 pb-3">
+            <span class="text-slate-500">Plano</span>
+            <span id="resumoPlano" class="font-semibold text-slate-900">—</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-200 pb-3">
+            <span class="text-slate-500">Tipo de cobrança</span>
+            <span id="resumoCobranca" class="font-semibold text-slate-900">—</span>
+          </div>
+          <div class="flex justify-between pt-2 text-lg font-bold">
+            <span class="text-slate-900">Total</span>
+            <span id="resumoValor" class="text-green-600">—</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- TELA DE SUCESSO -->
+    <section id="cardSucesso" class="hidden mt-8 bg-green-50 border border-green-200 rounded-2xl p-6 shadow-sm">
+      <h3 class="text-xl font-bold text-green-800 mb-2">Pagamento aprovado</h3>
+      <p class="text-sm text-slate-700 mb-3" id="sucessoMensagem">Seu plano está ativo.</p>
+      <div class="bg-white border border-green-200 rounded-xl p-4 text-sm grid sm:grid-cols-2 gap-3">
+        <div><span class="text-slate-500">Recibo nº:</span> <span id="sucessoRecibo" class="font-semibold text-slate-900">—</span></div>
+        <div><span class="text-slate-500">Valor:</span> <span id="sucessoValor" class="font-semibold text-slate-900">—</span></div>
+        <div><span class="text-slate-500">Cartão:</span> <span id="sucessoCartao" class="font-semibold text-slate-900">—</span></div>
+        <div><span class="text-slate-500">Data:</span> <span id="sucessoData" class="font-semibold text-slate-900">—</span></div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3 mt-5">
+        <a href="admin-dashboard.html"
+           class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition text-center">
+          Ir para o painel
+        </a>
+        <a href="plano-premium.html"
+           class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-xl transition text-center">
+          Ver planos
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="pc-api.js"></script>
+
+  <script>
+    const sessao = pcRequireSession();
+
+    const PLANO_LABEL = { BASIC: "Basic", STANDARD: "Standard", PREMIUM: "Premium" };
+    const COBRANCA_LABEL = { MENSAL: "Mensal", ANUAL: "Anual", TRIAL: "Trial" };
+
+    const VALORES = {
+      "STANDARD-MENSAL": 149.90,
+      "STANDARD-ANUAL":  1798.80,
+      "PREMIUM-MENSAL":  399.90,
+      "PREMIUM-ANUAL":   4798.80
+    };
+
+    function getParam(nome) {
+      return new URLSearchParams(window.location.search).get(nome);
+    }
+
+    let tipo     = (getParam("tipo")     || "STANDARD").toUpperCase();
+    let cobranca = (getParam("cobranca") || "MENSAL").toUpperCase();
+
+    if (!PLANO_LABEL[tipo] || tipo === "BASIC") tipo = "STANDARD";
+    if (!COBRANCA_LABEL[cobranca] || cobranca === "TRIAL") cobranca = "MENSAL";
+
+    function formatarMoeda(v) {
+      return Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function preencherResumo() {
+      document.getElementById("resumoEstacionamento").innerText = sessao.estacionamentoNome || "—";
+      document.getElementById("resumoPlano").innerText = PLANO_LABEL[tipo];
+      document.getElementById("resumoCobranca").innerText = COBRANCA_LABEL[cobranca];
+      document.getElementById("resumoValor").innerText = formatarMoeda(VALORES[tipo + "-" + cobranca] || 0);
+    }
+
+    function somenteDigitos(v) { return String(v || "").replace(/\D/g, ""); }
+
+    function formatarNumeroCartao(d) {
+      d = d.slice(0, 19);
+      return d.replace(/(.{4})/g, "$1 ").trim();
+    }
+
+    function formatarValidade(d) {
+      d = d.slice(0, 4);
+      if (d.length <= 2) return d;
+      return d.substring(0, 2) + "/" + d.substring(2);
+    }
+
+    function identificarBandeiraLocal(numero) {
+      const d = somenteDigitos(numero);
+      if (!d) return "—";
+      if (d.startsWith("4")) return "Visa";
+      if (/^5[1-5]/.test(d) || /^2(2[2-9]|[3-6]\d|7[01]|720)/.test(d)) return "Mastercard";
+      if (/^3[47]/.test(d)) return "Amex";
+      if (/^(36|38|30[0-5])/.test(d)) return "Diners";
+      if (/^6011/.test(d) || /^65/.test(d)) return "Discover";
+      if (/^35/.test(d)) return "JCB";
+      if (/^(4011|438935|431274|451416|5067|509|6277|6362|6516|650|6550)/.test(d)) return "Elo";
+      if (/^(606282|3841)/.test(d)) return "Hipercard";
+      return "Outro";
+    }
+
+    /** Luhn local — feedback antes do submit. */
+    function luhnValido(numero) {
+      const d = somenteDigitos(numero);
+      if (d.length < 13 || d.length > 19) return false;
+      let soma = 0, dobrar = false;
+      for (let i = d.length - 1; i >= 0; i--) {
+        let n = Number(d[i]);
+        if (dobrar) { n *= 2; if (n > 9) n -= 9; }
+        soma += n;
+        dobrar = !dobrar;
+      }
+      return soma % 10 === 0;
+    }
+
+    function validadeFutura(mmAA) {
+      if (!/^\d{2}\/\d{2}$/.test(mmAA)) return false;
+      const [m, a] = mmAA.split("/").map(Number);
+      if (m < 1 || m > 12) return false;
+      const hoje = new Date();
+      const ano  = 2000 + a;
+      const ultimoDia = new Date(ano, m, 0, 23, 59, 59);
+      return ultimoDia >= hoje;
+    }
+
+    function mostrarErroInline(msg) {
+      pcMensagemInline("mensagemInline", "erro", msg);
+      pcErro(msg);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function processarPagamento(ev) {
+      ev.preventDefault();
+      pcMensagemInline("mensagemInline", "limpar");
+
+      const nomeCartao = document.getElementById("nomeCartao").value.trim();
+      const numeroDigitos = somenteDigitos(document.getElementById("numeroCartao").value);
+      const validade   = document.getElementById("validade").value.trim();
+      const cvv        = somenteDigitos(document.getElementById("cvv").value);
+      const cpfCnpj    = somenteDigitos(document.getElementById("cpfCnpjTitular").value);
+      const aceiteLegalPlano = document.getElementById("aceiteLegalPlano");
+
+      if (!nomeCartao) { mostrarErroInline("Informe o nome impresso no cartão."); return; }
+      if (!luhnValido(numeroDigitos)) { mostrarErroInline("Número de cartão inválido. Confira os dígitos digitados."); return; }
+      if (!validadeFutura(validade)) { mostrarErroInline("Validade inválida ou cartão vencido. Use o formato MM/AA."); return; }
+      if (cvv.length < 3 || cvv.length > 4) { mostrarErroInline("CVV deve ter 3 ou 4 dígitos."); return; }
+      if (aceiteLegalPlano && !aceiteLegalPlano.checked) { mostrarErroInline("Aceite os Termos de Uso e a Politica de Privacidade para contratar o plano."); return; }
+
+      const botao = document.getElementById("botaoConfirmar");
+      const original = botao.innerText;
+      botao.disabled = true;
+      botao.innerText = "Processando pagamento...";
+
+      try {
+        const resp = await pcFetch("/api/estacionamentos/" + sessao.estacionamentoId + "/plano/pagamento", {
+          method: "POST",
+          body: JSON.stringify({
+            tipo: tipo,
+            cobranca: cobranca,
+            nomeCartao: nomeCartao,
+            numeroCartao: numeroDigitos,
+            validade: validade,
+            cvv: cvv,
+            cpfCnpjTitular: cpfCnpj || null
+          })
+        });
+
+        document.getElementById("formPagamento").classList.add("hidden");
+        document.getElementById("cardSucesso").classList.remove("hidden");
+        document.getElementById("sucessoMensagem").innerText =
+          "Seu plano " + (PLANO_LABEL[resp.plano.plano] || resp.plano.plano) + " (" +
+          (COBRANCA_LABEL[resp.plano.cobranca] || resp.plano.cobranca) + ") foi ativado.";
+        document.getElementById("sucessoRecibo").innerText  = resp.recibo;
+        document.getElementById("sucessoValor").innerText   = formatarMoeda(resp.valor);
+        document.getElementById("sucessoCartao").innerText  = (resp.bandeira || "—") + " final " + (resp.ultimos4 || "----");
+        document.getElementById("sucessoData").innerText    = pcFormatarDataHora(resp.dataPagamento);
+        const tipoPlanoAtivado = resp.plano && resp.plano.plano ? String(resp.plano.plano).toUpperCase() : "";
+        localStorage.setItem("planoAtivo",
+          (tipoPlanoAtivado === "STANDARD" || tipoPlanoAtivado === "PREMIUM") ? "true" : "false"
+        );
+        if (resp.plano && resp.plano.plano) {
+          localStorage.setItem("planoTipoAtual", tipoPlanoAtivado);
+        }
+        pcSucesso("Pagamento aprovado! Plano ativado.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+      } catch (e) {
+        console.error("Erro no pagamento:", e);
+        mostrarErroInline(e.message || "Não foi possível processar o pagamento. Tente novamente.");
+      } finally {
+        botao.disabled = false;
+        botao.innerText = original;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      preencherResumo();
+
+      document.getElementById("numeroCartao").addEventListener("input", e => {
+        const d = somenteDigitos(e.target.value);
+        e.target.value = formatarNumeroCartao(d);
+        document.getElementById("bandeiraInfo").innerText = "Bandeira: " + identificarBandeiraLocal(d);
+      });
+
+      document.getElementById("validade").addEventListener("input", e => {
+        e.target.value = formatarValidade(somenteDigitos(e.target.value));
+      });
+
+      document.getElementById("cvv").addEventListener("input", e => {
+        e.target.value = somenteDigitos(e.target.value).slice(0, 4);
+      });
+
+      const cpfEl = document.getElementById("cpfCnpjTitular");
+      cpfEl.addEventListener("input", e => {
+        let d = somenteDigitos(e.target.value).slice(0, 14);
+        if (d.length <= 11) {
+          // CPF
+          if (d.length > 3)  d = d.substring(0,3) + "." + d.substring(3);
+          if (d.length > 7)  d = d.substring(0,7) + "." + d.substring(7);
+          if (d.length > 11) d = d.substring(0,11) + "-" + d.substring(11);
+        } else {
+          // CNPJ
+          d = d.substring(0,2) + "." + d.substring(2,5) + "." + d.substring(5,8)
+              + "/" + d.substring(8,12) + "-" + d.substring(12);
+        }
+        e.target.value = d;
+      });
+    });
+
+    const sair = pcSair;
+  </script>
+
+</body>
+</html>
