@@ -28,7 +28,7 @@
           href="index.html"
           class="text-sm text-slate-700 hover:text-green-600 font-medium"
         >
-          PÃ¡gina inicial
+          Página inicial
         </a>
 
         <a
@@ -41,13 +41,13 @@
     </div>
   </header>
 
-  <!-- CONTEÃšDO -->
+  <!-- CONTEÚDO -->
   <main class="max-w-6xl mx-auto px-6 py-10">
 
-    <!-- TÃTULO -->
+    <!-- TÍTULO -->
     <section class="mb-8">
       <p class="text-green-600 font-semibold mb-2">
-        Ãrea para donos e administradores
+        Área para donos e administradores
       </p>
 
       <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
@@ -55,7 +55,7 @@
       </h2>
 
       <p class="text-slate-600 mt-2 max-w-3xl">
-        Informe os dados do responsÃ¡vel e do estacionamento para demonstrar como o painel administrativo serÃ¡ ativado dentro da plataforma Parada Certa.
+        Informe os dados do responsável e do estacionamento para demonstrar como o painel administrativo será ativado dentro da plataforma Parada Certa.
       </p>
     </section>
 
@@ -65,8 +65,8 @@
         Cadastro administrativo
       </p>
       <p class="text-sm text-slate-700">
-        Preencha os dados do responsÃ¡vel, do estacionamento e do primeiro operador.
-        Ao concluir, o administrador serÃ¡ criado e vocÃª serÃ¡ direcionado para configurar vagas e fotos.
+        Preencha os dados do responsável, do estacionamento e do primeiro operador.
+        Ao concluir, o administrador será criado e você será direcionado para configurar vagas e fotos.
       </p>
     </section>
 
@@ -75,10 +75,10 @@
     <!-- FORM -->
     <form onsubmit="cadastrarEstacionamento(event)" class="grid lg:grid-cols-2 gap-8">
 
-      <!-- RESPONSÃVEL -->
+      <!-- RESPONSÁVEL -->
       <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h3 class="text-xl font-bold text-slate-900 mb-6">
-          Dados do responsÃ¡vel
+          Dados do responsável
         </h3>
 
         <div class="space-y-5">
@@ -199,7 +199,7 @@
             />
           </div>
 
-          <!-- EndereÃ§o detalhado (com ViaCEP + Nominatim) -->
+          <!-- Endereço detalhado (com ViaCEP + Nominatim) -->
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">CNPJ</label>
@@ -258,7 +258,7 @@
             </div>
 
             <div>
-              <label class="block text-sm text-slate-600 mb-2 font-medium">NÃºmero</label>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Número</label>
               <input id="numero" type="text" maxlength="10" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
             </div>
 
@@ -286,11 +286,11 @@
           <div class="grid md:grid-cols-2 gap-3 mt-2">
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">Latitude (auto)</label>
-              <input id="latitude" type="text" readonly placeholder="â€”" class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 cursor-not-allowed" />
+              <input id="latitude" type="text" readonly placeholder="—" class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 cursor-not-allowed" />
             </div>
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">Longitude (auto)</label>
-              <input id="longitude" type="text" readonly placeholder="â€”" class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 cursor-not-allowed" />
+              <input id="longitude" type="text" readonly placeholder="—" class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 cursor-not-allowed" />
             </div>
           </div>
 
@@ -298,17 +298,17 @@
 
           <div>
             <label class="block text-sm text-slate-600 mb-2 font-medium">
-              EndereÃ§o final (gerado automaticamente; opcional sobrescrever)
+              Endereço final (gerado automaticamente; opcional sobrescrever)
             </label>
             <input
               id="endereco"
               type="text"
               maxlength="300"
-              placeholder="Rua, nÃºmero - bairro, cidade - UF"
+              placeholder="Rua, número - bairro, cidade - UF"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
             />
             <p class="text-xs text-slate-500 mt-1">
-              Formato padrÃ£o: "logradouro, nÃºmero - bairro, cidade - UF". Deixe vazio para usar o texto montado automaticamente.
+              Formato padrão: "logradouro, número - bairro, cidade - UF". Deixe vazio para usar o texto montado automaticamente.
             </p>
           </div>
 
@@ -320,11 +320,11 @@
               id="pixKey"
               type="text"
               maxlength="200"
-              placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatÃ³ria"
+              placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
             />
             <p class="text-xs text-slate-500 mt-1">
-              Pode ser CPF (11 dÃ­gitos), CNPJ (14 dÃ­gitos), e-mail, telefone com DDD ou chave aleatÃ³ria.
+              Pode ser CPF (11 dígitos), CNPJ (14 dígitos), e-mail, telefone com DDD ou chave aleatória.
             </p>
           </div>
 
@@ -345,7 +345,7 @@
 
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">
-                PreÃ§o por hora
+                Preço por hora
               </label>
               <input
                 id="precoHora"
@@ -383,7 +383,7 @@
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">
-                HorÃ¡rio de abertura
+                Horário de abertura
               </label>
               <input
                 id="horarioAbertura"
@@ -395,7 +395,7 @@
 
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">
-                HorÃ¡rio de fechamento
+                Horário de fechamento
               </label>
               <input
                 id="horarioFechamento"
@@ -408,12 +408,12 @@
 
           <div>
             <label class="block text-sm text-slate-600 mb-2 font-medium">
-              DescriÃ§Ã£o
+              Descrição
             </label>
             <textarea
               id="descricao"
               rows="4"
-              placeholder="Descreva diferenciais, seguranÃ§a, localizaÃ§Ã£o e benefÃ­cios..."
+              placeholder="Descreva diferenciais, segurança, localização e benefícios..."
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
             ></textarea>
           </div>
@@ -424,10 +424,10 @@
       <section class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <div class="mb-4">
           <p class="text-blue-600 font-bold mb-1">Operador do kiosk</p>
-          <h3 class="text-xl font-bold text-slate-900">Login que vai operar o balcÃ£o (totem de impressÃ£o de QR)</h3>
+          <h3 class="text-xl font-bold text-slate-900">Login que vai operar o balcão (totem de impressão de QR)</h3>
           <p class="text-sm text-slate-600 mt-1">
-            O operador Ã© a pessoa que vai gerar QR Codes na aplicaÃ§Ã£o do balcÃ£o. Ã‰ um login separado do administrador web â€”
-            essa conta acessa apenas o totem (ParadaCertaManager). VocÃª poderÃ¡ adicionar mais operadores depois em "UsuÃ¡rios".
+            O operador é a pessoa que vai gerar QR Codes na aplicação do balcão. É um login separado do administrador web —
+            essa conta acessa apenas o totem (ParadaCertaManager). Você poderá adicionar mais operadores depois em "Usuários".
           </p>
         </div>
 
@@ -435,28 +435,28 @@
         <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
           <p class="text-yellow-700 font-bold mb-1 text-sm">Dados pessoais (LGPD)</p>
           <p class="text-sm text-slate-700">
-            CPF, e-mail, telefone e endereÃ§o do operador sÃ£o tratados conforme a LGPD: o CPF aparece mascarado
-            em listagens (***.***.***-XX) e sÃ³ Ã© visÃ­vel na tela de ediÃ§Ã£o do prÃ³prio operador.
-            O CPF Ã© imutÃ¡vel apÃ³s o cadastro.
+            CPF, e-mail, telefone e endereço do operador são tratados conforme a LGPD: o CPF aparece mascarado
+            em listagens (***.***.***-XX) e só é visível na tela de edição do próprio operador.
+            O CPF é imutável após o cadastro.
           </p>
         </div>
 
-        <!-- Bloco: identificaÃ§Ã£o -->
-        <h4 class="text-lg font-bold text-slate-900 mb-3">IdentificaÃ§Ã£o</h4>
+        <!-- Bloco: identificação -->
+        <h4 class="text-lg font-bold text-slate-900 mb-3">Identificação</h4>
         <div class="grid md:grid-cols-2 gap-5">
           <div>
             <label class="block text-sm text-slate-600 mb-2 font-medium">Nome completo</label>
-            <input id="opNome" type="text" placeholder="Ex: Carlos da RecepÃ§Ã£o" maxlength="100"
+            <input id="opNome" type="text" placeholder="Ex: Carlos da Recepção" maxlength="100"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
           </div>
 
           <div>
             <label class="block text-sm text-slate-600 mb-2 font-medium">
-              CPF <span class="text-xs text-slate-500 font-normal">(11 dÃ­gitos)</span>
+              CPF <span class="text-xs text-slate-500 font-normal">(11 dígitos)</span>
             </label>
             <input id="opCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
-            <p class="text-xs text-slate-500 mt-1">ImutÃ¡vel apÃ³s o cadastro.</p>
+            <p class="text-xs text-slate-500 mt-1">Imutável após o cadastro.</p>
           </div>
 
           <div>
@@ -472,23 +472,23 @@
           </div>
 
           <div>
-            <label class="block text-sm text-slate-600 mb-2 font-medium">UsuÃ¡rio (login no kiosk)</label>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Usuário (login no kiosk)</label>
             <input id="opUsuario" type="text" placeholder="Ex: operador1" minlength="3" maxlength="50"
               pattern="[A-Za-z0-9._\-]+"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
-            <p class="text-xs text-slate-500 mt-1">Apenas letras, nÃºmeros, ponto, hÃ­fen e underline.</p>
+            <p class="text-xs text-slate-500 mt-1">Apenas letras, números, ponto, hífen e underline.</p>
           </div>
 
           <div>
             <label class="block text-sm text-slate-600 mb-2 font-medium">Senha</label>
-            <input id="opSenha" type="password" placeholder="MÃ­nimo 6 caracteres" minlength="6"
+            <input id="opSenha" type="password" placeholder="Mínimo 6 caracteres" minlength="6"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
-            <p class="text-xs text-slate-500 mt-1">A senha Ã© armazenada de forma segura.</p>
+            <p class="text-xs text-slate-500 mt-1">A senha é armazenada de forma segura.</p>
           </div>
         </div>
 
-        <!-- Bloco: endereÃ§o -->
-        <h4 class="text-lg font-bold text-slate-900 mt-8 mb-3">EndereÃ§o do operador</h4>
+        <!-- Bloco: endereço -->
+        <h4 class="text-lg font-bold text-slate-900 mt-8 mb-3">Endereço do operador</h4>
 
         <div class="grid md:grid-cols-6 gap-5">
           <div class="md:col-span-2">
@@ -505,7 +505,7 @@
           </div>
 
           <div>
-            <label class="block text-sm text-slate-600 mb-2 font-medium">NÃºmero</label>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Número</label>
             <input id="opNumero" type="text" maxlength="10"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
           </div>
@@ -549,7 +549,7 @@
             </h3>
 
             <p class="text-slate-600 mt-2">
-              Com o plano premium, o estacionamento libera gestÃ£o completa, relatÃ³rios, financeiro, reservas, preÃ§os e acompanhamento operacional.
+              Com o plano premium, o estacionamento libera gestão completa, relatórios, financeiro, reservas, preços e acompanhamento operacional.
             </p>
 
             <div class="grid md:grid-cols-3 gap-3 mt-5">
@@ -559,13 +559,13 @@
               </div>
 
               <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <p class="font-bold text-blue-700">RelatÃ³rios</p>
-                <p class="text-sm text-slate-600 mt-1">Acompanhe operaÃ§Ã£o e receita.</p>
+                <p class="font-bold text-blue-700">Relatórios</p>
+                <p class="text-sm text-slate-600 mt-1">Acompanhe operação e receita.</p>
               </div>
 
               <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
                 <p class="font-bold text-yellow-700">Financeiro</p>
-                <p class="text-sm text-slate-600 mt-1">Controle pagamentos e preÃ§os.</p>
+                <p class="text-sm text-slate-600 mt-1">Controle pagamentos e preços.</p>
               </div>
             </div>
           </div>
@@ -575,19 +575,19 @@
             <p class="text-4xl font-bold text-slate-900 mt-2">
               R$ 149,90
             </p>
-            <p class="text-sm text-slate-500 mt-1">/ mÃªs</p>
+            <p class="text-sm text-slate-500 mt-1">/ mês</p>
 
             <label class="flex items-center gap-3 mt-5">
               <input id="planoPremium" type="checkbox" class="w-5 h-5 accent-green-600" checked />
               <span class="text-sm font-medium text-slate-700">
-                Ativar demonstraÃ§Ã£o
+                Ativar demonstração
               </span>
             </label>
           </div>
         </div>
       </section>
 
-      <!-- BOTÃ•ES -->
+      <!-- BOTÕES -->
       <section class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
@@ -636,7 +636,7 @@
           href="login-admin.html"
           class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-6 py-3 rounded-xl transition text-center"
         >
-          JÃ¡ tenho cadastro
+          Já tenho cadastro
         </a>
 
         <button
@@ -668,7 +668,7 @@
       el.innerText = "";
     }
 
-    // â”€â”€ Helpers de formataÃ§Ã£o / validaÃ§Ã£o (mesma lÃ³gica de usuarios.html) â”€â”€â”€
+    // ── Helpers de formatação / validação (mesma lógica de usuarios.html) ───
     function atualizarCamposReservaCadastro() {
       const permite = document.getElementById("permiteReserva").checked;
       const grupo = document.getElementById("grupoQtdVagasReservaveis");
@@ -712,7 +712,7 @@
       return d.substring(0,5) + "-" + d.substring(5);
     }
 
-    /** Algoritmo brasileiro de CPF (mesma lÃ³gica do backend OperadorService). */
+    /** Algoritmo brasileiro de CPF (mesma lógica do backend OperadorService). */
     function validarCpfLocal(cpf) {
       const d = somenteDigitos(cpf);
       if (d.length !== 11) return false;
@@ -754,8 +754,8 @@
     }
 
     /**
-     * Chave Pix: aceita CPF (11d), CNPJ (14d), e-mail, telefone com DDD (10/11d com +55 ou sÃ³ dÃ­gitos)
-     * ou chave aleatÃ³ria no formato UUID (8-4-4-4-12 hex). ValidaÃ§Ã£o intencionalmente permissiva.
+     * Chave Pix: aceita CPF (11d), CNPJ (14d), e-mail, telefone com DDD (10/11d com +55 ou só dígitos)
+     * ou chave aleatória no formato UUID (8-4-4-4-12 hex). Validação intencionalmente permissiva.
      */
     function validarChavePixLocal(chave) {
       const v = String(chave || "").trim();
@@ -765,13 +765,13 @@
       if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)) return true;
       if (digitos.length === 11 && validarCpfLocal(digitos)) return true;
       if (digitos.length === 14 && validarCnpjLocal(digitos)) return true;
-      // Telefone +55DDD9XXXXXXXX (13d) ou 11d (DDD + 9 dÃ­gitos)
+      // Telefone +55DDD9XXXXXXXX (13d) ou 11d (DDD + 9 dígitos)
       if (digitos.length === 13 && digitos.startsWith("55")) return true;
       if (digitos.length === 10 || digitos.length === 11) return true;
       return false;
     }
 
-    // â”€â”€ ViaCEP + Nominatim (mesma logica de admin-vagas.html) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── ViaCEP + Nominatim (mesma logica de admin-vagas.html) ───────────────
     function formatarCep(v) {
       const d = String(v || "").replace(/\D/g, "");
       if (d.length !== 8) return d;
@@ -806,7 +806,7 @@
       const requestSeq = ++_cadCepRequestSeq;
       limparEnderecoEstacionamentoPorCep();
       if (cep.length !== 8) {
-        statusEl.innerText = cep.length === 0 ? "" : "Informe um CEP com 8 dÃ­gitos.";
+        statusEl.innerText = cep.length === 0 ? "" : "Informe um CEP com 8 dígitos.";
         return;
       }
       statusEl.innerText = "Buscando CEP no ViaCEP...";
@@ -815,7 +815,7 @@
         if (!r.ok) throw new Error("Falha na consulta ViaCEP");
         const j = await r.json();
         if (requestSeq !== _cadCepRequestSeq || String(document.getElementById("cep").value || "").replace(/\D/g, "") !== cep) return;
-        if (j.erro) { statusEl.innerText = "CEP nÃ£o encontrado."; return; }
+        if (j.erro) { statusEl.innerText = "CEP não encontrado."; return; }
         if (!ehCidadeSaoPaulo(j.localidade)) {
           statusEl.innerText = "No momento, atendemos apenas estacionamentos na cidade de Sao Paulo.";
           return;
@@ -832,11 +832,11 @@
           agendarGeocoding();
         }
 
-        statusEl.innerText = "EndereÃ§o preenchido pelo ViaCEP.";
+        statusEl.innerText = "Endereço preenchido pelo ViaCEP.";
       } catch (e) {
         console.error("Erro ViaCEP:", e);
         if (requestSeq !== _cadCepRequestSeq || String(document.getElementById("cep").value || "").replace(/\D/g, "") !== cep) return;
-        statusEl.innerText = "NÃ£o foi possÃ­vel consultar o CEP agora.";
+        statusEl.innerText = "Não foi possível consultar o CEP agora.";
       }
     }
 
@@ -903,12 +903,12 @@
           document.getElementById("longitude").value = lon.toFixed(7);
           statusEl.innerText = `Coordenadas atualizadas (${lat.toFixed(5)}, ${lon.toFixed(5)}).`;
         } else {
-          statusEl.innerText = "Resposta do Nominatim sem coordenadas vÃ¡lidas.";
+          statusEl.innerText = "Resposta do Nominatim sem coordenadas válidas.";
         }
       } catch (e) {
         console.error("Erro Nominatim:", e);
         if (!enderecoAindaAtual()) return;
-        statusEl.innerText = "NÃ£o foi possÃ­vel calcular as coordenadas agora.";
+        statusEl.innerText = "Não foi possível calcular as coordenadas agora.";
       }
     }
     function agendarGeocoding() {
@@ -916,14 +916,14 @@
       _cadGeoTimer = setTimeout(geocodificarAgora, 800);
     }
 
-    // â”€â”€ ViaCEP do operador (autocompleta endereÃ§o pessoal) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── ViaCEP do operador (autocompleta endereço pessoal) ──────────────────
     async function consultarCepOperador() {
       const cep = somenteDigitos(document.getElementById("opCep").value);
       const statusEl = document.getElementById("opCepStatus");
       const requestSeq = ++_opCepRequestSeq;
       limparEnderecoOperadorPorCep();
       if (cep.length !== 8) {
-        statusEl.innerText = cep.length === 0 ? "" : "Informe um CEP com 8 dÃ­gitos.";
+        statusEl.innerText = cep.length === 0 ? "" : "Informe um CEP com 8 dígitos.";
         return;
       }
       statusEl.innerText = "Buscando CEP no ViaCEP...";
@@ -932,7 +932,7 @@
         if (!r.ok) throw new Error("Falha na consulta ViaCEP");
         const j = await r.json();
         if (requestSeq !== _opCepRequestSeq || somenteDigitos(document.getElementById("opCep").value) !== cep) return;
-        if (j.erro) { statusEl.innerText = "CEP nÃ£o encontrado."; return; }
+        if (j.erro) { statusEl.innerText = "CEP não encontrado."; return; }
         document.getElementById("opCep").value = formatarCepInput(cep);
         document.getElementById("opLogradouro").value = j.logradouro || "";
         document.getElementById("opBairro").value     = j.bairro || "";
@@ -949,11 +949,11 @@
 
         }
 
-        statusEl.innerText = "EndereÃ§o preenchido pelo ViaCEP. Confirme o nÃºmero e o complemento.";
+        statusEl.innerText = "Endereço preenchido pelo ViaCEP. Confirme o número e o complemento.";
       } catch (e) {
         console.error("Erro ViaCEP (operador):", e);
         if (requestSeq !== _opCepRequestSeq || somenteDigitos(document.getElementById("opCep").value) !== cep) return;
-        statusEl.innerText = "NÃ£o foi possÃ­vel consultar o CEP agora.";
+        statusEl.innerText = "Não foi possível consultar o CEP agora.";
       }
     }
 
@@ -1030,7 +1030,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // â”€â”€ Estacionamento: CEP + UF + geocoding â”€â”€
+      // ── Estacionamento: CEP + UF + geocoding ──
       const cepEl = document.getElementById("cep");
       if (cepEl) {
         cepEl.addEventListener("blur", consultarCep);
@@ -1040,7 +1040,7 @@
           _cadCepRequestSeq++;
           limparEnderecoEstacionamentoPorCep();
           const statusEl = document.getElementById("cepStatus");
-          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dÃ­gitos.");
+          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dígitos.");
         });
       }
       const ufEl = document.getElementById("uf");
@@ -1050,7 +1050,7 @@
         if (el) el.addEventListener("blur", agendarGeocoding);
       });
 
-      // â”€â”€ ResponsÃ¡vel: mÃ¡scara do telefone admin â”€â”€
+      // ── Responsável: máscara do telefone admin ──
       const telRespEl = document.getElementById("telefone");
       if (telRespEl) telRespEl.addEventListener("input", e => {
         e.target.value = formatarTelefoneInput(somenteDigitos(e.target.value));
@@ -1087,7 +1087,7 @@
         atualizarPreviewFotosCadastro();
       });
 
-      // â”€â”€ Operador: mÃ¡scaras dinÃ¢micas + ViaCEP â”€â”€
+      // ── Operador: máscaras dinâmicas + ViaCEP ──
       const opCpfEl = document.getElementById("opCpf");
       if (opCpfEl) opCpfEl.addEventListener("input", e => {
         e.target.value = formatarCpfInput(somenteDigitos(e.target.value));
@@ -1106,7 +1106,7 @@
           _opCepRequestSeq++;
           limparEnderecoOperadorPorCep();
           const statusEl = document.getElementById("opCepStatus");
-          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dÃ­gitos.");
+          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dígitos.");
         });
         opCepEl.addEventListener("blur", consultarCepOperador);
       }
@@ -1161,7 +1161,7 @@
       const horarioAbertura = document.getElementById("horarioAbertura").value;
       const horarioFechamento = document.getElementById("horarioFechamento").value;
 
-      // Garante coordenadas via Nominatim se ainda nÃ£o tiver
+      // Garante coordenadas via Nominatim se ainda não tiver
       const latVazia = !document.getElementById("latitude").value;
       const lonVazia = !document.getElementById("longitude").value;
       if ((latVazia || lonVazia) && document.getElementById("logradouro").value.trim()
@@ -1171,7 +1171,7 @@
 
       const cepDigits = String(document.getElementById("cep").value || "").replace(/\D/g, "");
       if (cepDigits && cepDigits.length !== 8) {
-        mostrarErro("CEP deve ter 8 dÃ­gitos.");
+        mostrarErro("CEP deve ter 8 dígitos.");
         return;
       }
 
@@ -1183,7 +1183,7 @@
       const partesObrigatorias = { logradouro, numero, bairro, cidade, uf };
       const faltando = Object.entries(partesObrigatorias).filter(([_, v]) => !v).map(([k]) => k);
       if (faltando.length) {
-        mostrarErro("Informe o endereÃ§o completo do estacionamento: logradouro, nÃºmero, bairro, cidade e UF.");
+        mostrarErro("Informe o endereço completo do estacionamento: logradouro, número, bairro, cidade e UF.");
         return;
       }
       if (!ehCidadeSaoPaulo(cidade)) {
@@ -1191,28 +1191,28 @@
         return;
       }
 
-      // EndereÃ§o no formato padrÃ£o "logradouro, numero - bairro, cidade - UF".
+      // Endereço no formato padrão "logradouro, numero - bairro, cidade - UF".
       const enderecoUsuario = document.getElementById("endereco").value.trim();
       const enderecoMontado = pcMontarEndereco({ logradouro, numero, bairro, cidade, uf });
       const enderecoFinal   = enderecoUsuario || enderecoMontado;
 
-      // Chave Pix (opcional, mas se preenchida deve ter formato plausÃ­vel)
+      // Chave Pix (opcional, mas se preenchida deve ter formato plausível)
       const pixKey = document.getElementById("pixKey").value.trim();
       if (pixKey && !validarChavePixLocal(pixKey)) {
-        mostrarErro("Chave Pix em formato invÃ¡lido. Use CPF, CNPJ, e-mail, telefone ou chave aleatÃ³ria.");
+        mostrarErro("Chave Pix em formato inválido. Use CPF, CNPJ, e-mail, telefone ou chave aleatória.");
         return;
       }
 
-      // â”€â”€ Operador inicial do kiosk (dados pessoais obrigatÃ³rios â€” LGPD) â”€â”€
+      // ── Operador inicial do kiosk (dados pessoais obrigatórios — LGPD) ──
       const permiteReserva = document.getElementById("permiteReserva").checked;
       const qtdVagasTotais = Number(document.getElementById("qtdVagasTotais").value);
       const qtdVagasReservaveis = permiteReserva ? Number(document.getElementById("qtdVagasReservaveis").value || 0) : 0;
       if (permiteReserva && (!qtdVagasReservaveis || qtdVagasReservaveis < 1)) {
-        mostrarErro("Informe quantas vagas serÃ£o reservÃ¡veis.");
+        mostrarErro("Informe quantas vagas serão reserváveis.");
         return;
       }
       if (qtdVagasReservaveis > qtdVagasTotais) {
-        mostrarErro("Vagas reservÃ¡veis nÃ£o pode ser maior que o total de vagas.");
+        mostrarErro("Vagas reserváveis não pode ser maior que o total de vagas.");
         return;
       }
 
@@ -1235,19 +1235,19 @@
         return;
       }
       if (!validarCpfLocal(opCpfDigits)) {
-        mostrarErro("CPF do operador invÃ¡lido.");
+        mostrarErro("CPF do operador inválido.");
         return;
       }
       if (!validarEmailLocal(opEmail)) {
-        mostrarErro("E-mail do operador invÃ¡lido.");
+        mostrarErro("E-mail do operador inválido.");
         return;
       }
       if (opTelDigits.length < 8) {
-        mostrarErro("Telefone do operador invÃ¡lido (informe DDD + nÃºmero).");
+        mostrarErro("Telefone do operador inválido (informe DDD + número).");
         return;
       }
       if (!opUsuario || !/^[A-Za-z0-9._\-]+$/.test(opUsuario) || opUsuario.length < 3) {
-        mostrarErro("UsuÃ¡rio do operador invÃ¡lido. Use 3 a 50 caracteres entre letras, nÃºmeros, ponto, hÃ­fen ou underline.");
+        mostrarErro("Usuário do operador inválido. Use 3 a 50 caracteres entre letras, números, ponto, hífen ou underline.");
         return;
       }
       if (!opSenha || opSenha.length < 6) {
@@ -1255,11 +1255,11 @@
         return;
       }
       if (opCepDigits.length !== 8) {
-        mostrarErro("CEP do operador deve ter 8 dÃ­gitos.");
+        mostrarErro("CEP do operador deve ter 8 dígitos.");
         return;
       }
       if (!opLogradouro || !opNumero || !opBairro || !opCidade || opUf.length !== 2) {
-        mostrarErro("Preencha todo o endereÃ§o do operador (logradouro, nÃºmero, bairro, cidade e UF).");
+        mostrarErro("Preencha todo o endereço do operador (logradouro, número, bairro, cidade e UF).");
         return;
       }
       if (!ehCidadeSaoPaulo(opCidade)) {
@@ -1360,7 +1360,7 @@
           estacionamentoNome: resp.estacionamentoNome
         });
 
-        pcSucesso("Cadastro realizado com sucesso. Direcionando para a configuraÃ§Ã£o do estacionamento.", 2400);
+        pcSucesso("Cadastro realizado com sucesso. Direcionando para a configuração do estacionamento.", 2400);
         setTimeout(() => { window.location.href = "admin-vagas.html"; }, 1200);
 
       } catch (e) {

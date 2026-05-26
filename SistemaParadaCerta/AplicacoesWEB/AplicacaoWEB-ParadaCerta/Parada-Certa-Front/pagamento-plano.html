@@ -19,7 +19,7 @@
           Parada<span class="text-green-600">Certa</span>
         </h1>
         <p class="text-sm text-slate-500 mt-1">
-          ContrataÃ§Ã£o de plano administrativo
+          Contratação de plano administrativo
         </p>
       </div>
 
@@ -27,17 +27,17 @@
     </div>
   </header>
 
-  <!-- CONTEÃšDO -->
+  <!-- CONTEÚDO -->
   <main class="max-w-4xl mx-auto px-6 py-10">
 
     <section class="mb-8">
       <p class="text-green-600 font-semibold mb-2">Pagamento seguro</p>
       <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
-        Confirme a contrataÃ§Ã£o do plano
+        Confirme a contratação do plano
       </h2>
       <p class="text-slate-600 mt-2 max-w-2xl">
-        Preencha os dados do cartÃ£o para ativar o plano selecionado. Apenas os Ãºltimos 4 dÃ­gitos do cartÃ£o
-        sÃ£o armazenados; o nÃºmero completo e o CVV nÃ£o sÃ£o salvos em momento algum.
+        Preencha os dados do cartão para ativar o plano selecionado. Apenas os últimos 4 dígitos do cartão
+        são armazenados; o número completo e o CVV não são salvos em momento algum.
       </p>
     </section>
 
@@ -45,21 +45,21 @@
 
     <section class="grid lg:grid-cols-3 gap-6">
 
-      <!-- FORMULÃRIO -->
+      <!-- FORMULÁRIO -->
       <form id="formPagamento" onsubmit="processarPagamento(event)" class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
-        <h3 class="text-xl font-bold text-slate-900">Dados do cartÃ£o</h3>
+        <h3 class="text-xl font-bold text-slate-900">Dados do cartão</h3>
 
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">Nome impresso no cartÃ£o</label>
-          <input id="nomeCartao" type="text" maxlength="100" placeholder="Como aparece no cartÃ£o"
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Nome impresso no cartão</label>
+          <input id="nomeCartao" type="text" maxlength="100" placeholder="Como aparece no cartão"
             class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" required />
         </div>
 
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">NÃºmero do cartÃ£o</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Número do cartão</label>
           <input id="numeroCartao" type="text" inputmode="numeric" maxlength="23" placeholder="0000 0000 0000 0000"
             class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500 font-mono tracking-widest" required />
-          <p id="bandeiraInfo" class="text-xs text-slate-500 mt-1 min-h-[1rem]">Bandeira: â€”</p>
+          <p id="bandeiraInfo" class="text-xs text-slate-500 mt-1 min-h-[1rem]">Bandeira: —</p>
         </div>
 
         <div class="grid md:grid-cols-2 gap-4">
@@ -82,7 +82,7 @@
         </div>
 
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700">
-          O pagamento Ã© simulado para fins do projeto. Em produÃ§Ã£o, os dados seriam enviados para o
+          O pagamento é simulado para fins do projeto. Em produção, os dados seriam enviados para o
           adquirente sem nunca serem armazenados pela plataforma.
         </div>
 
@@ -115,19 +115,19 @@
         <div class="space-y-3 text-sm">
           <div class="flex justify-between border-b border-slate-200 pb-3">
             <span class="text-slate-500">Estacionamento</span>
-            <span id="resumoEstacionamento" class="font-semibold text-slate-900 text-right max-w-[160px]">â€”</span>
+            <span id="resumoEstacionamento" class="font-semibold text-slate-900 text-right max-w-[160px]">—</span>
           </div>
           <div class="flex justify-between border-b border-slate-200 pb-3">
             <span class="text-slate-500">Plano</span>
-            <span id="resumoPlano" class="font-semibold text-slate-900">â€”</span>
+            <span id="resumoPlano" class="font-semibold text-slate-900">—</span>
           </div>
           <div class="flex justify-between border-b border-slate-200 pb-3">
-            <span class="text-slate-500">Tipo de cobranÃ§a</span>
-            <span id="resumoCobranca" class="font-semibold text-slate-900">â€”</span>
+            <span class="text-slate-500">Tipo de cobrança</span>
+            <span id="resumoCobranca" class="font-semibold text-slate-900">—</span>
           </div>
           <div class="flex justify-between pt-2 text-lg font-bold">
             <span class="text-slate-900">Total</span>
-            <span id="resumoValor" class="text-green-600">â€”</span>
+            <span id="resumoValor" class="text-green-600">—</span>
           </div>
         </div>
       </aside>
@@ -136,12 +136,12 @@
     <!-- TELA DE SUCESSO -->
     <section id="cardSucesso" class="hidden mt-8 bg-green-50 border border-green-200 rounded-2xl p-6 shadow-sm">
       <h3 class="text-xl font-bold text-green-800 mb-2">Pagamento aprovado</h3>
-      <p class="text-sm text-slate-700 mb-3" id="sucessoMensagem">Seu plano estÃ¡ ativo.</p>
+      <p class="text-sm text-slate-700 mb-3" id="sucessoMensagem">Seu plano está ativo.</p>
       <div class="bg-white border border-green-200 rounded-xl p-4 text-sm grid sm:grid-cols-2 gap-3">
-        <div><span class="text-slate-500">Recibo nÂº:</span> <span id="sucessoRecibo" class="font-semibold text-slate-900">â€”</span></div>
-        <div><span class="text-slate-500">Valor:</span> <span id="sucessoValor" class="font-semibold text-slate-900">â€”</span></div>
-        <div><span class="text-slate-500">CartÃ£o:</span> <span id="sucessoCartao" class="font-semibold text-slate-900">â€”</span></div>
-        <div><span class="text-slate-500">Data:</span> <span id="sucessoData" class="font-semibold text-slate-900">â€”</span></div>
+        <div><span class="text-slate-500">Recibo nº:</span> <span id="sucessoRecibo" class="font-semibold text-slate-900">—</span></div>
+        <div><span class="text-slate-500">Valor:</span> <span id="sucessoValor" class="font-semibold text-slate-900">—</span></div>
+        <div><span class="text-slate-500">Cartão:</span> <span id="sucessoCartao" class="font-semibold text-slate-900">—</span></div>
+        <div><span class="text-slate-500">Data:</span> <span id="sucessoData" class="font-semibold text-slate-900">—</span></div>
       </div>
       <div class="flex flex-col sm:flex-row gap-3 mt-5">
         <a href="admin-dashboard.html"
@@ -188,7 +188,7 @@
     }
 
     function preencherResumo() {
-      document.getElementById("resumoEstacionamento").innerText = sessao.estacionamentoNome || "â€”";
+      document.getElementById("resumoEstacionamento").innerText = sessao.estacionamentoNome || "—";
       document.getElementById("resumoPlano").innerText = PLANO_LABEL[tipo];
       document.getElementById("resumoCobranca").innerText = COBRANCA_LABEL[cobranca];
       document.getElementById("resumoValor").innerText = formatarMoeda(VALORES[tipo + "-" + cobranca] || 0);
@@ -209,7 +209,7 @@
 
     function identificarBandeiraLocal(numero) {
       const d = somenteDigitos(numero);
-      if (!d) return "â€”";
+      if (!d) return "—";
       if (d.startsWith("4")) return "Visa";
       if (/^5[1-5]/.test(d) || /^2(2[2-9]|[3-6]\d|7[01]|720)/.test(d)) return "Mastercard";
       if (/^3[47]/.test(d)) return "Amex";
@@ -221,7 +221,7 @@
       return "Outro";
     }
 
-    /** Luhn local â€” feedback antes do submit. */
+    /** Luhn local — feedback antes do submit. */
     function luhnValido(numero) {
       const d = somenteDigitos(numero);
       if (d.length < 13 || d.length > 19) return false;
@@ -262,10 +262,10 @@
       const cpfCnpj    = somenteDigitos(document.getElementById("cpfCnpjTitular").value);
       const aceiteLegalPlano = document.getElementById("aceiteLegalPlano");
 
-      if (!nomeCartao) { mostrarErroInline("Informe o nome impresso no cartÃ£o."); return; }
-      if (!luhnValido(numeroDigitos)) { mostrarErroInline("NÃºmero de cartÃ£o invÃ¡lido. Confira os dÃ­gitos digitados."); return; }
-      if (!validadeFutura(validade)) { mostrarErroInline("Validade invÃ¡lida ou cartÃ£o vencido. Use o formato MM/AA."); return; }
-      if (cvv.length < 3 || cvv.length > 4) { mostrarErroInline("CVV deve ter 3 ou 4 dÃ­gitos."); return; }
+      if (!nomeCartao) { mostrarErroInline("Informe o nome impresso no cartão."); return; }
+      if (!luhnValido(numeroDigitos)) { mostrarErroInline("Número de cartão inválido. Confira os dígitos digitados."); return; }
+      if (!validadeFutura(validade)) { mostrarErroInline("Validade inválida ou cartão vencido. Use o formato MM/AA."); return; }
+      if (cvv.length < 3 || cvv.length > 4) { mostrarErroInline("CVV deve ter 3 ou 4 dígitos."); return; }
       if (aceiteLegalPlano && !aceiteLegalPlano.checked) { mostrarErroInline("Aceite os Termos de Uso e a Politica de Privacidade para contratar o plano."); return; }
 
       const botao = document.getElementById("botaoConfirmar");
@@ -294,7 +294,7 @@
           (COBRANCA_LABEL[resp.plano.cobranca] || resp.plano.cobranca) + ") foi ativado.";
         document.getElementById("sucessoRecibo").innerText  = resp.recibo;
         document.getElementById("sucessoValor").innerText   = formatarMoeda(resp.valor);
-        document.getElementById("sucessoCartao").innerText  = (resp.bandeira || "â€”") + " final " + (resp.ultimos4 || "----");
+        document.getElementById("sucessoCartao").innerText  = (resp.bandeira || "—") + " final " + (resp.ultimos4 || "----");
         document.getElementById("sucessoData").innerText    = pcFormatarDataHora(resp.dataPagamento);
         const tipoPlanoAtivado = resp.plano && resp.plano.plano ? String(resp.plano.plano).toUpperCase() : "";
         localStorage.setItem("planoAtivo",
@@ -308,7 +308,7 @@
 
       } catch (e) {
         console.error("Erro no pagamento:", e);
-        mostrarErroInline(e.message || "NÃ£o foi possÃ­vel processar o pagamento. Tente novamente.");
+        mostrarErroInline(e.message || "Não foi possível processar o pagamento. Tente novamente.");
       } finally {
         botao.disabled = false;
         botao.innerText = original;

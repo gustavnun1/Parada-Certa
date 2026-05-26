@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>ConfiguraÃ§Ãµes - Parada Certa</title>
+  <title>Configurações - Parada Certa</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -29,23 +29,23 @@
     </div>
   </header>
 
-  <!-- CONTEÃšDO -->
+  <!-- CONTEÚDO -->
   <main class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- TÃTULO -->
+    <!-- TÍTULO -->
     <section class="mb-8">
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
           <p class="text-green-600 font-semibold mb-2">
-            ConfiguraÃ§Ãµes administrativas
+            Configurações administrativas
           </p>
 
           <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
-            ConfiguraÃ§Ãµes do Estacionamento
+            Configurações do Estacionamento
           </h2>
 
           <p class="text-slate-600 mt-2 max-w-3xl">
-            Visualize os dados principais do estacionamento e configure informaÃ§Ãµes usadas no painel administrativo.
+            Visualize os dados principais do estacionamento e configure informações usadas no painel administrativo.
           </p>
         </div>
 
@@ -58,7 +58,7 @@
 
     <!-- ALERTA ERRO -->
     <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
-      NÃ£o foi possÃ­vel carregar as configuraÃ§Ãµes no momento. Tente novamente em instantes.
+      Não foi possível carregar as configurações no momento. Tente novamente em instantes.
     </section>
 
     <!-- CARDS -->
@@ -66,7 +66,7 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Status</p>
         <h3 id="cardStatus" class="text-3xl font-bold mt-2 text-green-600">-</h3>
-        <p class="text-xs text-slate-500 mt-2">SituaÃ§Ã£o do estacionamento</p>
+        <p class="text-xs text-slate-500 mt-2">Situação do estacionamento</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -76,7 +76,7 @@
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">PreÃ§o/hora</p>
+        <p class="text-sm text-slate-500">Preço/hora</p>
         <h3 id="cardPreco" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
         <p class="text-xs text-slate-500 mt-2">Valor principal</p>
       </div>
@@ -84,11 +84,11 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Funcionamento</p>
         <h3 id="cardHorario" class="text-3xl font-bold mt-2 text-slate-900">-</h3>
-        <p class="text-xs text-slate-500 mt-2">HorÃ¡rio de abertura</p>
+        <p class="text-xs text-slate-500 mt-2">Horário de abertura</p>
       </div>
     </section>
 
-    <!-- SELEÃ‡ÃƒO -->
+    <!-- SELEÇÃO -->
     <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
       <div class="grid lg:grid-cols-3 gap-5 items-end">
         <div class="lg:col-span-2">
@@ -114,7 +114,7 @@
       </div>
     </section>
 
-    <!-- FORMULÃRIOS -->
+    <!-- FORMULÁRIOS -->
     <section class="grid lg:grid-cols-2 gap-8 mb-8">
 
       <!-- Dados do estacionamento -->
@@ -134,7 +134,7 @@
           </div>
 
           <div>
-            <label class="block text-sm text-slate-600 mb-2 font-medium">EndereÃ§o</label>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Endereço</label>
             <input
               id="endereco"
               type="text"
@@ -219,21 +219,21 @@
           </div>
 
           <div>
-            <label class="block text-sm text-slate-600 mb-2 font-medium">DescriÃ§Ã£o</label>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Descrição</label>
             <textarea
               id="descricao"
               rows="4"
-              placeholder="DescriÃ§Ã£o do estacionamento..."
+              placeholder="Descrição do estacionamento..."
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
             ></textarea>
           </div>
         </div>
       </div>
 
-      <!-- OperaÃ§Ã£o -->
+      <!-- Operação -->
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h3 class="text-xl font-bold mb-6 text-slate-900">
-          OperaÃ§Ã£o e Vagas
+          Operação e Vagas
         </h3>
 
         <div class="space-y-5">
@@ -249,7 +249,7 @@
             </div>
 
             <div>
-              <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas disponÃ­veis <span class="text-xs text-slate-400">(calculado)</span></label>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas disponíveis <span class="text-xs text-slate-400">(calculado)</span></label>
               <input
                 id="qtdVagasDisponiveis"
                 type="number"
@@ -262,7 +262,7 @@
 
           <div class="grid md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas reservÃ¡veis</label>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas reserváveis</label>
               <input
                 id="qtdVagasReservaveis"
                 type="number"
@@ -284,7 +284,7 @@
           </div>
 
           <div>
-            <label class="block text-sm text-slate-600 mb-2 font-medium">PreÃ§o por hora</label>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Preço por hora</label>
             <input
               id="precoHora"
               type="number"
@@ -296,7 +296,7 @@
 
           <div class="grid md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm text-slate-600 mb-2 font-medium">HorÃ¡rio de abertura</label>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Horário de abertura</label>
               <input
                 id="horarioAbertura"
                 type="time"
@@ -305,7 +305,7 @@
             </div>
 
             <div>
-              <label class="block text-sm text-slate-600 mb-2 font-medium">HorÃ¡rio de fechamento</label>
+              <label class="block text-sm text-slate-600 mb-2 font-medium">Horário de fechamento</label>
               <input
                 id="horarioFechamento"
                 type="time"
@@ -327,11 +327,11 @@
       </div>
     </section>
 
-    <!-- CONFIGURAÃ‡Ã•ES ADMIN -->
+    <!-- CONFIGURAÇÕES ADMIN -->
     <section class="grid lg:grid-cols-2 gap-8 mb-8">
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h3 class="text-xl font-bold mb-6 text-slate-900">
-          ConfiguraÃ§Ãµes do Painel
+          Configurações do Painel
         </h3>
 
         <div class="space-y-4">
@@ -346,15 +346,15 @@
           <label class="flex items-center justify-between gap-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
             <div>
               <p class="font-semibold text-slate-900">Mostrar alertas operacionais</p>
-              <p class="text-sm text-slate-500">Mostra avisos sobre vagas, reservas e operaÃ§Ã£o.</p>
+              <p class="text-sm text-slate-500">Mostra avisos sobre vagas, reservas e operação.</p>
             </div>
             <input id="mostrarAlertas" type="checkbox" class="w-5 h-5 accent-green-600" checked />
           </label>
 
           <label class="flex items-center justify-between gap-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
             <div>
-              <p class="font-semibold text-slate-900">RelatÃ³rios liberados</p>
-              <p class="text-sm text-slate-500">Permite acesso aos relatÃ³rios administrativos.</p>
+              <p class="font-semibold text-slate-900">Relatórios liberados</p>
+              <p class="text-sm text-slate-500">Permite acesso aos relatórios administrativos.</p>
             </div>
             <input id="relatoriosLiberados" type="checkbox" class="w-5 h-5 accent-green-600" checked />
           </label>
@@ -363,19 +363,19 @@
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h3 class="text-xl font-bold mb-6 text-slate-900">
-          Resumo da configuraÃ§Ã£o
+          Resumo da configuração
         </h3>
 
         <div class="space-y-4 text-sm">
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
             <p class="text-slate-500">Estacionamento selecionado</p>
-            <p id="resumoEstacionamento" class="font-semibold text-slate-900">â€”</p>
+            <p id="resumoEstacionamento" class="font-semibold text-slate-900">—</p>
           </div>
 
           <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-            <p class="text-green-700 font-semibold">Salvar alteraÃ§Ãµes</p>
+            <p class="text-green-700 font-semibold">Salvar alterações</p>
             <p class="text-slate-700 mt-1">
-              Ao salvar, os dados cadastrais e a capacidade de vagas sÃ£o atualizados juntos para o
+              Ao salvar, os dados cadastrais e a capacidade de vagas são atualizados juntos para o
               estacionamento escolhido.
             </p>
           </div>
@@ -383,7 +383,7 @@
       </div>
     </section>
 
-    <!-- BOTÃ•ES -->
+    <!-- BOTÕES -->
     <section class="bg-red-50 border border-red-200 rounded-2xl p-6 shadow-sm mb-8">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
         <div>
@@ -414,7 +414,7 @@
         onclick="salvarConfiguracoesDemo()"
         class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition"
       >
-        Salvar configuraÃ§Ãµes
+        Salvar configurações
       </button>
     </section>
 

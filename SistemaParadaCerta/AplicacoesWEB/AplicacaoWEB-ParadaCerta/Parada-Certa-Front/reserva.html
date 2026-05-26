@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Painel de OperaÃ§Ã£o - Parada Certa</title>
+  <title>Painel de Operação - Parada Certa</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,7 @@
           Parada<span class="text-green-600">Certa</span>
         </h1>
         <p class="text-sm text-slate-500 mt-1">
-          Painel de OperaÃ§Ã£o do estacionamento
+          Painel de Operação do estacionamento
         </p>
       </div>
 
@@ -30,10 +30,10 @@
     </div>
   </header>
 
-  <!-- CONTEÃšDO -->
+  <!-- CONTEÚDO -->
   <main class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- TÃTULO -->
+    <!-- TÍTULO -->
     <section class="mb-8">
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
@@ -42,12 +42,12 @@
           </p>
 
           <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
-            Painel de OperaÃ§Ã£o
+            Painel de Operação
           </h2>
 
           <p class="text-slate-600 mt-2 max-w-3xl">
-            Acompanhe entradas, reservas, vagas disponÃ­veis, veÃ­culos no pÃ¡tio, validaÃ§Ã£o por QR Code,
-            saÃ­da e atendimento dos clientes.
+            Acompanhe entradas, reservas, vagas disponíveis, veículos no pátio, validação por QR Code,
+            saída e atendimento dos clientes.
           </p>
         </div>
 
@@ -61,11 +61,11 @@
     <!-- AVISO -->
     <section class="mb-8 bg-blue-50 border border-blue-200 rounded-2xl p-5">
       <p class="text-blue-700 font-bold mb-1">
-        Painel de OperaÃ§Ã£o
+        Painel de Operação
       </p>
       <p class="text-sm text-slate-700">
-        Esta tela representa a rotina do funcionÃ¡rio responsÃ¡vel por operar o estacionamento:
-        acompanhar vagas, validar QR Code, consultar veÃ­culos, finalizar permanÃªncias e cancelar entradas quando necessÃ¡rio.
+        Esta tela representa a rotina do funcionário responsável por operar o estacionamento:
+        acompanhar vagas, validar QR Code, consultar veículos, finalizar permanências e cancelar entradas quando necessário.
       </p>
     </section>
 
@@ -82,13 +82,13 @@
             Mapa de calor operacional
             <span class="inline-block bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-2 py-1 rounded-full">Premium</span>
           </h3>
-          <p class="text-sm text-slate-500 mt-1">RegiÃµes de SÃ£o Paulo com maior volume agregado de entradas no perÃ­odo.</p>
+          <p class="text-sm text-slate-500 mt-1">Regiões de São Paulo com maior volume agregado de entradas no período.</p>
         </div>
         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
           <select id="periodoMapaCalor" onchange="carregarMapaCalor()" class="px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500">
             <option value="hoje">Hoje</option>
             <option value="semana">Semana</option>
-            <option value="mes" selected>MÃªs</option>
+            <option value="mes" selected>Mês</option>
             <option value="ano">Ano</option>
             <option value="todos">Todos</option>
           </select>
@@ -97,15 +97,15 @@
       </div>
 
       <div id="mapaCalorVazio" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-5 text-sm text-slate-600">
-        NÃ£o hÃ¡ dados suficientes para gerar o mapa de calor no momento.
+        Não há dados suficientes para gerar o mapa de calor no momento.
       </div>
 
       <div id="mapaCalorConteudo" class="hidden grid lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
         <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 min-h-[360px]">
           <div class="absolute inset-0 opacity-70" style="background-image: linear-gradient(rgba(148,163,184,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.14) 1px, transparent 1px); background-size: 38px 38px;"></div>
           <div class="absolute inset-x-6 top-6 z-10 pointer-events-none flex items-center justify-between text-xs text-slate-700">
-            <span>SÃ£o Paulo</span>
-            <span>Dados agregados por regiÃ£o</span>
+            <span>São Paulo</span>
+            <span>Dados agregados por região</span>
           </div>
           <div id="mapaCalorLeaflet" class="absolute inset-0 z-0"></div>
           <div class="absolute left-6 bottom-6 right-6 z-10 pointer-events-none flex items-center gap-3 text-xs text-slate-700 bg-white/85 border border-slate-200 rounded-xl px-3 py-2">
@@ -123,12 +123,12 @@
               <p id="mapaCalorTotalEntradas" class="text-2xl font-bold text-slate-900 mt-1">0</p>
             </div>
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <p class="text-xs text-slate-500">RegiÃµes</p>
+              <p class="text-xs text-slate-500">Regiões</p>
               <p id="mapaCalorTotalRegioes" class="text-2xl font-bold text-slate-900 mt-1">0</p>
             </div>
           </div>
           <div class="border border-slate-200 rounded-xl overflow-hidden">
-            <div class="bg-slate-50 px-4 py-3 text-xs font-bold text-slate-500 uppercase">RegiÃµes mais aquecidas</div>
+            <div class="bg-slate-50 px-4 py-3 text-xs font-bold text-slate-500 uppercase">Regiões mais aquecidas</div>
             <div id="mapaCalorLista" class="divide-y divide-slate-100"></div>
           </div>
         </div>
@@ -146,7 +146,7 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Finalizadas</p>
         <h3 id="cardFinalizadas" class="text-3xl font-bold mt-2 text-green-600">0</h3>
-        <p class="text-xs text-slate-500 mt-2">Clientes jÃ¡ atendidos</p>
+        <p class="text-xs text-slate-500 mt-2">Clientes já atendidos</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -162,7 +162,7 @@
       </div>
     </section>
 
-    <!-- OPERAÃ‡ÃƒO -->
+    <!-- OPERAÇÃO -->
     <section class="grid lg:grid-cols-3 gap-6 mb-8">
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -172,8 +172,8 @@
 
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-            <p class="text-sm text-green-700">DisponÃ­veis</p>
-            <p id="vagasDisponÃ­veis" class="text-3xl font-bold text-green-700 mt-1">100</p>
+            <p class="text-sm text-green-700">Disponíveis</p>
+            <p id="vagasDisponíveis" class="text-3xl font-bold text-green-700 mt-1">100</p>
           </div>
 
           <div class="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -195,25 +195,25 @@
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm lg:col-span-2">
         <h3 class="text-xl font-bold text-slate-900 mb-4">
-          Entradas em operaÃ§Ã£o
+          Entradas em operação
         </h3>
 
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
           <p class="text-sm text-slate-700 mb-3">
-            Entradas pelo totem geram uma sessÃ£o ativa automaticamente e aparecem nesta lista como
+            Entradas pelo totem geram uma sessão ativa automaticamente e aparecem nesta lista como
             <strong>Entrada via totem</strong>. Entradas pelo aplicativo seguem identificadas pelo motorista.
           </p>
 
           <ul class="text-sm text-slate-600 list-disc ml-5 space-y-1"> 
-            <li>Quando a entrada vem pelo aplicativo, o motorista aparece identificado por cliente, CPF e veÃ­culo.</li>
-            <li>Nesta tela o operador acompanha as sessÃµes ATIVAS, finaliza ou cancela reservas.</li>
+            <li>Quando a entrada vem pelo aplicativo, o motorista aparece identificado por cliente, CPF e veículo.</li>
+            <li>Nesta tela o operador acompanha as sessões ATIVAS, finaliza ou cancela reservas.</li>
           </ul>
 
           <button
             onclick="carregarSessoes()"
             class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-xl transition"
           >
-            Atualizar lista de sessÃµes
+            Atualizar lista de sessões
           </button>
         </div>
       </div>
@@ -224,11 +224,11 @@
     <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
       <div class="grid md:grid-cols-3 gap-4">
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">Buscar reserva ou veÃ­culo</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Buscar reserva ou veículo</label>
           <input
             id="busca"
             type="text"
-            placeholder="Cliente, veÃ­culo ou placa..."
+            placeholder="Cliente, veículo ou placa..."
             onkeyup="filtrarReservas()"
             class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
           />
@@ -262,15 +262,15 @@
       <div class="px-6 py-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h3 class="text-xl font-bold text-slate-900">
-            Entradas e veÃ­culos em operaÃ§Ã£o
+            Entradas e veículos em operação
           </h3>
           <p class="text-sm text-slate-500 mt-1">
-            Controle operacional das vagas, placas, horÃ¡rios, entradas e saÃ­das.
+            Controle operacional das vagas, placas, horários, entradas e saídas.
           </p>
         </div>
 
         <span class="bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-bold">
-          VisÃ£o do operador
+          Visão do operador
         </span>
       </div>
 
@@ -279,14 +279,14 @@
           <thead class="bg-slate-50 text-slate-600">
             <tr>
               <th class="px-6 py-4 text-left font-semibold">Cliente</th>
-              <th class="px-6 py-4 text-left font-semibold">VeÃ­culo</th>
+              <th class="px-6 py-4 text-left font-semibold">Veículo</th>
               <th class="px-6 py-4 text-left font-semibold">Placa</th>
               <th class="px-6 py-4 text-left font-semibold">Vaga</th>
               <th class="px-6 py-4 text-left font-semibold">Entrada</th>
-              <th class="px-6 py-4 text-left font-semibold">SaÃ­da prevista</th>
+              <th class="px-6 py-4 text-left font-semibold">Saída prevista</th>
               <th class="px-6 py-4 text-left font-semibold">Status</th>
               <th class="px-6 py-4 text-left font-semibold">Valor</th>
-              <th class="px-6 py-4 text-left font-semibold">AÃ§Ãµes</th>
+              <th class="px-6 py-4 text-left font-semibold">Ações</th>
             </tr>
           </thead>
 
@@ -311,7 +311,7 @@
     const ESTACIONAMENTO_ID = sessao.estacionamentoId;
 
     document.querySelector('p.font-semibold.text-blue-600').innerText =
-        sessao.nomeCompleto + " â€” " + (sessao.estacionamentoNome || "Estacionamento");
+        sessao.nomeCompleto + " — " + (sessao.estacionamentoNome || "Estacionamento");
 
     let sessoes = [];
 
@@ -344,20 +344,20 @@
       if (tipo === "BASIC" && plano.expirado) {
         banner.classList.remove("hidden");
         banner.className = "mb-8 rounded-2xl p-5 border bg-red-50 border-red-300 text-red-800";
-        titulo.innerText = "Seu perÃ­odo de avaliaÃ§Ã£o expirou.";
+        titulo.innerText = "Seu período de avaliação expirou.";
         texto.innerText = "Para continuar usando os recursos administrativos, assine um plano pago.";
         acoes.innerHTML = `<a href="plano-premium.html" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Escolher plano</a>`;
       } else if (tipo === "BASIC") {
         banner.classList.remove("hidden");
         banner.className = "mb-8 rounded-2xl p-5 border bg-yellow-50 border-yellow-300 text-yellow-800";
-        titulo.innerText = "VocÃª estÃ¡ no perÃ­odo gratuito.";
-        texto.innerText = "Para continuar usando os recursos administrativos apÃ³s o perÃ­odo de avaliaÃ§Ã£o, assine o Plano Standard.";
+        titulo.innerText = "Você está no período gratuito.";
+        texto.innerText = "Para continuar usando os recursos administrativos após o período de avaliação, assine o Plano Standard.";
         acoes.innerHTML = `<a href="pagamento-plano.html?tipo=STANDARD&cobranca=MENSAL" class="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Assinar Standard</a>`;
       } else if (tipo === "STANDARD" && plano.ativo) {
         banner.classList.remove("hidden");
         banner.className = "mb-8 rounded-2xl p-5 border bg-blue-50 border-blue-300 text-blue-800";
         titulo.innerText = "Plano Standard ativo.";
-        texto.innerText = "Desbloqueie recursos estratÃ©gicos com o Plano Premium, como mapa de calor, dados regionais e relatÃ³rios avanÃ§ados.";
+        texto.innerText = "Desbloqueie recursos estratégicos com o Plano Premium, como mapa de calor, dados regionais e relatórios avançados.";
         acoes.innerHTML = `<a href="pagamento-plano.html?tipo=PREMIUM&cobranca=MENSAL" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">Conhecer Premium</a>`;
       } else if ((tipo === "STANDARD" || tipo === "PREMIUM") && plano.expirado) {
         banner.classList.remove("hidden");
@@ -382,7 +382,7 @@
     function inicializarMapaCalor() {
       if (mapaCalorLeaflet) return mapaCalorLeaflet;
       if (!window.L || !L.heatLayer) {
-        throw new Error("Biblioteca de mapa indisponÃ­vel. Verifique a conexÃ£o com o CDN do Leaflet.");
+        throw new Error("Biblioteca de mapa indisponível. Verifique a conexão com o CDN do Leaflet.");
       }
 
       mapaCalorLeaflet = L.map("mapaCalorLeaflet", {
@@ -404,7 +404,7 @@
     }
 
     function normalizarNomeMunicipio(nome) {
-      return (nome || "").toLowerCase().normalize("NFD").replace(/[Ì€-Í¯]/g, "").trim();
+      return (nome || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
 
     async function buscarPoligonoMunicipio(cidade, uf) {
@@ -429,7 +429,7 @@
         cachePoligonoMunicipio.set(chave, geojson);
         return geojson;
       } catch (err) {
-        console.warn("PolÃ­gono do municÃ­pio indisponÃ­vel:", err);
+        console.warn("Polígono do município indisponível:", err);
         cachePoligonoMunicipio.set(chave, null);
         return null;
       }
@@ -490,7 +490,7 @@
             fillColor: "#0f172a",
             fillOpacity: 0.55
           }).bindTooltip(
-            `<strong>${p.bairro || "RegiÃ£o nÃ£o informada"}</strong><br>${p.entradasPeriodo || 0} entradas agregadas<br>${p.quantidadeEstacionamentos || 0} estacionamento(s)`,
+            `<strong>${p.bairro || "Região não informada"}</strong><br>${p.entradasPeriodo || 0} entradas agregadas<br>${p.quantidadeEstacionamentos || 0} estacionamento(s)`,
             { direction: "top", sticky: true }
           ).addTo(marcadoresCalorLeaflet);
 
@@ -498,7 +498,7 @@
           item.className = "px-4 py-3 flex items-center justify-between gap-3";
           item.innerHTML = `
             <div>
-              <div class="font-semibold text-slate-900">${idx + 1}. ${p.bairro || "RegiÃ£o nÃ£o informada"}</div>
+              <div class="font-semibold text-slate-900">${idx + 1}. ${p.bairro || "Região não informada"}</div>
               <div class="text-xs text-slate-500">${p.quantidadeEstacionamentos || 0} estacionamento(s)</div>
             </div>
             <div class="text-right">
@@ -548,11 +548,11 @@
           mapa.setView([-23.5505, -46.6333], 11);
         }
 
-        status.innerText = geoMunicipio ? "Atualizado" : "Atualizado (limites do municÃ­pio indisponÃ­veis)";
+        status.innerText = geoMunicipio ? "Atualizado" : "Atualizado (limites do município indisponíveis)";
       } catch (e) {
         console.error("Erro ao carregar mapa de calor:", e);
         vazio.classList.remove("hidden");
-        status.innerText = e.status === 403 ? "Premium necessÃ¡rio" : "Erro ao carregar";
+        status.innerText = e.status === 403 ? "Premium necessário" : "Erro ao carregar";
       }
     }
 
@@ -567,7 +567,7 @@
       if (status === "ATIVA") return "Ativa";
       if (status === "ENCERRADA") return "Encerrada";
       if (status === "CANCELADA") return "Cancelada";
-      return status || "â€”";
+      return status || "—";
     }
 
     function ehAcessoTotem(s) {
@@ -580,13 +580,13 @@
     }
 
     function detalheClienteOperacao(s) {
-      if (ehAcessoTotem(s)) return "Motorista sem identificaÃ§Ã£o pelo app";
+      if (ehAcessoTotem(s)) return "Motorista sem identificação pelo app";
       return s.clienteCpf ? "CPF " + s.clienteCpf : "Cliente do estacionamento";
     }
 
     function veiculoOperacao(s) {
       if (s.modeloVeiculo) return s.modeloVeiculo;
-      return ehAcessoTotem(s) ? "VeÃ­culo nÃ£o informado" : "-";
+      return ehAcessoTotem(s) ? "Veículo não informado" : "-";
     }
 
     function placaOperacao(s) {
@@ -595,7 +595,7 @@
 
     function tipoOperacao(s) {
       if (s.reservado) return "Reservada";
-      return ehAcessoTotem(s) ? "Totem / balcÃ£o" : "Por demanda";
+      return ehAcessoTotem(s) ? "Totem / balcão" : "Por demanda";
     }
 
     async function carregarSessoes() {
@@ -608,7 +608,7 @@
         console.error("Erro ao carregar sessoes:", e);
         sessoes = [];
         renderTabela();
-        alert(e.message || "NÃ£o foi possÃ­vel carregar as sessoes.");
+        alert(e.message || "Não foi possível carregar as sessoes.");
       }
     }
 
@@ -689,7 +689,7 @@
         document.getElementById("cardValor").innerText       = formatarMoeda(r.receitaPrevista);
 
         document.getElementById("vagasTotais").innerText      = r.vagasTotais ?? 0;
-        document.getElementById("vagasDisponÃ­veis").innerText = r.vagasDisponiveis ?? 0;
+        document.getElementById("vagasDisponíveis").innerText = r.vagasDisponiveis ?? 0;
         document.getElementById("vagasReservadas").innerText  = r.vagasReservadas ?? 0;
         const ocupadas = Math.max((r.vagasTotais ?? 0) - (r.vagasDisponiveis ?? 0), 0);
         document.getElementById("vagasOcupadas").innerText = ocupadas;
@@ -697,19 +697,19 @@
         console.error("Erro ao carregar resumo:", e);
         ["cardAtivas","cardFinalizadas","cardCanceladas"].forEach(id => document.getElementById(id).innerText = "-");
         document.getElementById("cardValor").innerText = "-";
-        ["vagasTotais","vagasDisponÃ­veis","vagasReservadas","vagasOcupadas"].forEach(id => document.getElementById(id).innerText = "-");
+        ["vagasTotais","vagasDisponíveis","vagasReservadas","vagasOcupadas"].forEach(id => document.getElementById(id).innerText = "-");
       }
     }
 
     async function finalizarSessao(sessaoId) {
-      if (!confirm("Finalizar a sessÃ£o #" + sessaoId + "?")) return;
+      if (!confirm("Finalizar a sessão #" + sessaoId + "?")) return;
       try {
         await pcFetch("/api/operacao/" + sessaoId + "/finalizar", { method: "POST" });
-        alert("SessÃ£o finalizada.");
+        alert("Sessão finalizada.");
         await Promise.all([carregarSessoes(), carregarResumo()]);
       } catch (e) {
         console.error(e);
-        alert(e.message || "NÃ£o foi possÃ­vel finalizar.");
+        alert(e.message || "Não foi possível finalizar.");
       }
     }
 
@@ -725,7 +725,7 @@
           <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6">
             <h3 class="text-lg font-bold text-slate-900">Confirmar cancelamento</h3>
             <p class="text-sm text-slate-600 mt-2">
-              Esta aÃ§Ã£o altera a ocupaÃ§Ã£o e os relatÃ³rios. Informe a senha do administrador para prosseguir.
+              Esta ação altera a ocupação e os relatórios. Informe a senha do administrador para prosseguir.
             </p>
             <label class="block text-sm text-slate-600 mt-5 mb-2 font-medium">Senha do administrador</label>
             <input id="senhaCancelamentoAdmin" type="password" autocomplete="current-password"
@@ -764,8 +764,8 @@
       const senhaAdmin = await pedirSenhaAdminCancelamento();
       if (!senhaAdmin) return;
       try {
-        // A API devolve { sucesso, mensagem } â€” usamos a mensagem para refletir
-        // se a notificaÃ§Ã£o por e-mail ao motorista foi entregue ou nÃ£o.
+        // A API devolve { sucesso, mensagem } — usamos a mensagem para refletir
+        // se a notificação por e-mail ao motorista foi entregue ou não.
         const resp = await pcFetch("/api/operacao/" + sessaoId + "/cancelar", {
           method: "POST",
           body: JSON.stringify({
@@ -778,7 +778,7 @@
         await Promise.all([carregarSessoes(), carregarResumo()]);
       } catch (e) {
         console.error(e);
-        alert(e.message || "NÃ£o foi possÃ­vel cancelar.");
+        alert(e.message || "Não foi possível cancelar.");
       }
     }
 
@@ -786,16 +786,16 @@
       const s = sessoes.find(x => Number(x.id) === Number(sessaoId));
       if (!s) return;
       alert(
-        "SessÃ£o #" + s.id + "\n" +
+        "Sessão #" + s.id + "\n" +
         "Origem: " + (ehAcessoTotem(s) ? "Totem / kiosk" : "Aplicativo") + "\n" +
         "Cliente: " + nomeClienteOperacao(s) + "\n" +
-        "CPF: " + (ehAcessoTotem(s) ? "NÃ£o informado" : (s.clienteCpf || "-")) + "\n" +
-        "VeÃ­culo: " + veiculoOperacao(s) + " (" + placaOperacao(s) + ")\n" +
+        "CPF: " + (ehAcessoTotem(s) ? "Não informado" : (s.clienteCpf || "-")) + "\n" +
+        "Veículo: " + veiculoOperacao(s) + " (" + placaOperacao(s) + ")\n" +
         "Entrada: " + pcFormatarDataHora(s.horaEntrada) + "\n" +
-        "SaÃ­da: " + (s.horaSaida ? pcFormatarDataHora(s.horaSaida) : "-") + "\n" +
+        "Saída: " + (s.horaSaida ? pcFormatarDataHora(s.horaSaida) : "-") + "\n" +
         "Pagamento: " + (s.horaPagamento ? pcFormatarDataHora(s.horaPagamento) : "-") + "\n" +
         "Valor pago: " + formatarMoeda(s.valorPago) + "\n" +
-        "Reservado: " + (s.reservado ? "Sim" : "NÃ£o") + "\n" +
+        "Reservado: " + (s.reservado ? "Sim" : "Não") + "\n" +
         "Status: " + nomeStatus(s.status) + "\n" +
         "QR: " + (s.qrCode || "-")
       );

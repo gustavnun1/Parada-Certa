@@ -29,15 +29,15 @@
     </div>
   </header>
 
-  <!-- CONTEÃšDO -->
+  <!-- CONTEÚDO -->
   <main class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- TÃTULO -->
+    <!-- TÍTULO -->
     <section class="mb-8">
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
           <p class="text-green-600 font-semibold mb-2">
-            GestÃ£o de estacionamentos
+            Gestão de estacionamentos
           </p>
 
           <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
@@ -45,7 +45,7 @@
           </h2>
 
           <p class="text-slate-600 mt-2 max-w-3xl">
-            Visualize seus estacionamentos cadastrados e acompanhe vagas, preÃ§os, horÃ¡rios e status de operaÃ§Ã£o.
+            Visualize seus estacionamentos cadastrados e acompanhe vagas, preços, horários e status de operação.
           </p>
         </div>
 
@@ -60,7 +60,7 @@
 
     <!-- ALERTA ERRO -->
     <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
-      NÃ£o foi possÃ­vel carregar a lista de estacionamentos no momento. Tente novamente em instantes.
+      Não foi possível carregar a lista de estacionamentos no momento. Tente novamente em instantes.
     </section>
 
     <!-- CARDS -->
@@ -74,7 +74,7 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Ativos</p>
         <h3 id="cardAtivos" class="text-3xl font-bold mt-2 text-green-600">0</h3>
-        <p class="text-xs text-slate-500 mt-2">DisponÃ­veis para operaÃ§Ã£o</p>
+        <p class="text-xs text-slate-500 mt-2">Disponíveis para operação</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -84,9 +84,9 @@
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">PreÃ§o mÃ©dio</p>
+        <p class="text-sm text-slate-500">Preço médio</p>
         <h3 id="cardPrecoMedio" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
-        <p class="text-xs text-slate-500 mt-2">Valor mÃ©dio por hora</p>
+        <p class="text-xs text-slate-500 mt-2">Valor médio por hora</p>
       </div>
     </section>
 
@@ -98,7 +98,7 @@
           <input
             id="busca"
             type="text"
-            placeholder="Nome ou endereÃ§o..."
+            placeholder="Nome ou endereço..."
             onkeyup="filtrarEstacionamentos()"
             class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
           />
@@ -152,13 +152,13 @@
           <thead class="bg-slate-50 text-slate-600">
             <tr>
               <th class="px-6 py-4 text-left font-semibold">Nome</th>
-              <th class="px-6 py-4 text-left font-semibold">EndereÃ§o</th>
+              <th class="px-6 py-4 text-left font-semibold">Endereço</th>
               <th class="px-6 py-4 text-left font-semibold">Vagas</th>
-              <th class="px-6 py-4 text-left font-semibold">ReservÃ¡veis</th>
-              <th class="px-6 py-4 text-left font-semibold">PreÃ§o</th>
-              <th class="px-6 py-4 text-left font-semibold">HorÃ¡rio</th>
+              <th class="px-6 py-4 text-left font-semibold">Reserváveis</th>
+              <th class="px-6 py-4 text-left font-semibold">Preço</th>
+              <th class="px-6 py-4 text-left font-semibold">Horário</th>
               <th class="px-6 py-4 text-left font-semibold">Status</th>
-              <th class="px-6 py-4 text-left font-semibold">AÃ§Ãµes</th>
+              <th class="px-6 py-4 text-left font-semibold">Ações</th>
             </tr>
           </thead>
 
@@ -183,7 +183,7 @@
 
       <input type="hidden" id="formId" />
 
-      <!-- Bloco: identificaÃ§Ã£o e operaÃ§Ã£o -->
+      <!-- Bloco: identificação e operação -->
       <div class="grid md:grid-cols-2 gap-5">
         <div>
           <label class="block text-sm text-slate-600 mb-2 font-medium">Nome</label>
@@ -202,7 +202,7 @@
           <input id="formNomeFantasia" type="text" maxlength="200" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
         </div>
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">PreÃ§o por hora (R$)</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Preço por hora (R$)</label>
           <input id="formPreco" type="number" min="0" step="0.01" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
         </div>
         <div>
@@ -210,26 +210,26 @@
           <input id="formVagasTotais" type="number" min="1" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
         </div>
         <div id="grupoVagasReservaveis" class="hidden">
-          <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas reservÃ¡veis</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Vagas reserváveis</label>
           <input id="formVagasReservaveis" type="number" min="0" value="0" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
           <p class="text-xs text-slate-500 mt-1">Informe uma quantidade maior que zero e menor ou igual ao total de vagas.</p>
         </div>
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">HorÃ¡rio abertura</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Horário abertura</label>
           <input id="formHorarioAbertura" type="time" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
         </div>
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">HorÃ¡rio fechamento</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Horário fechamento</label>
           <input id="formHorarioFechamento" type="time" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
         </div>
         <div class="md:col-span-2">
           <label class="block text-sm text-slate-600 mb-2 font-medium">Chave Pix (para recebimentos)</label>
-          <input id="formPixKey" type="text" maxlength="200" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatÃ³ria"
+          <input id="formPixKey" type="text" maxlength="200" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
             class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
-          <p class="text-xs text-slate-500 mt-1">Aceita CPF (11 dÃ­gitos), CNPJ (14 dÃ­gitos), e-mail, telefone com DDD ou chave aleatÃ³ria.</p>
+          <p class="text-xs text-slate-500 mt-1">Aceita CPF (11 dígitos), CNPJ (14 dígitos), e-mail, telefone com DDD ou chave aleatória.</p>
         </div>
         <div class="md:col-span-2">
-          <label class="block text-sm text-slate-600 mb-2 font-medium">DescriÃ§Ã£o</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Descrição</label>
           <textarea id="formDescricao" rows="3" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"></textarea>
         </div>
         <label class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
@@ -242,12 +242,12 @@
         </label>
       </div>
 
-      <!-- Bloco: endereÃ§o detalhado + geocoding -->
+      <!-- Bloco: endereço detalhado + geocoding -->
       <div class="mt-8 border-t border-slate-200 pt-6">
-        <h4 class="text-lg font-bold text-slate-900 mb-1">EndereÃ§o</h4>
+        <h4 class="text-lg font-bold text-slate-900 mb-1">Endereço</h4>
         <p class="text-sm text-slate-500 mb-5">
           Informe o CEP para que logradouro, bairro, cidade e UF sejam preenchidos automaticamente.
-          Latitude e longitude sÃ£o calculadas a partir do logradouro e do nÃºmero.
+          Latitude e longitude são calculadas a partir do logradouro e do número.
         </p>
 
         <div class="grid md:grid-cols-6 gap-5">
@@ -262,7 +262,7 @@
             <input id="formLogradouro" type="text" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
           </div>
           <div>
-            <label class="block text-sm text-slate-600 mb-2 font-medium">NÃºmero</label>
+            <label class="block text-sm text-slate-600 mb-2 font-medium">Número</label>
             <input id="formNumero" type="text" maxlength="10" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
           </div>
 
@@ -287,12 +287,12 @@
 
           <div class="md:col-span-3">
             <label class="block text-sm text-slate-600 mb-2 font-medium">Latitude (auto)</label>
-            <input id="formLatitude" type="text" readonly placeholder="â€”"
+            <input id="formLatitude" type="text" readonly placeholder="—"
               class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 focus:outline-none cursor-not-allowed" />
           </div>
           <div class="md:col-span-3">
             <label class="block text-sm text-slate-600 mb-2 font-medium">Longitude (auto)</label>
-            <input id="formLongitude" type="text" readonly placeholder="â€”"
+            <input id="formLongitude" type="text" readonly placeholder="—"
               class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 focus:outline-none cursor-not-allowed" />
           </div>
 
@@ -305,12 +305,12 @@
 
           <div class="md:col-span-6">
             <label class="block text-sm text-slate-600 mb-2 font-medium">
-              EndereÃ§o final (gerado automaticamente; opcional sobrescrever)
+              Endereço final (gerado automaticamente; opcional sobrescrever)
             </label>
-            <input id="formEndereco" type="text" maxlength="300" placeholder="logradouro, nÃºmero - bairro, cidade - UF"
+            <input id="formEndereco" type="text" maxlength="300" placeholder="logradouro, número - bairro, cidade - UF"
               class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500" />
             <p class="text-xs text-slate-500 mt-1">
-              Formato padrÃ£o: "logradouro, nÃºmero - bairro, cidade - UF". Deixe vazio para usar o texto montado automaticamente.
+              Formato padrão: "logradouro, número - bairro, cidade - UF". Deixe vazio para usar o texto montado automaticamente.
             </p>
           </div>
         </div>
@@ -318,12 +318,12 @@
 
       <div id="formErro" class="hidden mt-4 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm"></div>
 
-      <!-- Bloco: fotos (Item 3 + Item 5) â€” visÃ­vel apenas em ediÃ§Ã£o -->
+      <!-- Bloco: fotos (Item 3 + Item 5) — visível apenas em edição -->
       <div id="blocoFotos" class="hidden mt-8 border-t border-slate-200 pt-6">
         <div class="flex items-end justify-between gap-4 mb-3">
           <div>
             <h4 class="text-lg font-bold text-slate-900">Fotos do estacionamento</h4>
-            <p id="fotosStatus" class="text-sm text-slate-500">â€”</p>
+            <p id="fotosStatus" class="text-sm text-slate-500">—</p>
           </div>
           <div class="flex items-center gap-3">
             <label class="text-sm text-slate-600 font-medium">Adicionar foto</label>
@@ -332,7 +332,7 @@
           </div>
         </div>
         <p class="text-xs text-slate-500 mb-4">
-          Aceita JPG, PNG ou WEBP atÃ© 5 MB. As imagens passam por verificaÃ§Ã£o automÃ¡tica de seguranÃ§a
+          Aceita JPG, PNG ou WEBP até 5 MB. As imagens passam por verificação automática de segurança
           antes de serem aceitas.
         </p>
         <div id="gridFotos" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
@@ -417,7 +417,7 @@
 
           <td class="px-6 py-4">
             <div class="font-semibold text-slate-900">${qtdDisponiveis}/${qtdTotal}</div>
-            <div class="text-xs text-slate-500">disponÃ­veis/total</div>
+            <div class="text-xs text-slate-500">disponíveis/total</div>
           </td>
 
           <td class="px-6 py-4">
@@ -430,7 +430,7 @@
           </td>
 
           <td class="px-6 py-4 text-slate-700">
-            ${normalizarHora(e.horarioAbertura) || "-"} Ã s ${normalizarHora(e.horarioFechamento) || "-"}
+            ${normalizarHora(e.horarioAbertura) || "-"} às ${normalizarHora(e.horarioFechamento) || "-"}
           </td>
 
           <td class="px-6 py-4">
@@ -518,7 +518,7 @@
 
     async function verDetalhes(id) {
       if (!id) {
-        pcErro("Estacionamento nÃ£o encontrado.");
+        pcErro("Estacionamento não encontrado.");
         return;
       }
 
@@ -526,20 +526,20 @@
         const e = await pcFetch(`/api/estacionamentos/${id}`);
         const mensagem =
           `Estacionamento: ${e.nome || "-"}\n` +
-          `EndereÃ§o: ${e.endereco || "-"}\n` +
-          `PreÃ§o por hora: ${formatarMoeda(e.precoHora)}\n` +
+          `Endereço: ${e.endereco || "-"}\n` +
+          `Preço por hora: ${formatarMoeda(e.precoHora)}\n` +
           `Vagas: ${e.qtdVagasDisponiveis ?? 0}/${e.qtdVagasTotais ?? 0}\n` +
-          `ReservÃ¡veis: ${e.qtdVagasReservadas ?? 0}/${e.qtdVagasReservaveis ?? 0}\n` +
-          `HorÃ¡rio: ${normalizarHora(e.horarioAbertura) || "-"} Ã s ${normalizarHora(e.horarioFechamento) || "-"}\n` +
+          `Reserváveis: ${e.qtdVagasReservadas ?? 0}/${e.qtdVagasReservaveis ?? 0}\n` +
+          `Horário: ${normalizarHora(e.horarioAbertura) || "-"} às ${normalizarHora(e.horarioFechamento) || "-"}\n` +
           `Status: ${normalizarAtivo(e.ativo) ? "Ativo" : "Inativo"}`;
         pcInfo(mensagem, 8000);
       } catch (erro) {
         console.error("Erro ao buscar detalhes:", erro);
-        pcErro(erro.message || "NÃ£o foi possÃ­vel carregar os detalhes.");
+        pcErro(erro.message || "Não foi possível carregar os detalhes.");
       }
     }
 
-    // â”€â”€ Formulario novo/editar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Formulario novo/editar ────────────────────────────────────────────
 
     let formModo = "novo"; // "novo" | "editar"
 
@@ -576,7 +576,7 @@
       document.getElementById("formId").value = "";
       limparFormulario();
 
-      // Fotos sÃ³ aparecem depois que o estacionamento existir (precisa de id).
+      // Fotos só aparecem depois que o estacionamento existir (precisa de id).
       document.getElementById("blocoFotos").classList.add("hidden");
 
       document.getElementById("formBox").classList.remove("hidden");
@@ -616,13 +616,13 @@
       document.getElementById("formPixKey").value = e.pixKey || "";
 
       document.getElementById("formBox").classList.remove("hidden");
-      // Item 3: carregar fotos do estacionamento na ediÃ§Ã£o
+      // Item 3: carregar fotos do estacionamento na edição
       document.getElementById("blocoFotos").classList.remove("hidden");
       carregarFotos(e.id);
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
 
-    // â”€â”€ Fotos (Item 3 + Item 5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Fotos (Item 3 + Item 5) ───────────────────────────────────────────────
     const PC_API_HOST = "http://localhost:8080";
     let _fotosAtuais = [];
     let _limiteFotos = 3;
@@ -654,14 +654,14 @@
       grid.innerHTML = "";
       const total = _fotosAtuais.length;
       const cheio = total >= _limiteFotos;
-      const planoNome = _planoAtualUpload ? (_planoAtualUpload.plano || "â€”") : "â€”";
+      const planoNome = _planoAtualUpload ? (_planoAtualUpload.plano || "—") : "—";
       const expirado = _planoAtualUpload && _planoAtualUpload.expirado;
 
       if (expirado) {
         status.innerHTML = `<span class="text-red-700 font-semibold">Plano ${planoNome} expirado.</span> Renove para enviar fotos.`;
         input.disabled = true;
       } else {
-        status.innerHTML = `Plano <strong>${planoNome}</strong> Â· ${total} de ${_limiteFotos} fotos usadas.`
+        status.innerHTML = `Plano <strong>${planoNome}</strong> · ${total} de ${_limiteFotos} fotos usadas.`
             + (cheio ? ` <span class="text-yellow-700 font-semibold">Limite atingido.</span>` : "");
         input.disabled = cheio;
       }
@@ -682,7 +682,7 @@
           </div>
           <div class="p-3 flex flex-col gap-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-500">${f.tipoMime} Â· ${formatarKb(f.tamanhoBytes)}</span>
+              <span class="text-xs text-slate-500">${f.tipoMime} · ${formatarKb(f.tamanhoBytes)}</span>
               ${f.principal
                 ? `<span class="text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-2 py-0.5 rounded-full">Principal</span>`
                 : `<button onclick="marcarPrincipal(${f.id})" class="text-xs font-semibold text-blue-600 hover:text-blue-800">Marcar como principal</button>`
@@ -711,7 +711,7 @@
       if (!file || !estId) return;
 
       if (file.size > 5 * 1024 * 1024) {
-        pcErro("A imagem Ã© muito grande. O limite Ã© de 5 MB.");
+        pcErro("A imagem é muito grande. O limite é de 5 MB.");
         input.value = "";
         return;
       }
@@ -728,7 +728,7 @@
         carregarFotos(estId);
       } catch (e) {
         console.error("Erro ao enviar foto:", e);
-        pcErro(e.message || "NÃ£o foi possÃ­vel enviar a foto.");
+        pcErro(e.message || "Não foi possível enviar a foto.");
       } finally {
         input.value = "";
       }
@@ -743,7 +743,7 @@
         carregarFotos(estId);
       } catch (e) {
         console.error("Erro ao marcar principal:", e);
-        pcErro(e.message || "NÃ£o foi possÃ­vel marcar como principal.");
+        pcErro(e.message || "Não foi possível marcar como principal.");
       }
     }
 
@@ -757,11 +757,11 @@
         carregarFotos(estId);
       } catch (e) {
         console.error("Erro ao remover foto:", e);
-        pcErro(e.message || "NÃ£o foi possÃ­vel remover a foto.");
+        pcErro(e.message || "Não foi possível remover a foto.");
       }
     }
 
-    // â”€â”€ ViaCEP + Nominatim â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── ViaCEP + Nominatim ────────────────────────────────────────────────────
 
     function formatarCep(v) {
       const d = String(v || "").replace(/\D/g, "");
@@ -790,7 +790,7 @@
       };
       return calc(12) === Number(d[12]) && calc(13) === Number(d[13]);
     }
-    function normalizarCidade(v) { return String(v || "").normalize("NFD").replace(/[Ì€-Í¯]/g, "").trim().toLowerCase(); }
+    function normalizarCidade(v) { return String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase(); }
     function ehCidadeSaoPaulo(v) { return normalizarCidade(v) === "sao paulo"; }
 
     function validarCpfLocal(cpf) {
@@ -848,7 +848,7 @@
       const requestSeq = ++_formCepRequestSeq;
       limparEnderecoFormPorCep();
       if (cep.length !== 8) {
-        statusEl.innerText = "Informe um CEP com 8 dÃ­gitos.";
+        statusEl.innerText = "Informe um CEP com 8 dígitos.";
         return;
       }
       statusEl.innerText = "Buscando CEP no ViaCEP...";
@@ -858,7 +858,7 @@
         const j = await r.json();
         if (requestSeq !== _formCepRequestSeq || lerCepDigits() !== cep) return;
         if (j.erro) {
-          statusEl.innerText = "CEP nÃ£o encontrado.";
+          statusEl.innerText = "CEP não encontrado.";
           return;
         }
         if (!ehCidadeSaoPaulo(j.localidade)) {
@@ -876,11 +876,11 @@
         if (document.getElementById("formNumero").value.trim()) {
           agendarGeocoding();
         }
-        statusEl.innerText = "EndereÃ§o preenchido pelo ViaCEP. Confirme o nÃºmero e o complemento.";
+        statusEl.innerText = "Endereço preenchido pelo ViaCEP. Confirme o número e o complemento.";
       } catch (e) {
         console.error("Erro ViaCEP:", e);
         if (requestSeq !== _formCepRequestSeq || lerCepDigits() !== cep) return;
-        statusEl.innerText = "NÃ£o foi possÃ­vel consultar o CEP agora.";
+        statusEl.innerText = "Não foi possível consultar o CEP agora.";
       }
     }
 
@@ -889,8 +889,8 @@
 
     /**
      * Geocoding via Nominatim (OpenStreetMap). Gratuito, sem chave.
-     * Respeita os termos: User-Agent identificÃ¡vel + debounce + 1 req por intervalo do usuÃ¡rio.
-     * Atualiza apenas se vier resultado; mantÃ©m valores anteriores em caso de falha.
+     * Respeita os termos: User-Agent identificável + debounce + 1 req por intervalo do usuário.
+     * Atualiza apenas se vier resultado; mantém valores anteriores em caso de falha.
      */
     async function geocodificarAgora() {
       const requestSeq = ++_formGeoRequestSeq;
@@ -941,7 +941,7 @@
           const r = await fetch(url, {
             headers: {
               // Termos do Nominatim exigem User-Agent identificavel.
-              // Em browsers o cabeÃ§alho User-Agent geralmente Ã© mantido pelo navegador,
+              // Em browsers o cabeçalho User-Agent geralmente é mantido pelo navegador,
               // mas mantemos Accept-Language para resultados em PT-BR.
               "Accept": "application/json",
               "Accept-Language": "pt-BR"
@@ -964,17 +964,17 @@
           document.getElementById("formLongitude").value = lon.toFixed(7);
           statusEl.innerText = `Coordenadas atualizadas (${lat.toFixed(5)}, ${lon.toFixed(5)}).`;
         } else {
-          statusEl.innerText = "Resposta do Nominatim sem coordenadas vÃ¡lidas.";
+          statusEl.innerText = "Resposta do Nominatim sem coordenadas válidas.";
         }
       } catch (e) {
         console.error("Erro Nominatim:", e);
         if (!enderecoAindaAtual()) return;
-        statusEl.innerText = "NÃ£o foi possÃ­vel calcular as coordenadas agora. Tente novamente em alguns segundos.";
+        statusEl.innerText = "Não foi possível calcular as coordenadas agora. Tente novamente em alguns segundos.";
       }
     }
 
     function agendarGeocoding() {
-      // Debounce de 800ms para nÃ£o disparar a cada tecla.
+      // Debounce de 800ms para não disparar a cada tecla.
       if (_geoTimer) clearTimeout(_geoTimer);
       _geoTimer = setTimeout(geocodificarAgora, 800);
     }
@@ -1010,8 +1010,8 @@
       const cnpjDigits = somenteDigitos(document.getElementById("formCnpj").value);
       const razaoSocial = document.getElementById("formRazaoSocial").value.trim();
       const nomeFantasia = document.getElementById("formNomeFantasia").value.trim();
-      if (!validarCnpjLocal(cnpjDigits)) { mostrarErroForm("CNPJ do estacionamento invÃ¡lido."); return; }
-      if (!razaoSocial) { mostrarErroForm("Informe a razÃ£o social do estacionamento."); return; }
+      if (!validarCnpjLocal(cnpjDigits)) { mostrarErroForm("CNPJ do estacionamento inválido."); return; }
+      if (!razaoSocial) { mostrarErroForm("Informe a razão social do estacionamento."); return; }
 
       const logradouro = document.getElementById("formLogradouro").value.trim();
       const numero     = document.getElementById("formNumero").value.trim();
@@ -1020,21 +1020,21 @@
       const uf         = document.getElementById("formUf").value.trim().toUpperCase();
 
       if (!logradouro || !numero || !bairro || !cidade || !uf) {
-        mostrarErroForm("Informe o endereÃ§o completo: logradouro, nÃºmero, bairro, cidade e UF.");
+        mostrarErroForm("Informe o endereço completo: logradouro, número, bairro, cidade e UF.");
         return;
       }
       if (!ehCidadeSaoPaulo(cidade)) {
-        mostrarErroForm("No momento, atendemos apenas estacionamentos na cidade de SÃ£o Paulo.");
+        mostrarErroForm("No momento, atendemos apenas estacionamentos na cidade de São Paulo.");
         return;
       }
 
       const pixKey = document.getElementById("formPixKey").value.trim();
       if (pixKey && !validarChavePixLocal(pixKey)) {
-        mostrarErroForm("Chave Pix em formato invÃ¡lido. Use CPF, CNPJ, e-mail, telefone ou chave aleatÃ³ria.");
+        mostrarErroForm("Chave Pix em formato inválido. Use CPF, CNPJ, e-mail, telefone ou chave aleatória.");
         return;
       }
 
-      // EndereÃ§o no formato padrÃ£o "logradouro, numero - bairro, cidade - UF".
+      // Endereço no formato padrão "logradouro, numero - bairro, cidade - UF".
       const enderecoDigitado = document.getElementById("formEndereco").value.trim();
       const enderecoMontado  = pcMontarEndereco({ logradouro, numero, bairro, cidade, uf });
       const enderecoFinal    = enderecoDigitado || enderecoMontado;
@@ -1043,11 +1043,11 @@
       const qtdVagasTotais = Number(document.getElementById("formVagasTotais").value);
       const qtdVagasReservaveis = permiteReserva ? Number(document.getElementById("formVagasReservaveis").value || 0) : 0;
       if (permiteReserva && (!qtdVagasReservaveis || qtdVagasReservaveis < 1)) {
-        mostrarErroForm("Informe quantas vagas serÃ£o reservÃ¡veis.");
+        mostrarErroForm("Informe quantas vagas serão reserváveis.");
         return;
       }
       if (qtdVagasReservaveis > qtdVagasTotais) {
-        mostrarErroForm("Vagas reservÃ¡veis nÃ£o pode ser maior que o total de vagas.");
+        mostrarErroForm("Vagas reserváveis não pode ser maior que o total de vagas.");
         return;
       }
 
@@ -1079,13 +1079,13 @@
       };
 
       if (corpo.cep && corpo.cep.length !== 8) {
-        mostrarErroForm("CEP deve ter 8 dÃ­gitos.");
+        mostrarErroForm("CEP deve ter 8 dígitos.");
         return;
       }
 
       if (formModo === "novo") {
         if (!corpo.nome || !corpo.qtdVagasTotais || isNaN(corpo.precoHora)) {
-          mostrarErroForm("Preencha nome, preÃ§o por hora e total de vagas.");
+          mostrarErroForm("Preencha nome, preço por hora e total de vagas.");
           return;
         }
       }
@@ -1137,11 +1137,11 @@
 
       } catch (e) {
         console.error("Erro ao salvar:", e);
-        mostrarErroForm(e.message || "NÃ£o foi possÃ­vel salvar o estacionamento.");
+        mostrarErroForm(e.message || "Não foi possível salvar o estacionamento.");
       }
     }
 
-    // â”€â”€ Wire-up de eventos do form de endereÃ§o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Wire-up de eventos do form de endereço ────────────────────────────────
     document.addEventListener("DOMContentLoaded", () => {
       const cnpjEl = document.getElementById("formCnpj");
       if (cnpjEl) cnpjEl.addEventListener("input", e => {
@@ -1157,13 +1157,13 @@
           _formCepRequestSeq++;
           limparEnderecoFormPorCep();
           const statusEl = document.getElementById("formCepStatus");
-          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dÃ­gitos.");
+          if (statusEl) statusEl.innerText = d.length === 0 ? "" : (d.length === 8 ? "" : "Informe um CEP com 8 dígitos.");
         });
       }
       const ufEl = document.getElementById("formUf");
       if (ufEl) ufEl.addEventListener("input", (e) => { e.target.value = e.target.value.toUpperCase().slice(0,2); });
 
-      // Geocoding (Nominatim) ao perder foco do nÃºmero, logradouro ou cidade.
+      // Geocoding (Nominatim) ao perder foco do número, logradouro ou cidade.
       const permiteReservaEl = document.getElementById("formPermiteReserva");
       if (permiteReservaEl) permiteReservaEl.addEventListener("change", atualizarCamposReserva);
       const vagasTotaisEl = document.getElementById("formVagasTotais");
@@ -1176,14 +1176,14 @@
     });
 
     async function excluirEstacionamento(id) {
-      if (!confirm("Desativar este estacionamento? Ele deixarÃ¡ de aparecer no aplicativo.")) return;
+      if (!confirm("Desativar este estacionamento? Ele deixará de aparecer no aplicativo.")) return;
       try {
         await pcFetch("/api/estacionamentos/" + id, { method: "DELETE" });
         pcSucesso("Estacionamento desativado.");
         carregar();
       } catch (e) {
         console.error("Erro ao excluir:", e);
-        pcErro(e.message || "NÃ£o foi possÃ­vel desativar o estacionamento.");
+        pcErro(e.message || "Não foi possível desativar o estacionamento.");
       }
     }
 
