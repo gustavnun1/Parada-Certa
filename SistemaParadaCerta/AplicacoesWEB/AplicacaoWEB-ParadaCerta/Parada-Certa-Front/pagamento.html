@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -29,10 +29,10 @@
     </div>
   </header>
 
-  <!-- CONTEÚDO -->
+  <!-- CONTEÃšDO -->
   <main class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- TÍTULO -->
+    <!-- TÃTULO -->
     <section class="mb-8">
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
@@ -45,12 +45,12 @@
           </h2>
 
           <p class="text-slate-600 mt-2 max-w-3xl">
-            Acompanhe pagamentos recebidos, taxas da plataforma, valores líquidos e previsão de repasse do estacionamento.
+            Acompanhe pagamentos recebidos, taxas da plataforma, valores lÃ­quidos e previsÃ£o de repasse do estacionamento.
           </p>
         </div>
 
         <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
-          <p class="text-sm text-slate-500">Módulo</p>
+          <p class="text-sm text-slate-500">MÃ³dulo</p>
           <p class="font-semibold text-slate-900">Financeiro administrativo</p>
         </div>
       </div>
@@ -63,7 +63,7 @@
       </p>
       <p class="text-sm text-slate-700">
         Esta tela mostra os pagamentos recebidos pelo seu estacionamento, descontando a taxa da plataforma e
-        apresentando o valor líquido para repasse.
+        apresentando o valor lÃ­quido para repasse.
       </p>
     </section>
 
@@ -82,7 +82,7 @@
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Valor líquido</p>
+        <p class="text-sm text-slate-500">Valor lÃ­quido</p>
         <h3 id="cardLiquido" class="text-3xl font-bold mt-2 text-yellow-600">R$ 0,00</h3>
         <p class="text-xs text-slate-500 mt-2">Valor final do estacionamento</p>
       </div>
@@ -90,7 +90,7 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Pagamentos hoje</p>
         <h3 id="cardPagamentosHoje" class="text-3xl font-bold mt-2 text-blue-600">0</h3>
-        <p class="text-xs text-slate-500 mt-2">Movimentações do dia</p>
+        <p class="text-xs text-slate-500 mt-2">MovimentaÃ§Ãµes do dia</p>
       </div>
     </section>
 
@@ -102,7 +102,7 @@
           <div>
             <h3 class="text-xl font-bold text-slate-900">Resumo financeiro</h3>
             <p class="text-sm text-slate-500 mt-1">
-              Visão geral dos recebimentos do estacionamento.
+              VisÃ£o geral dos recebimentos do estacionamento.
             </p>
           </div>
 
@@ -111,16 +111,16 @@
             onchange="filtrarPagamentos()"
             class="px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
           >
-            <option value="todos">Todos os períodos</option>
+            <option value="todos">Todos os perÃ­odos</option>
             <option value="hoje">Hoje</option>
             <option value="semana">Esta semana</option>
-            <option value="mes">Este mês</option>
+            <option value="mes">Este mÃªs</option>
           </select>
         </div>
 
         <div class="grid sm:grid-cols-3 gap-4">
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <p class="text-sm text-slate-500">Ticket médio</p>
+            <p class="text-sm text-slate-500">Ticket mÃ©dio</p>
             <p id="ticketMedio" class="text-2xl font-bold mt-2 text-slate-900">R$ 0,00</p>
           </div>
 
@@ -142,29 +142,29 @@
         <div class="space-y-4 text-sm">
           <div class="flex justify-between border-b border-slate-200 pb-3">
             <span class="text-slate-500">Estacionamento</span>
-            <span id="repasseEstacionamento" class="font-medium text-slate-900">—</span>
+            <span id="repasseEstacionamento" class="font-medium text-slate-900">â€”</span>
           </div>
 
           <div class="flex justify-between border-b border-slate-200 pb-3">
             <span class="text-slate-500">Chave PIX</span>
-            <span id="repassePix" class="font-medium text-slate-900">—</span>
+            <span id="repassePix" class="font-medium text-slate-900">â€”</span>
           </div>
 
           <div class="flex justify-between border-b border-slate-200 pb-3">
             <span class="text-slate-500">Taxa da plataforma</span>
-            <span id="repasseTaxa" class="font-medium text-slate-900">—</span>
+            <span id="repasseTaxa" class="font-medium text-slate-900">â€”</span>
           </div>
 
           <div class="flex justify-between pt-2 text-lg font-bold">
-            <span class="text-slate-900">Valor líquido</span>
-            <span id="valorRepasse" class="text-green-600">—</span>
+            <span class="text-slate-900">Valor lÃ­quido</span>
+            <span id="valorRepasse" class="text-green-600">â€”</span>
           </div>
         </div>
 
         <div class="mt-6 p-4 rounded-xl bg-green-50 border border-green-200">
-          <p class="text-sm text-green-700 font-bold mb-1">Observação</p>
+          <p class="text-sm text-green-700 font-bold mb-1">ObservaÃ§Ã£o</p>
           <p class="text-sm text-slate-700">
-            O valor líquido considera a taxa da plataforma descontada dos pagamentos confirmados no período selecionado.
+            O valor lÃ­quido considera a taxa da plataforma descontada dos pagamentos confirmados no perÃ­odo selecionado.
           </p>
         </div>
       </aside>
@@ -207,9 +207,9 @@
     <!-- TABELA -->
     <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
       <div class="px-6 py-5 border-b border-slate-200">
-        <h3 class="text-xl font-bold text-slate-900">Histórico financeiro</h3>
+        <h3 class="text-xl font-bold text-slate-900">HistÃ³rico financeiro</h3>
         <p class="text-sm text-slate-500 mt-1">
-          Pagamentos recebidos por reservas e permanências do estacionamento.
+          Pagamentos recebidos por reservas e permanÃªncias do estacionamento.
         </p>
       </div>
 
@@ -223,7 +223,7 @@
               <th class="px-6 py-4 text-left font-semibold">Forma</th>
               <th class="px-6 py-4 text-left font-semibold">Bruto</th>
               <th class="px-6 py-4 text-left font-semibold">Taxa</th>
-              <th class="px-6 py-4 text-left font-semibold">Líquido</th>
+              <th class="px-6 py-4 text-left font-semibold">LÃ­quido</th>
               <th class="px-6 py-4 text-left font-semibold">Status</th>
             </tr>
           </thead>
@@ -239,6 +239,7 @@
 
   </main>
 
+  <script src="pc-config.js"></script>
   <script src="pc-api.js"></script>
 
   <script>
@@ -259,12 +260,12 @@
     function preencherEstacionamentoBox() {
       pcFetch("/api/estacionamentos/" + ESTACIONAMENTO_ID)
         .then(est => {
-          document.getElementById("repasseEstacionamento").innerText = est.nome || "—";
-          document.getElementById("repassePix").innerText = est.pixKey || "Não cadastrada";
+          document.getElementById("repasseEstacionamento").innerText = est.nome || "â€”";
+          document.getElementById("repassePix").innerText = est.pixKey || "NÃ£o cadastrada";
         })
         .catch(() => {
-          document.getElementById("repasseEstacionamento").innerText = "—";
-          document.getElementById("repassePix").innerText = "—";
+          document.getElementById("repasseEstacionamento").innerText = "â€”";
+          document.getElementById("repassePix").innerText = "â€”";
         });
     }
 
@@ -279,7 +280,7 @@
       } catch (e) {
         console.error(e);
         pagamentos = [];
-        pcErro(e.message || "Não foi possível carregar os pagamentos no momento.");
+        pcErro(e.message || "NÃ£o foi possÃ­vel carregar os pagamentos no momento.");
       }
       renderTabela();
     }
@@ -300,10 +301,10 @@
         document.getElementById("repasseTaxa").innerText = pct.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "% sobre cada pagamento";
       } catch (e) {
         console.error(e);
-        ["cardTotalRecebido","cardTaxas","cardLiquido","valorRepasse","ticketMedio","maiorPagamento"].forEach(id => document.getElementById(id).innerText = "—");
-        document.getElementById("cardPagamentosHoje").innerText = "—";
-        document.getElementById("pagamentosPendentes").innerText = "—";
-        document.getElementById("repasseTaxa").innerText = "—";
+        ["cardTotalRecebido","cardTaxas","cardLiquido","valorRepasse","ticketMedio","maiorPagamento"].forEach(id => document.getElementById(id).innerText = "â€”");
+        document.getElementById("cardPagamentosHoje").innerText = "â€”";
+        document.getElementById("pagamentosPendentes").innerText = "â€”";
+        document.getElementById("repasseTaxa").innerText = "â€”";
       }
     }
 
@@ -336,17 +337,17 @@
       filtrados.forEach(p => {
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-50 transition";
-        const statusLabel = p.status === "PAGO" ? "Pago" : (p.status || "—");
+        const statusLabel = p.status === "PAGO" ? "Pago" : (p.status || "â€”");
         tr.innerHTML = `
           <td class="px-6 py-4">
             <div class="font-semibold text-slate-900">${p.clienteNome || "Cliente #" + p.clienteId}</div>
             <div class="text-xs text-slate-500">Sessao #${p.sessaoId}${p.reservado ? " (reserva)" : ""}</div>
           </td>
           <td class="px-6 py-4">
-            <span class="px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-semibold">${p.placa || "—"}</span>
+            <span class="px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-semibold">${p.placa || "â€”"}</span>
           </td>
           <td class="px-6 py-4 text-slate-700">${pcFormatarDataHora(p.dataPagamento)}</td>
-          <td class="px-6 py-4 text-slate-700">${p.forma || "—"}</td>
+          <td class="px-6 py-4 text-slate-700">${p.forma || "â€”"}</td>
           <td class="px-6 py-4 font-semibold text-slate-900">${formatarMoeda(p.valorBruto)}</td>
           <td class="px-6 py-4 font-semibold text-red-600">${formatarMoeda(p.taxaPlataforma)}</td>
           <td class="px-6 py-4 font-semibold text-green-600">${formatarMoeda(p.valorLiquido)}</td>
@@ -359,7 +360,7 @@
     }
 
     function filtrarPagamentos() {
-      // Mudou periodo no servidor — recarrega tudo
+      // Mudou periodo no servidor â€” recarrega tudo
       carregarPagamentos();
       carregarResumo();
     }

@@ -6,7 +6,12 @@
 // - Wrapper de fetch que extrai mensagens de erro padrao da API
 // =====================================================================
 
-const PC_API_BASE = "http://localhost:8080";
+const PC_API_BASE = (
+  window.PC_API_BASE ||
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8080"
+    : "")
+);
 const PC_SESSION_KEY = "adminLogado";
 
 function pcGetSession() {

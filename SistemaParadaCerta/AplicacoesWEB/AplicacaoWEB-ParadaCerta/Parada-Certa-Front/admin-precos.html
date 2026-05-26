@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Preços - Parada Certa</title>
+  <title>PreÃ§os - Parada Certa</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -29,54 +29,54 @@
     </div>
   </header>
 
-  <!-- CONTEÚDO -->
+  <!-- CONTEÃšDO -->
   <main class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- TÍTULO -->
+    <!-- TÃTULO -->
     <section class="mb-8">
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
           <p class="text-green-600 font-semibold mb-2">
-            Gestão de valores
+            GestÃ£o de valores
           </p>
 
           <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
-            Tabela de Preços
+            Tabela de PreÃ§os
           </h2>
 
           <p class="text-slate-600 mt-2 max-w-3xl">
-            Consulte os preços por hora cadastrados e simule regras de cobrança no painel administrativo.
+            Consulte os preÃ§os por hora cadastrados e simule regras de cobranÃ§a no painel administrativo.
           </p>
         </div>
 
         <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
-          <p class="text-sm text-slate-500">Módulo</p>
-          <p class="font-semibold text-slate-900">Tabela de preços</p>
+          <p class="text-sm text-slate-500">MÃ³dulo</p>
+          <p class="font-semibold text-slate-900">Tabela de preÃ§os</p>
         </div>
       </div>
     </section>
 
     <!-- ALERTA ERRO -->
     <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
-      Não foi possível carregar os preços agora. Tente novamente em instantes.
+      NÃ£o foi possÃ­vel carregar os preÃ§os agora. Tente novamente em instantes.
     </section>
 
     <!-- CARDS -->
     <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Preço médio por hora</p>
+        <p class="text-sm text-slate-500">PreÃ§o mÃ©dio por hora</p>
         <h3 id="cardHora" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
-        <p class="text-xs text-slate-500 mt-2">Média dos estacionamentos</p>
+        <p class="text-xs text-slate-500 mt-2">MÃ©dia dos estacionamentos</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Menor preço</p>
+        <p class="text-sm text-slate-500">Menor preÃ§o</p>
         <h3 id="cardMenor" class="text-3xl font-bold mt-2 text-blue-600">R$ 0,00</h3>
-        <p class="text-xs text-slate-500 mt-2">Valor mais acessível</p>
+        <p class="text-xs text-slate-500 mt-2">Valor mais acessÃ­vel</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Maior preço</p>
+        <p class="text-sm text-slate-500">Maior preÃ§o</p>
         <h3 id="cardMaior" class="text-3xl font-bold mt-2 text-yellow-600">R$ 0,00</h3>
         <p class="text-xs text-slate-500 mt-2">Valor premium</p>
       </div>
@@ -84,11 +84,11 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Estacionamentos ativos</p>
         <h3 id="cardAtivos" class="text-3xl font-bold mt-2 text-slate-900">0</h3>
-        <p class="text-xs text-slate-500 mt-2">Com preço cadastrado</p>
+        <p class="text-xs text-slate-500 mt-2">Com preÃ§o cadastrado</p>
       </div>
     </section>
 
-    <!-- SELEÇÃO -->
+    <!-- SELEÃ‡ÃƒO -->
     <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
       <div class="grid lg:grid-cols-3 gap-5 items-end">
         <div class="lg:col-span-2">
@@ -109,18 +109,18 @@
           onclick="carregarEstacionamentos()"
           class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition"
         >
-          Recarregar preços
+          Recarregar preÃ§os
         </button>
       </div>
     </section>
 
-    <!-- FORMULÁRIO E RESUMO -->
+    <!-- FORMULÃRIO E RESUMO -->
     <section class="grid lg:grid-cols-2 gap-8 mb-8">
 
-      <!-- PREÇO PRINCIPAL -->
+      <!-- PREÃ‡O PRINCIPAL -->
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h3 class="text-xl font-bold mb-6 text-slate-900">
-          Preço do Estacionamento
+          PreÃ§o do Estacionamento
         </h3>
 
         <div class="space-y-5">
@@ -138,7 +138,7 @@
 
           <div>
             <label class="block text-sm text-slate-600 mb-2 font-medium">
-              Preço por hora
+              PreÃ§o por hora
             </label>
             <input
               id="precoHora"
@@ -152,7 +152,7 @@
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">
-                Horário de abertura
+                HorÃ¡rio de abertura
               </label>
               <input
                 id="horarioAbertura"
@@ -164,7 +164,7 @@
 
             <div>
               <label class="block text-sm text-slate-600 mb-2 font-medium">
-                Horário de fechamento
+                HorÃ¡rio de fechamento
               </label>
               <input
                 id="horarioFechamento"
@@ -177,16 +177,16 @@
 
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
             <p class="text-slate-700 text-sm">
-              O botão <strong>Salvar preço</strong> grava o novo valor para o estacionamento selecionado.
+              O botÃ£o <strong>Salvar preÃ§o</strong> grava o novo valor para o estacionamento selecionado.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- SIMULAÇÃO -->
+      <!-- SIMULAÃ‡ÃƒO -->
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h3 class="text-xl font-bold mb-6 text-slate-900">
-          Simulação de Cobrança
+          SimulaÃ§Ã£o de CobranÃ§a
         </h3>
 
         <div class="space-y-5">
@@ -204,7 +204,7 @@
                 <option value="2">2 horas</option>
                 <option value="3">3 horas</option>
                 <option value="4">4 horas</option>
-                <option value="8">Diária de 8 horas</option>
+                <option value="8">DiÃ¡ria de 8 horas</option>
               </select>
             </div>
 
@@ -236,7 +236,7 @@
             </div>
 
             <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-              <p class="text-sm text-green-700">Líquido</p>
+              <p class="text-sm text-green-700">LÃ­quido</p>
               <p id="simLiquido" class="text-2xl font-bold text-green-700 mt-1">R$ 0,00</p>
             </div>
           </div>
@@ -247,7 +247,7 @@
     <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm mb-8">
       <div class="px-6 py-5 border-b border-slate-200">
         <h3 class="text-xl font-bold text-slate-900">
-          Preços cadastrados
+          PreÃ§os cadastrados
         </h3>
         <p class="text-sm text-slate-500 mt-1">
           Valores por hora cadastrados nos seus estacionamentos.
@@ -259,11 +259,11 @@
           <thead class="bg-slate-50 text-slate-600">
             <tr>
               <th class="px-6 py-4 text-left font-semibold">Estacionamento</th>
-              <th class="px-6 py-4 text-left font-semibold">Endereço</th>
-              <th class="px-6 py-4 text-left font-semibold">Preço/hora</th>
-              <th class="px-6 py-4 text-left font-semibold">Horário</th>
+              <th class="px-6 py-4 text-left font-semibold">EndereÃ§o</th>
+              <th class="px-6 py-4 text-left font-semibold">PreÃ§o/hora</th>
+              <th class="px-6 py-4 text-left font-semibold">HorÃ¡rio</th>
               <th class="px-6 py-4 text-left font-semibold">Status</th>
-              <th class="px-6 py-4 text-left font-semibold">Ação</th>
+              <th class="px-6 py-4 text-left font-semibold">AÃ§Ã£o</th>
             </tr>
           </thead>
 
@@ -276,7 +276,7 @@
       </div>
     </section>
 
-    <!-- BOTÕES -->
+    <!-- BOTÃ•ES -->
     <section class="flex flex-col sm:flex-row gap-4 justify-end">
       <button
         onclick="restaurarPrecoApi()"
@@ -289,12 +289,13 @@
         onclick="salvarPrecoDemo()"
         class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition"
       >
-        Salvar preço
+        Salvar preÃ§o
       </button>
     </section>
 
   </main>
 
+  <script src="pc-config.js"></script>
   <script src="pc-api.js"></script>
 
   <script>
@@ -401,7 +402,7 @@
           </td>
 
           <td class="px-6 py-4 text-slate-700">
-            ${normalizarHora(e.horarioAbertura) || "-"} às ${normalizarHora(e.horarioFechamento) || "-"}
+            ${normalizarHora(e.horarioAbertura) || "-"} Ã s ${normalizarHora(e.horarioFechamento) || "-"}
           </td>
 
           <td class="px-6 py-4">
@@ -419,7 +420,7 @@
               onclick="selecionarPelaTabela(${e.id})"
               class="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
             >
-              Editar preço
+              Editar preÃ§o
             </button>
           </td>
         `;
@@ -472,14 +473,14 @@
 
     function restaurarPrecoApi() {
       if (!estacionamentoSelecionado) {
-        pcAviso("Selecione um estacionamento antes de restaurar o preço.");
+        pcAviso("Selecione um estacionamento antes de restaurar o preÃ§o.");
         return;
       }
 
       preencherFormulario(estacionamentoSelecionado);
       atualizarSimulacao();
 
-      pcSucesso("Preço restaurado com o valor atualmente salvo.");
+      pcSucesso("PreÃ§o restaurado com o valor atualmente salvo.");
     }
 
     async function salvarPrecoDemo() {
@@ -490,7 +491,7 @@
 
       const preco = Number(document.getElementById("precoHora").value || 0);
       if (preco <= 0) {
-        pcAviso("Informe um preço por hora maior que zero.");
+        pcAviso("Informe um preÃ§o por hora maior que zero.");
         return;
       }
 
@@ -499,7 +500,7 @@
           method: "PUT",
           body: JSON.stringify({ adminId: ADMIN_ID, precoHora: preco })
         });
-        pcSucesso("Preço atualizado com sucesso.");
+        pcSucesso("PreÃ§o atualizado com sucesso.");
         estacionamentoSelecionado.precoHora = preco;
         const idx = estacionamentos.findIndex(e => Number(e.id) === Number(estacionamentoSelecionado.id));
         if (idx >= 0) estacionamentos[idx].precoHora = preco;
@@ -507,7 +508,7 @@
         atualizarCards();
       } catch (e) {
         console.error(e);
-        pcErro(e.message || "Não foi possível salvar o preço.");
+        pcErro(e.message || "NÃ£o foi possÃ­vel salvar o preÃ§o.");
       }
     }
 

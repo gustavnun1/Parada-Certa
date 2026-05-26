@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Relatórios - Parada Certa</title>
+  <title>RelatÃ³rios - Parada Certa</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -29,36 +29,36 @@
     </div>
   </header>
 
-  <!-- CONTEÚDO -->
+  <!-- CONTEÃšDO -->
   <main class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- TÍTULO -->
+    <!-- TÃTULO -->
     <section class="mb-8">
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
           <p class="text-green-600 font-semibold mb-2">
-            Relatórios administrativos
+            RelatÃ³rios administrativos
           </p>
 
           <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
-            Relatórios do Estacionamento
+            RelatÃ³rios do Estacionamento
           </h2>
 
           <p class="text-slate-600 mt-2 max-w-3xl">
-            Acompanhe capacidade, vagas, preços, reservas e indicadores operacionais dos seus estacionamentos.
+            Acompanhe capacidade, vagas, preÃ§os, reservas e indicadores operacionais dos seus estacionamentos.
           </p>
         </div>
 
         <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
-          <p class="text-sm text-slate-500">Módulo</p>
-          <p class="font-semibold text-slate-900">Relatórios administrativos</p>
+          <p class="text-sm text-slate-500">MÃ³dulo</p>
+          <p class="font-semibold text-slate-900">RelatÃ³rios administrativos</p>
         </div>
       </div>
     </section>
 
     <!-- ALERTA ERRO -->
     <section id="alertaErro" class="hidden mb-8 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
-      Não foi possível carregar os dados do relatório no momento. Tente novamente em instantes.
+      NÃ£o foi possÃ­vel carregar os dados do relatÃ³rio no momento. Tente novamente em instantes.
     </section>
 
     <!-- FILTROS -->
@@ -76,7 +76,7 @@
         </div>
 
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">Tipo de relatório</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Tipo de relatÃ³rio</label>
           <select
             id="tipoRelatorio"
             onchange="aplicarFiltros()"
@@ -90,7 +90,7 @@
         </div>
 
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">Período</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">PerÃ­odo</label>
           <select
             id="periodo"
             onchange="aplicarFiltros()"
@@ -98,7 +98,7 @@
           >
             <option value="hoje">Hoje</option>
             <option value="semana">Esta semana</option>
-            <option value="mes">Este mês</option>
+            <option value="mes">Este mÃªs</option>
             <option value="ano">Este ano</option>
           </select>
         </div>
@@ -107,7 +107,7 @@
           onclick="carregarEstacionamentos()"
           class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition"
         >
-          Atualizar relatório
+          Atualizar relatÃ³rio
         </button>
       </div>
     </section>
@@ -127,7 +127,7 @@
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Vagas disponíveis</p>
+        <p class="text-sm text-slate-500">Vagas disponÃ­veis</p>
         <h3 id="cardDisponiveis" class="text-3xl font-bold mt-2 text-green-600">0</h3>
         <p class="text-xs text-slate-500 mt-2">Disponibilidade atual</p>
       </div>
@@ -135,23 +135,23 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Receita estimada</p>
         <h3 id="cardReceita" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
-        <p class="text-xs text-slate-500 mt-2">Estimativa baseada em ocupação</p>
+        <p class="text-xs text-slate-500 mt-2">Estimativa baseada em ocupaÃ§Ã£o</p>
       </div>
     </section>
 
     <!-- INDICADORES -->
     <section class="grid lg:grid-cols-3 gap-6 mb-8">
 
-      <!-- Ocupação -->
+      <!-- OcupaÃ§Ã£o -->
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h3 class="text-xl font-bold text-slate-900 mb-4">
-          Ocupação geral
+          OcupaÃ§Ã£o geral
         </h3>
 
         <div class="space-y-4">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm text-slate-600">Ocupação estimada</span>
+              <span class="text-sm text-slate-600">OcupaÃ§Ã£o estimada</span>
               <span id="ocupacaoTexto" class="text-sm font-bold text-green-600">0%</span>
             </div>
 
@@ -182,7 +182,7 @@
 
         <div class="space-y-4">
           <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p class="text-sm text-blue-700">Vagas reserváveis</p>
+            <p class="text-sm text-blue-700">Vagas reservÃ¡veis</p>
             <p id="reservaveisInfo" class="text-3xl font-bold text-blue-700 mt-1">0</p>
           </div>
 
@@ -192,7 +192,7 @@
           </div>
 
           <p class="text-sm text-slate-600">
-            O limite de reservas é definido pela quantidade de vagas reserváveis cadastradas.
+            O limite de reservas Ã© definido pela quantidade de vagas reservÃ¡veis cadastradas.
           </p>
         </div>
       </div>
@@ -205,7 +205,7 @@
 
         <div class="space-y-4">
           <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-            <p class="text-sm text-green-700">Preço médio/hora</p>
+            <p class="text-sm text-green-700">PreÃ§o mÃ©dio/hora</p>
             <p id="precoMedioInfo" class="text-3xl font-bold text-green-700 mt-1">R$ 0,00</p>
           </div>
 
@@ -215,7 +215,7 @@
           </div>
 
           <p class="text-sm text-slate-600">
-            A receita real considera sessões, pagamentos e faturamento confirmados no período.
+            A receita real considera sessÃµes, pagamentos e faturamento confirmados no perÃ­odo.
           </p>
         </div>
       </div>
@@ -227,7 +227,7 @@
       <div class="px-6 py-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h3 class="text-xl font-bold text-slate-900">
-            Relatório por estacionamento
+            RelatÃ³rio por estacionamento
           </h3>
           <p class="text-sm text-slate-500 mt-1">
             Resumo consolidado dos seus estacionamentos.
@@ -248,9 +248,9 @@
             <tr>
               <th class="px-6 py-4 text-left font-semibold">Estacionamento</th>
               <th class="px-6 py-4 text-left font-semibold">Vagas</th>
-              <th class="px-6 py-4 text-left font-semibold">Ocupação</th>
+              <th class="px-6 py-4 text-left font-semibold">OcupaÃ§Ã£o</th>
               <th class="px-6 py-4 text-left font-semibold">Reservas</th>
-              <th class="px-6 py-4 text-left font-semibold">Preço/hora</th>
+              <th class="px-6 py-4 text-left font-semibold">PreÃ§o/hora</th>
               <th class="px-6 py-4 text-left font-semibold">Receita estimada</th>
               <th class="px-6 py-4 text-left font-semibold">Status</th>
             </tr>
@@ -261,23 +261,24 @@
       </div>
 
       <div id="mensagemVazia" class="hidden px-6 py-10 text-center text-slate-500">
-        Nenhum dado encontrado para o relatório.
+        Nenhum dado encontrado para o relatÃ³rio.
       </div>
     </section>
 
-    <!-- OBSERVAÇÕES -->
+    <!-- OBSERVAÃ‡Ã•ES -->
     <section class="bg-green-50 border border-green-200 rounded-2xl p-5">
       <p class="text-green-800 font-bold mb-1">
         Receita real
       </p>
       <p class="text-sm text-green-800">
-        Ao selecionar um estacionamento específico, o card "Receita estimada" passa a refletir o total
-        efetivamente recebido no período escolhido.
+        Ao selecionar um estacionamento especÃ­fico, o card "Receita estimada" passa a refletir o total
+        efetivamente recebido no perÃ­odo escolhido.
       </p>
     </section>
 
   </main>
 
+  <script src="pc-config.js"></script>
   <script src="pc-api.js"></script>
 
   <script>
@@ -460,7 +461,7 @@
 
           <td class="px-6 py-4">
             <div class="font-semibold text-slate-900">${disponiveis}/${total}</div>
-            <div class="text-xs text-slate-500">disponíveis/total</div>
+            <div class="text-xs text-slate-500">disponÃ­veis/total</div>
           </td>
 
           <td class="px-6 py-4">
@@ -502,7 +503,7 @@
 
     function exportarRelatorioDemo() {
       if (!Array.isArray(relatorioAtual) || relatorioAtual.length === 0) {
-        pcAviso("Não há dados disponíveis para exportação no período selecionado.");
+        pcAviso("NÃ£o hÃ¡ dados disponÃ­veis para exportaÃ§Ã£o no perÃ­odo selecionado.");
         return;
       }
 
@@ -530,13 +531,13 @@
 
       const janela = window.open("", "_blank");
       if (!janela) {
-        pcAviso("Permita pop-ups deste site para exportar o relatório em PDF.");
+        pcAviso("Permita pop-ups deste site para exportar o relatÃ³rio em PDF.");
         return;
       }
 
       const doc = janela.document;
       doc.open();
-      doc.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Parada Certa<\/title><\/head><body><\/body><\/html>');
+      doc.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>RelatÃ³rio Parada Certa<\/title><\/head><body><\/body><\/html>');
       doc.close();
 
       const head = doc.head || doc.getElementsByTagName("head")[0];
@@ -578,31 +579,31 @@
       }).join('');
 
       doc.body.innerHTML =
-        '<section class="header"><div class="brand">Parada Certa</div><h1>Relatório administrativo</h1>'
+        '<section class="header"><div class="brand">Parada Certa</div><h1>RelatÃ³rio administrativo</h1>'
         + '<div class="muted">Gerado em ' + esc(geradoEm) + '</div></section>'
         + '<p><strong>Estacionamento:</strong> ' + esc(estacionamentoNome)
         + '<br><strong>Tipo:</strong> ' + esc(tipo)
-        + '<br><strong>Período:</strong> ' + esc(periodo) + '</p>'
+        + '<br><strong>PerÃ­odo:</strong> ' + esc(periodo) + '</p>'
         + '<section class="grid">'
         +   '<div class="card"><p>Estacionamentos</p><strong>' + totalEstacionamentos + '</strong></div>'
         +   '<div class="card"><p>Total de vagas</p><strong>' + totalVagas + '</strong></div>'
-        +   '<div class="card"><p>Disponíveis</p><strong>' + disponiveis + '</strong></div>'
+        +   '<div class="card"><p>DisponÃ­veis</p><strong>' + disponiveis + '</strong></div>'
         +   '<div class="card"><p>Receita estimada</p><strong>' + esc(formatarMoeda(receita)) + '</strong></div>'
         + '</section>'
         + '<section class="grid" style="margin-top:10px">'
         +   '<div class="card"><p>Ocupadas</p><strong>' + ocupadas + '</strong></div>'
-        +   '<div class="card"><p>Ocupação</p><strong>' + ocupacao + '%</strong></div>'
-        +   '<div class="card"><p>Reserváveis</p><strong>' + reservaveis + '</strong></div>'
+        +   '<div class="card"><p>OcupaÃ§Ã£o</p><strong>' + ocupacao + '%</strong></div>'
+        +   '<div class="card"><p>ReservÃ¡veis</p><strong>' + reservaveis + '</strong></div>'
         +   '<div class="card"><p>Reservadas</p><strong>' + reservadas + '</strong></div>'
         + '</section>'
         + '<h2>Detalhamento por estacionamento</h2>'
         + '<table><thead><tr>'
-        +   '<th>Estacionamento</th><th>Vagas</th><th>Ocupação</th><th>Reservas</th>'
-        +   '<th>Preço/hora</th><th>Receita</th><th>Status</th>'
+        +   '<th>Estacionamento</th><th>Vagas</th><th>OcupaÃ§Ã£o</th><th>Reservas</th>'
+        +   '<th>PreÃ§o/hora</th><th>Receita</th><th>Status</th>'
         + '</tr></thead><tbody>' + linhasHtml + '</tbody></table>'
         + '<div class="footer">Documento gerado pelo painel Parada Certa.</div>';
 
-      // Abre o diálogo de impressão na janela auxiliar — sem inline <script> no HTML.
+      // Abre o diÃ¡logo de impressÃ£o na janela auxiliar â€” sem inline <script> no HTML.
       try {
         janela.focus();
         setTimeout(() => { try { janela.print(); } catch (_) {} }, 250);
