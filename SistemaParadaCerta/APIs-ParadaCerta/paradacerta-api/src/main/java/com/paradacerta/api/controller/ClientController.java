@@ -7,6 +7,7 @@ import com.paradacerta.api.repository.EnderecoRepository;
 import com.paradacerta.api.repository.VeiculoRepository;
 import com.paradacerta.api.service.CadastroService;
 import com.paradacerta.api.service.DeleteService;
+import com.paradacerta.api.service.PlacaValidator;
 import com.paradacerta.api.service.SaverService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +75,11 @@ public class ClientController {
     /** GET /api/verificar/placa/{placa} */
     @GetMapping("/verificar/placa/{placa}")
     public ResponseEntity<ApiResponse> verificarPlaca(@PathVariable String placa) {
-        if (veiculoRepository.existsByPlaca(placa.toUpperCase())) {
+        String placaNormalizada = PlacaValidator.normalizar(placa);
+        if (!PlacaValidator.isValida(placaNormalizada)) {
+            return ResponseEntity.badRequest().body(ApiResponse.erro(PlacaValidator.MSG_FORMATO_INVALIDO));
+        }
+        if (veiculoRepository.existsByPlaca(placaNormalizada)) {
             return ResponseEntity.badRequest().body(ApiResponse.erro("Placa já cadastrada"));
         }
         return ResponseEntity.ok(ApiResponse.ok("Placa disponível"));

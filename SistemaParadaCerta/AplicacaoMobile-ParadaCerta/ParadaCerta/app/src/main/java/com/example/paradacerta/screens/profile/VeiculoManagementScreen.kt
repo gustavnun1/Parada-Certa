@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.models.Veiculo
 import com.example.paradacerta.screens.common.VEHICLE_BRANDS
 import com.example.paradacerta.ui.theme.CinzaMedio
+import com.example.paradacerta.validation.PlacaValidator
 import com.example.paradacerta.viewmodel.VeiculoViewModel
 import kotlinx.coroutines.launch
 
@@ -377,7 +378,7 @@ private fun VeiculoFormDialog(
     var expandedModelo by remember { mutableStateOf(false) }
     var expandedCor by remember { mutableStateOf(false) }
 
-    val placaValida = placa.length in 7..8
+    val placaValida = PlacaValidator.isValida(placa)
     val modeloValido = modelo.isNotBlank()
     val formValido = placaValida && modeloValido && cor.isNotBlank()
 
@@ -389,14 +390,14 @@ private fun VeiculoFormDialog(
                 OutlinedTextField(
                     value = placa,
                     onValueChange = { input ->
-                        placa = input.uppercase().filter { it.isLetterOrDigit() }.take(8)
+                        placa = PlacaValidator.normalizar(input)
                     },
                     label = { Text("Placa") },
                     placeholder = { Text("ABC1D23") },
                     enabled = placaEditavel,
                     isError = placa.isNotBlank() && !placaValida,
                     supportingText = if (placa.isNotBlank() && !placaValida) {
-                        { Text("Placa inválida") }
+                        { Text(PlacaValidator.MENSAGEM_FORMATO_INVALIDO) }
                     } else null,
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()

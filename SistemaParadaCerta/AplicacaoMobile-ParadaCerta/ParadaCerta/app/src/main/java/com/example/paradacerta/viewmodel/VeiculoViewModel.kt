@@ -6,6 +6,7 @@ import com.example.paradacerta.models.Veiculo
 import com.example.paradacerta.models.VeiculoAdicionarRequest
 import com.example.paradacerta.models.VeiculoAtualizarRequest
 import com.example.paradacerta.network.ParadaCertaClient
+import com.example.paradacerta.validation.PlacaValidator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,8 +47,14 @@ class VeiculoViewModel : ViewModel() {
         viewModelScope.launch {
             _operacaoState.value = VeiculoState(isLoading = true)
             try {
+                val placaNormalizada = PlacaValidator.normalizar(placa)
+                if (!PlacaValidator.isValida(placaNormalizada)) {
+                    _operacaoState.value = VeiculoState(errorMessage = PlacaValidator.MENSAGEM_FORMATO_INVALIDO)
+                    return@launch
+                }
+
                 val response = ParadaCertaClient.service.adicionarVeiculo(
-                    VeiculoAdicionarRequest(cpf = cpf, placa = placa.uppercase(), modeloVeiculo = modelo, corVeiculo = cor)
+                    VeiculoAdicionarRequest(cpf = cpf, placa = placaNormalizada, modeloVeiculo = modelo, corVeiculo = cor)
                 )
                 if (response.isSuccessful && response.body()?.sucesso == true) {
                     recarregarListaInterna(cpf)

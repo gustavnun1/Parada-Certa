@@ -39,7 +39,10 @@ public class VeiculoService {
             throw new RequisicaoInvalidaException("Limite de " + LIMITE_VEICULOS + " veículos atingido");
         }
 
-        String placa = input.getPlaca().toUpperCase();
+        String placa = PlacaValidator.normalizar(input.getPlaca());
+        if (!PlacaValidator.isValida(placa)) {
+            throw new RequisicaoInvalidaException(PlacaValidator.MSG_FORMATO_INVALIDO);
+        }
 
         if (veiculoRepository.existsByPlaca(placa)) {
             throw new ConflictException("Placa " + placa + " já cadastrada no sistema");

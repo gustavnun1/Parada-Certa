@@ -61,6 +61,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.screens.common.VEHICLE_BRANDS
+import com.example.paradacerta.validation.PlacaValidator
 import com.example.paradacerta.viewmodel.RegisterViewModel
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
@@ -118,6 +119,7 @@ fun RegisterScreen(
     var plate by remember { mutableStateOf("") }
     var selectedVehicleBrand by remember { mutableStateOf("") }
     var expandedVehicleBrand by remember { mutableStateOf(false) }
+    val plateIsValid = PlacaValidator.isValida(plate)
 
     val vehicleTypes = listOf("Carro", "Moto", "Caminhão", "Van")
     val colors = listOf(
@@ -420,9 +422,13 @@ fun RegisterScreen(
 
                     OutlinedTextField(
                         value = plate,
-                        onValueChange = { plate = it.uppercase().take(7) },
+                        onValueChange = { plate = PlacaValidator.normalizar(it) },
                         label = { Text("Placa") },
-                        placeholder = { Text("ABC1234") },
+                        placeholder = { Text("ABC1234 ou ABC1D23") },
+                        isError = plate.isNotBlank() && !plateIsValid,
+                        supportingText = if (plate.isNotBlank() && !plateIsValid) {
+                            { Text(PlacaValidator.MENSAGEM_FORMATO_INVALIDO) }
+                        } else null,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -735,7 +741,7 @@ fun RegisterScreen(
                             }
                         }
                         2 -> {
-                            if (plate.isBlank() || selectedVehicleBrand.isBlank()) {
+                            if (!plateIsValid || selectedVehicleBrand.isBlank()) {
                                 showError = true
                             } else {
                                 showError = false

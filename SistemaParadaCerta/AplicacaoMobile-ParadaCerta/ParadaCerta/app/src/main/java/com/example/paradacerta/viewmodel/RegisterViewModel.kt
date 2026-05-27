@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.paradacerta.models.ClientRequest
 import com.example.paradacerta.network.ParadaCertaClient
 import com.example.paradacerta.network.ViaCepClient
+import com.example.paradacerta.validation.PlacaValidator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -120,6 +121,12 @@ class RegisterViewModel : ViewModel() {
             try {
                 _registerState.value = RegisterState(isLoading = true)
 
+                val placaNormalizada = PlacaValidator.normalizar(placa)
+                if (!PlacaValidator.isValida(placaNormalizada)) {
+                    _registerState.value = RegisterState(errorMessage = PlacaValidator.MENSAGEM_FORMATO_INVALIDO)
+                    return@launch
+                }
+
                 val request = ClientRequest(
                     nome = nome,
                     email = email,
@@ -127,7 +134,7 @@ class RegisterViewModel : ViewModel() {
                     cpf = cpf.filter { it.isDigit() },
                     dataNascimento = dataNascimento,
                     numeroCelular = numeroCelular.filter { it.isDigit() },
-                    placa = placa.uppercase(),
+                    placa = placaNormalizada,
                     modeloVeiculo = modeloVeiculo,
                     corVeiculo = corVeiculo,
                     cep = cep.filter { it.isDigit() },

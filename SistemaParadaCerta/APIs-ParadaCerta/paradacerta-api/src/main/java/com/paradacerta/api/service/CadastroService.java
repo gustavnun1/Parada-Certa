@@ -34,7 +34,12 @@ public class CadastroService {
         if (clienteRepository.existsByEmail(req.getEmail())) {
             throw new ConflictException("E-mail já cadastrado");
         }
-        if (veiculoRepository.existsByPlaca(req.getPlaca().toUpperCase())) {
+        String placaUpper = PlacaValidator.normalizar(req.getPlaca());
+        if (!PlacaValidator.isValida(placaUpper)) {
+            throw new RequisicaoInvalidaException(PlacaValidator.MSG_FORMATO_INVALIDO);
+        }
+
+        if (veiculoRepository.existsByPlaca(placaUpper)) {
             throw new ConflictException("Placa já cadastrada");
         }
 
@@ -44,8 +49,6 @@ public class CadastroService {
         } catch (DateTimeParseException e) {
             throw new RequisicaoInvalidaException("Data de nascimento inválida. Use o formato DD/MM/AAAA");
         }
-
-        String placaUpper = req.getPlaca().toUpperCase();
 
         Cliente cliente = new Cliente();
         cliente.setCpf(req.getCpf());
