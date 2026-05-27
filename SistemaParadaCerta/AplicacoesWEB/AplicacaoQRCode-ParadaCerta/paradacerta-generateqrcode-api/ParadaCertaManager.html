@@ -690,15 +690,14 @@ body{
 <script>
 const API_BASE = (() => {
   const params = new URLSearchParams(window.location.search);
-  const configured = params.get('api') || localStorage.getItem('pc_kiosk_api_base');
+  const configured = params.get('api') || localStorage.getItem('pc_kiosk_api_base') || window.PC_API_BASE;
   if (configured) return configured.replace(/\/+$/, '');
 
-  // A API do kiosk roda em 8081. Se o HTML for servido pelo proprio Spring,
-  // usa a mesma origem; se for aberto via arquivo/Live Server, usa localhost:8081.
-  if (location.protocol.startsWith('http') && location.port === '8081') {
-    return location.origin;
-  }
-  return 'http://localhost:8081';
+  // O kiosk agora usa a API principal. Localmente usa 8080; hospedado como
+  // arquivo estatico usa a API publicada.
+  const host = location.hostname;
+  const local = host === 'localhost' || host === '127.0.0.1' || location.protocol === 'file:';
+  return local ? 'http://localhost:8080' : 'https://parada-certa-production.up.railway.app';
 })();
 
 console.info('Parada Certa Kiosk API:', API_BASE);
@@ -734,7 +733,7 @@ async function apiPost(path, body) {
       body: JSON.stringify(body),
     });
   } catch (err) {
-    throw new Error(`Nao foi possivel conectar na API (${API_BASE}). Verifique se a API do kiosk esta rodando na porta 8081.`);
+    throw new Error(`Nao foi possivel conectar na API (${API_BASE}). Verifique se a API principal esta rodando na porta 8080.`);
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -748,7 +747,7 @@ async function apiGet(path) {
   try {
     res = await fetch(API_BASE + path);
   } catch (err) {
-    throw new Error(`Nao foi possivel conectar na API (${API_BASE}). Verifique se a API do kiosk esta rodando na porta 8081.`);
+    throw new Error(`Nao foi possivel conectar na API (${API_BASE}). Verifique se a API principal esta rodando na porta 8080.`);
   }
   if (!res.ok) throw new Error('Erro na requisicao');
   return res.json();

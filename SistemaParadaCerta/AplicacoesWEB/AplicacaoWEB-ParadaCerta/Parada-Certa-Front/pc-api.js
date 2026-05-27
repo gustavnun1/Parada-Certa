@@ -188,6 +188,23 @@ function pcSair() {
   window.location.href = "escolha-login.html";
 }
 
+function pcToggleMobileNav() {
+  const menu = document.getElementById("pc-mobile-menu");
+  const botao = document.getElementById("pc-mobile-menu-button");
+  if (!menu || !botao) return;
+  const abrir = menu.classList.contains("hidden");
+  menu.classList.toggle("hidden", !abrir);
+  botao.setAttribute("aria-expanded", abrir ? "true" : "false");
+}
+
+function pcCloseMobileNav() {
+  const menu = document.getElementById("pc-mobile-menu");
+  const botao = document.getElementById("pc-mobile-menu-button");
+  if (!menu || !botao) return;
+  menu.classList.add("hidden");
+  botao.setAttribute("aria-expanded", "false");
+}
+
 // =====================================================================
 // Navbar unica do painel admin
 // Garante que toda pagina autenticada exibe o mesmo conjunto de abas,
@@ -227,6 +244,14 @@ function pcRenderNavbar() {
     return `<a href="${item.href}" class="${cls}">${item.label}</a>`;
   }).join("");
 
+  const mobileLinksHtml = PC_NAV_ITEMS.map(item => {
+    const ativo = item.id === pageAtiva;
+    const cls = ativo
+      ? "block px-4 py-3 text-green-700 bg-green-50 font-bold"
+      : "block px-4 py-3 text-slate-700 hover:bg-slate-50 hover:text-green-700 font-medium";
+    return `<a href="${item.href}" class="${cls}" onclick="pcCloseMobileNav()">${item.label}</a>`;
+  }).join("");
+
   const premiumLabel = planoTipoAtual === "PREMIUM" && planoAtivo
     ? "Premium ativo"
     : (planoTipoAtual === "STANDARD" && planoAtivo ? "Plano Standard" : "Planos");
@@ -236,13 +261,47 @@ function pcRenderNavbar() {
       ? "bg-green-100 text-green-700 border border-green-200 font-bold px-4 py-2 rounded-xl"
       : "bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-xl transition");
 
-  nav.className = "flex flex-wrap gap-4 text-sm items-center";
+  nav.className = "relative flex justify-end md:justify-start text-sm items-center";
   nav.innerHTML = `
-    ${linksHtml}
-    <a id="botaoPremiumMenu" href="plano-premium.html" class="${premiumCls}">${premiumLabel}</a>
-    <button onclick="pcSair()" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">Sair</button>
+    <div class="hidden md:flex flex-wrap gap-4 text-sm items-center">
+      ${linksHtml}
+      <a id="botaoPremiumMenu" href="plano-premium.html" class="${premiumCls}">${premiumLabel}</a>
+      <button onclick="pcSair()" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">Sair</button>
+    </div>
+
+    <button
+      id="pc-mobile-menu-button"
+      type="button"
+      class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm"
+      aria-label="Abrir menu"
+      aria-expanded="false"
+      onclick="pcToggleMobileNav()"
+    >
+      <span class="flex flex-col gap-1.5" aria-hidden="true">
+        <span class="block h-0.5 w-5 rounded bg-current"></span>
+        <span class="block h-0.5 w-5 rounded bg-current"></span>
+        <span class="block h-0.5 w-5 rounded bg-current"></span>
+      </span>
+    </button>
+
+    <div id="pc-mobile-menu" class="hidden md:hidden absolute right-0 top-12 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
+      ${mobileLinksHtml}
+      <div class="border-t border-slate-100 p-3 space-y-2">
+        <a id="botaoPremiumMenuMobile" href="plano-premium.html" onclick="pcCloseMobileNav()" class="block text-center ${premiumCls}">${premiumLabel}</a>
+        <button onclick="pcSair()" class="w-full bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">Sair</button>
+      </div>
+    </div>
   `;
 }
+
+document.addEventListener("click", function(event) {
+  const nav = document.getElementById("pc-navbar");
+  const menu = document.getElementById("pc-mobile-menu");
+  if (!nav || !menu || menu.classList.contains("hidden")) return;
+  if (!nav.contains(event.target)) {
+    pcCloseMobileNav();
+  }
+});
 
 // Renderiza automaticamente quando o DOM esta pronto.
 if (document.readyState === "loading") {
