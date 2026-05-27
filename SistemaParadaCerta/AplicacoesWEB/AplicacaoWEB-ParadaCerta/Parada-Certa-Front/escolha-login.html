@@ -230,10 +230,8 @@
   <script src="pc-api.js"></script>
 
   <script>
-    // Operador entra direto no sistema KIOSK (ParadaCertaManager.html) servido
-    // pelo mesmo Live Server que carrega este front. Caminho relativo a partir
-    // de AplicacaoWEB-ParadaCerta/Parada-Certa-Front/ ate a pasta do kiosk.
-    const URL_KIOSK = "../../AplicacaoQRCode-ParadaCerta/paradacerta-generateqrcode-api/ParadaCertaManager.html";
+    // Operador entra direto no sistema KIOSK publicado junto com o front.
+    const URL_KIOSK = "ParadaCertaManager.html";
 
     function entrarAdministrador() {
       window.location.href = "login-admin.html";
