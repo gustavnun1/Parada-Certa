@@ -10,7 +10,10 @@ import java.util.List;
 @Repository
 public interface OperadorEstacionamentoRepository extends JpaRepository<OperadorEstacionamento, Integer> {
 
-    Optional<OperadorEstacionamento> findByUsuarioAndAtivoTrue(String usuario);
+    Optional<OperadorEstacionamento> findByEstacionamentoIdAndUsuarioAndAtivoTrue(
+            Integer estacionamentoId,
+            String usuario
+    );
 
     List<OperadorEstacionamento> findByEstacionamentoId(Integer estacionamentoId);
 

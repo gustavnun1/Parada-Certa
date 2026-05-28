@@ -303,7 +303,7 @@
       [uf]               [char](2)       NULL,
 
       CONSTRAINT PK_OperadorEstac PRIMARY KEY CLUSTERED ([id] ASC),
-      CONSTRAINT UQ_OperadorEstac_usuario UNIQUE ([usuario]),
+      CONSTRAINT UQ_OperadorEstac_estac_usuario UNIQUE ([estacionamentoId], [usuario]),
       CONSTRAINT FK_OperadorEstac_Estacionamento
           FOREIGN KEY ([estacionamentoId])
           REFERENCES [dbo].[Estacionamento] ([id]),

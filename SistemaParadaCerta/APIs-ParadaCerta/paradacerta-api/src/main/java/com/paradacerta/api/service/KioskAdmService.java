@@ -37,11 +37,18 @@ public class KioskAdmService {
     private final SessaoRepository sessaoRepository;
 
     public KioskAdmDTO.LoginResponse login(KioskAdmDTO.LoginRequest request) {
-        if (request == null || request.getUsuario() == null || request.getSenha() == null) {
+        if (request == null
+                || request.getEstacionamentoId() == null
+                || request.getUsuario() == null
+                || request.getSenha() == null) {
             throw new CredenciaisInvalidasException("Usuario ou senha invalidos");
         }
 
-        OperadorEstacionamento operador = operadorRepository.findByUsuarioAndAtivoTrue(request.getUsuario())
+        OperadorEstacionamento operador = operadorRepository
+                .findByEstacionamentoIdAndUsuarioAndAtivoTrue(
+                        request.getEstacionamentoId(),
+                        request.getUsuario()
+                )
                 .orElseThrow(() -> new CredenciaisInvalidasException("Usuario ou senha invalidos"));
 
         if (!BCrypt.checkpw(request.getSenha(), operador.getSenhaHash())) {

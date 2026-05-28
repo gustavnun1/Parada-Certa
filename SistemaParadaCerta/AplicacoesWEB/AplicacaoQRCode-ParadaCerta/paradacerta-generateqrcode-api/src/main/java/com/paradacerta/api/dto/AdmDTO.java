@@ -10,6 +10,7 @@ public class AdmDTO {
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class LoginRequest {
+        private Integer estacionamentoId;
         private String usuario;
         private String senha;
     }

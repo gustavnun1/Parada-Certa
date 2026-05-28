@@ -65,11 +65,11 @@ class AdmEstacionamentoServiceTest {
     void loginRetornaDadosDoOperadorEstacionamentoEVagas() {
         OperadorEstacionamento operador = operadorAtivo(11, 5);
         operador.setSenhaHash(BCrypt.hashpw("123456", BCrypt.gensalt()));
-        when(operadorRepository.findByUsuarioAndAtivoTrue("admin")).thenReturn(Optional.of(operador));
+        when(operadorRepository.findByEstacionamentoIdAndUsuarioAndAtivoTrue(5, "admin")).thenReturn(Optional.of(operador));
         when(estacionamentoRepository.findById(5)).thenReturn(Optional.of(estacionamento(5)));
         when(vagasRepository.findByEstacionamentoId(5)).thenReturn(Optional.of(vagas(5, 20, 8)));
 
-        AdmDTO.LoginResponse response = service.login(new AdmDTO.LoginRequest("admin", "123456"));
+        AdmDTO.LoginResponse response = service.login(new AdmDTO.LoginRequest(5, "admin", "123456"));
 
         assertThat(response.getAdmId()).isEqualTo(11);
         assertThat(response.getNomeCompleto()).isEqualTo("Operador Teste");
@@ -83,9 +83,9 @@ class AdmEstacionamentoServiceTest {
     void loginRejeitaSenhaIncorreta() {
         OperadorEstacionamento operador = operadorAtivo(11, 5);
         operador.setSenhaHash(BCrypt.hashpw("correta", BCrypt.gensalt()));
-        when(operadorRepository.findByUsuarioAndAtivoTrue("admin")).thenReturn(Optional.of(operador));
+        when(operadorRepository.findByEstacionamentoIdAndUsuarioAndAtivoTrue(5, "admin")).thenReturn(Optional.of(operador));
 
-        assertThatThrownBy(() -> service.login(new AdmDTO.LoginRequest("admin", "errada")))
+        assertThatThrownBy(() -> service.login(new AdmDTO.LoginRequest(5, "admin", "errada")))
                 .isInstanceOf(CredenciaisInvalidasException.class)
                 .hasMessage("Usuario ou senha invalidos");
 

@@ -10,11 +10,12 @@ import java.util.Optional;
 @Repository
 public interface OperadorEstacionamentoRepository extends JpaRepository<OperadorEstacionamento, Integer> {
 
-    Optional<OperadorEstacionamento> findByUsuario(String usuario);
+    Optional<OperadorEstacionamento> findByEstacionamentoIdAndUsuarioAndAtivoTrue(
+            Integer estacionamentoId,
+            String usuario
+    );
 
-    Optional<OperadorEstacionamento> findByUsuarioAndAtivoTrue(String usuario);
-
-    boolean existsByUsuario(String usuario);
+    boolean existsByEstacionamentoIdAndUsuario(Integer estacionamentoId, String usuario);
 
     boolean existsByCpf(String cpf);
 

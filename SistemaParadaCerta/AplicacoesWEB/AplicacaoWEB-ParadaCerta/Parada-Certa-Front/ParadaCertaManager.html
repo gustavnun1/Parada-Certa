@@ -832,7 +832,7 @@ async function fazerLogin() {
   $('#btn-login').disabled = true;
 
   try {
-    const data = await apiPost('/api/adm/login', { usuario: usr, senha: pwd });
+    const data = await apiPost('/api/adm/login', { estacionamentoId: estId, usuario: usr, senha: pwd });
 
     if (data.estacionamentoId !== estId) {
       showLoginErro('ID do estacionamento não corresponde a este usuário');

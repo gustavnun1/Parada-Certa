@@ -55,7 +55,18 @@ public class AdmEstacionamentoService {
     private static final String MSG_SOMENTE_SP = "No momento, o Parada Certa aceita apenas estacionamentos localizados na cidade de Sao Paulo.";
 
     public AdmDTO.LoginResponse login(AdmDTO.LoginRequest request) {
-        OperadorEstacionamento op = operadorRepository.findByUsuarioAndAtivoTrue(request.getUsuario())
+        if (request == null
+                || request.getEstacionamentoId() == null
+                || request.getUsuario() == null
+                || request.getSenha() == null) {
+            throw new CredenciaisInvalidasException("Usuario ou senha invalidos");
+        }
+
+        OperadorEstacionamento op = operadorRepository
+                .findByEstacionamentoIdAndUsuarioAndAtivoTrue(
+                        request.getEstacionamentoId(),
+                        request.getUsuario()
+                )
                 .orElseThrow(() -> new CredenciaisInvalidasException("Usuario ou senha invalidos"));
 
         if (!BCrypt.checkpw(request.getSenha(), op.getSenhaHash())) {

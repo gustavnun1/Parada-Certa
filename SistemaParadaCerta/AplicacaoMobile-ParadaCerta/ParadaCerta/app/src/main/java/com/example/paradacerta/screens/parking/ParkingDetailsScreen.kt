@@ -29,10 +29,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.paradacerta.components.SeloQualidade
+import com.example.paradacerta.components.StatusFuncionamentoBadge
 import com.example.paradacerta.models.AvaliacaoItem
 import com.example.paradacerta.models.EstacionamentoFotoItem
+import com.example.paradacerta.models.EstacionamentoStatus
 import com.example.paradacerta.models.SessaoAtiva
 import com.example.paradacerta.models.Veiculo
+import com.example.paradacerta.models.rememberEstacionamentoStatus
 import com.example.paradacerta.network.ParadaCertaClient
 import com.example.paradacerta.ui.theme.CinzaMedio
 import com.example.paradacerta.ui.theme.VerdePrincipal
@@ -519,6 +522,9 @@ fun ParkingDetailsScreen(
 
                 estacionamento != null -> {
                     val p = estacionamento
+                    val statusFuncionamento by rememberEstacionamentoStatus(
+                        p.horarioAbertura, p.horarioFechamento
+                    )
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -531,6 +537,8 @@ fun ParkingDetailsScreen(
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold
                         )
+
+                        StatusFuncionamentoBadge(status = statusFuncionamento)
 
                         if (p.avaliacaoMedia > 4.5) {
                             SeloQualidade()
@@ -852,7 +860,8 @@ fun ParkingDetailsScreen(
                                         }
                                         Button(
                                             onClick = { showReservaDialog = true },
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier.fillMaxWidth(),
+                                            enabled = !statusFuncionamento.ehFechado
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.BookmarkAdd,
@@ -860,7 +869,17 @@ fun ParkingDetailsScreen(
                                                 modifier = Modifier.size(18.dp)
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text("Reservar vaga")
+                                            Text(
+                                                if (statusFuncionamento.ehFechado) "Estacionamento fechado"
+                                                else "Reservar vaga"
+                                            )
+                                        }
+                                        if (statusFuncionamento.ehFechado) {
+                                            Text(
+                                                text = "Reserva indisponível enquanto o estacionamento estiver fechado.",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.error
+                                            )
                                         }
                                     }
                                 }

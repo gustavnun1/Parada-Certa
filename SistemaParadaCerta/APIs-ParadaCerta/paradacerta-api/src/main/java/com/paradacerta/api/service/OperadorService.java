@@ -63,7 +63,7 @@ public class OperadorService {
         }
 
         String usuario = req.getUsuario().trim();
-        if (operadorRepository.existsByUsuario(usuario)) {
+        if (operadorRepository.existsByEstacionamentoIdAndUsuario(req.getEstacionamentoId(), usuario)) {
             throw new ConflictException("Já existe um operador com este nome de usuário");
         }
 
@@ -121,7 +121,7 @@ public class OperadorService {
         if (usr == null || usr.isEmpty()) {
             throw new ConflictException("Usuário do operador inicial é obrigatório");
         }
-        if (operadorRepository.existsByUsuario(usr)) {
+        if (operadorRepository.existsByEstacionamentoIdAndUsuario(estacionamentoId, usr)) {
             throw new ConflictException("Já existe um operador com este nome de usuário");
         }
 
@@ -149,7 +149,8 @@ public class OperadorService {
         }
         if (req.getUsuario() != null && !req.getUsuario().isBlank()) {
             String novo = req.getUsuario().trim();
-            if (!novo.equals(op.getUsuario()) && operadorRepository.existsByUsuario(novo)) {
+            if (!novo.equals(op.getUsuario())
+                    && operadorRepository.existsByEstacionamentoIdAndUsuario(op.getEstacionamentoId(), novo)) {
                 throw new ConflictException("Já existe um operador com este nome de usuário");
             }
             op.setUsuario(novo);

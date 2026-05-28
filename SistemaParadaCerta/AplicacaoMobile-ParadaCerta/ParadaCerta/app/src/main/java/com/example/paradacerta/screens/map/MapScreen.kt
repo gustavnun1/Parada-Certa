@@ -24,7 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.components.SeloQualidade
+import com.example.paradacerta.components.StatusFuncionamentoBadge
 import com.example.paradacerta.models.Estacionamento
+import com.example.paradacerta.models.EstacionamentoStatus
+import com.example.paradacerta.models.rememberEstacionamentoStatus
 import com.example.paradacerta.viewmodel.MapViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -681,11 +684,20 @@ fun EstacionamentoMapCard(
                 }
             }
 
-            estacionamento.horarioAbertura?.let { abertura ->
-                estacionamento.horarioFechamento?.let { fechamento ->
-                    Spacer(modifier = Modifier.height(8.dp))
+            val statusFuncionamento by rememberEstacionamentoStatus(
+                estacionamento.horarioAbertura,
+                estacionamento.horarioFechamento
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                StatusFuncionamentoBadge(status = statusFuncionamento, isOnPrimary = isSelected)
+                if (estacionamento.horarioAbertura != null && estacionamento.horarioFechamento != null) {
                     Text(
-                        text = "⏰ $abertura – $fechamento",
+                        text = "⏰ ${estacionamento.horarioAbertura} – ${estacionamento.horarioFechamento}",
                         style = MaterialTheme.typography.bodySmall,
                         color = corSecundaria
                     )
