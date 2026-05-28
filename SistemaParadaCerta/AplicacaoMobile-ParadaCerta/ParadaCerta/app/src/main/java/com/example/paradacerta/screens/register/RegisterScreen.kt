@@ -50,10 +50,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -110,6 +112,7 @@ fun RegisterScreen(
 ) {
     var step by remember { mutableStateOf(1) }
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     val nextField = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
     val doneField = KeyboardActions(onDone = { focusManager.clearFocus() })
 
@@ -204,6 +207,7 @@ fun RegisterScreen(
 
     LaunchedEffect(registerState) {
         if (registerState.isSuccess) {
+            Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
             onFinishRegister()
             viewModel.resetRegisterState()
         }

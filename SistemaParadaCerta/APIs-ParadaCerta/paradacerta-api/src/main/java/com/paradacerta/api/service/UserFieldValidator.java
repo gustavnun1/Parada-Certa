@@ -17,6 +17,8 @@ public final class UserFieldValidator {
     private static final Pattern NUMERO_VALIDO = Pattern.compile("^[0-9A-Za-z/-]+$");
     private static final DateTimeFormatter DATA_FORMAT =
             DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
+    private static final int IDADE_MINIMA = 18;
+    private static final int IDADE_MAXIMA = 120;
 
     private UserFieldValidator() {
     }
@@ -80,8 +82,23 @@ public final class UserFieldValidator {
             throw new RequisicaoInvalidaException("Data de nascimento inválida.");
         }
         LocalDate hoje = LocalDate.now();
-        if (data.isAfter(hoje) || data.isBefore(hoje.minusYears(120))) {
+        if (data.isAfter(hoje)
+                || data.isAfter(hoje.minusYears(IDADE_MINIMA))
+                || data.isBefore(hoje.minusYears(IDADE_MAXIMA))) {
             throw new RequisicaoInvalidaException("Data de nascimento inválida.");
+        }
+        return data;
+    }
+
+    static LocalDate validarDataNascimento(LocalDate data) {
+        if (data == null) {
+            throw new RequisicaoInvalidaException("Informe a data de nascimento.");
+        }
+        LocalDate hoje = LocalDate.now();
+        if (data.isAfter(hoje)
+                || data.isAfter(hoje.minusYears(IDADE_MINIMA))
+                || data.isBefore(hoje.minusYears(IDADE_MAXIMA))) {
+            throw new RequisicaoInvalidaException("Data de nascimento invÃ¡lida.");
         }
         return data;
     }

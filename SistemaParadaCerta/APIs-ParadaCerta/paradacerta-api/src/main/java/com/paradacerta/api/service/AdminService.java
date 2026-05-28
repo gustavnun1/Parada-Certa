@@ -80,6 +80,7 @@ public class AdminService {
         AdminCadastroRequest.EstacionamentoDados estData = req.getEstacionamento();
 
         String nomeResp = UserFieldValidator.normalizarNome(resp.getNome());
+        java.time.LocalDate dataNascimentoResp = UserFieldValidator.validarDataNascimento(resp.getDataNascimento());
         String email = UserFieldValidator.normalizarEmail(resp.getEmail());
         if (admRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("Já existe um administrador com este e-mail");
@@ -173,7 +174,7 @@ public class AdminService {
         adm.setEmail(email);
         adm.setTelefone(resp.getTelefone() == null ? null : resp.getTelefone().trim());
         adm.setCpf(cpfAdmin);
-        adm.setDataNascimento(resp.getDataNascimento());
+        adm.setDataNascimento(dataNascimentoResp);
         adm.setUsuario(usuario);
         adm.setSenhaHash(BCrypt.hashpw(resp.getSenha(), BCrypt.gensalt(10)));
         adm.setAtivo(true);
@@ -323,7 +324,7 @@ public class AdminService {
         }
 
         if (req.getDataNascimento() != null) {
-            adm.setDataNascimento(req.getDataNascimento());
+            adm.setDataNascimento(UserFieldValidator.validarDataNascimento(req.getDataNascimento()));
         }
 
         if (req.getSenha() != null && !req.getSenha().isBlank()) {

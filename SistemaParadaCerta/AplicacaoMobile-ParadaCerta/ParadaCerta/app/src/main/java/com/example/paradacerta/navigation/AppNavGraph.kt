@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -313,6 +314,7 @@ fun AppNavGraph(
 
             LaunchedEffect(saveState.isSuccess) {
                 if (saveState.isSuccess) {
+                    Toast.makeText(context, "Dados atualizados com sucesso!", Toast.LENGTH_LONG).show()
                     // Recarrega os dados atualizados do backend para que o Perfil mostre as informações novas
                     userData?.cpf?.let { cpf -> userViewModel.atualizarDados(cpf) }
                     navController.navigate(Screen.Home.route) {
@@ -325,6 +327,7 @@ fun AppNavGraph(
 
             LaunchedEffect(deleteState.isSuccess) {
                 if (deleteState.isSuccess) {
+                    Toast.makeText(context, "Conta excluída com sucesso!", Toast.LENGTH_LONG).show()
                     userViewModel.clearUser()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }

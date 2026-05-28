@@ -145,6 +145,7 @@
                 id="dataNascimentoResponsavel"
                 type="date"
                 class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+                required
               />
             </div>
           </div>
@@ -804,6 +805,28 @@
       return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(String(email || "").trim());
     }
 
+    function isoDateFromYearsAgo(years, adjustDays = 0) {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - years);
+      d.setDate(d.getDate() + adjustDays);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function validarDataNascimentoLocal(valor) {
+      if (!valor) return "Informe a data de nascimento.";
+      const nascimento = new Date(valor + "T00:00:00");
+      if (Number.isNaN(nascimento.getTime())) return "Data de nascimento inválida.";
+      const hoje = new Date();
+      const minimo18 = new Date();
+      minimo18.setFullYear(hoje.getFullYear() - 18);
+      const maximo120 = new Date();
+      maximo120.setFullYear(hoje.getFullYear() - 120);
+      if (nascimento > hoje || nascimento > minimo18 || nascimento < maximo120) {
+        return "Data de nascimento inválida. O usuário deve ter entre 18 e 120 anos.";
+      }
+      return null;
+    }
+
     /**
      * Chave Pix: aceita CPF (11d), CNPJ (14d), e-mail, telefone com DDD (10/11d com +55 ou só dígitos)
      * ou chave aleatória no formato UUID (8-4-4-4-12 hex). Validação intencionalmente permissiva.
@@ -1112,6 +1135,12 @@
         e.target.value = formatarCpfInput(somenteDigitos(e.target.value));
       });
 
+      const dataRespEl = document.getElementById("dataNascimentoResponsavel");
+      if (dataRespEl) {
+        dataRespEl.min = isoDateFromYearsAgo(120);
+        dataRespEl.max = isoDateFromYearsAgo(18);
+      }
+
       const cnpjEl = document.getElementById("cnpj");
       if (cnpjEl) cnpjEl.addEventListener("input", e => {
         e.target.value = formatarCnpjInput(somenteDigitos(e.target.value));
@@ -1207,6 +1236,12 @@
       const cpfRespDigits = somenteDigitos(document.getElementById("cpfResponsavel").value);
       if (!validarCpfLocal(cpfRespDigits)) {
         mostrarErro("CPF do responsavel invalido.");
+        return;
+      }
+      const dataNascimentoResp = document.getElementById("dataNascimentoResponsavel").value;
+      const erroDataResp = validarDataNascimentoLocal(dataNascimentoResp);
+      if (erroDataResp) {
+        mostrarErro(erroDataResp);
         return;
       }
 
@@ -1339,7 +1374,7 @@
           email: document.getElementById("email").value.trim(),
           telefone: document.getElementById("telefone").value.trim(),
           cpf: cpfRespDigits,
-          dataNascimento: document.getElementById("dataNascimentoResponsavel").value || null,
+          dataNascimento: dataNascimentoResp,
           senha: senha
         },
         operadorInicial: {

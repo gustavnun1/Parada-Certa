@@ -615,6 +615,27 @@
       return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(String(email || "").trim());
     }
 
+    function isoDateFromYearsAgo(years) {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - years);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function validarDataNascimentoLocal(valor) {
+      if (!valor) return null;
+      const nascimento = new Date(valor + "T00:00:00");
+      if (Number.isNaN(nascimento.getTime())) return "Data de nascimento inválida.";
+      const hoje = new Date();
+      const minimo18 = new Date();
+      minimo18.setFullYear(hoje.getFullYear() - 18);
+      const maximo120 = new Date();
+      maximo120.setFullYear(hoje.getFullYear() - 120);
+      if (nascimento > hoje || nascimento > minimo18 || nascimento < maximo120) {
+        return "Data de nascimento inválida. O usuário deve ter entre 18 e 120 anos.";
+      }
+      return null;
+    }
+
     // ── Carregamento ────────────────────────────────────────────────────────
     async function carregarUsuarios() {
       // Operadores e administrador em paralelo. Falha do admin nao bloqueia operadores.
@@ -1094,6 +1115,8 @@
       const erroNome = validarNomeLocal(nome);
       if (erroNome) { mostrarErroFormAdmin(erroNome); return; }
       if (email && !validarEmailLocal(email)) { mostrarErroFormAdmin("Informe um email válido."); return; }
+      const erroData = validarDataNascimentoLocal(dtNasc);
+      if (erroData) { mostrarErroFormAdmin(erroData); return; }
       if (senha && senha.length < 6) { mostrarErroFormAdmin("A nova senha deve ter ao menos 6 caracteres."); return; }
 
       try {
@@ -1234,6 +1257,12 @@
         adminTelEl.addEventListener("input", e => {
           e.target.value = formatarTelefoneInput(somenteDigitos(e.target.value));
         });
+      }
+
+      const adminDataEl = document.getElementById("adminDataNascimento");
+      if (adminDataEl) {
+        adminDataEl.min = isoDateFromYearsAgo(120);
+        adminDataEl.max = isoDateFromYearsAgo(18);
       }
     });
 

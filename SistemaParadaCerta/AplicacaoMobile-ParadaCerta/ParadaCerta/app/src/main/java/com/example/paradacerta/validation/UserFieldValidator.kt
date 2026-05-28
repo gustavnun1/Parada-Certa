@@ -81,7 +81,9 @@ object UserFieldValidator {
             return "Data de nascimento inválida."
         }
         val hoje = LocalDate.now()
+        val idadeMinima = hoje.minusYears(18)
         return when {
+            !nascimento.isAfter(hoje) && nascimento.isAfter(idadeMinima) -> "Data de nascimento invalida. O usuario deve ter pelo menos 18 anos."
             nascimento.isAfter(hoje) -> "Data de nascimento inválida."
             nascimento.isBefore(hoje.minusYears(120)) -> "Data de nascimento inválida."
             else -> null
