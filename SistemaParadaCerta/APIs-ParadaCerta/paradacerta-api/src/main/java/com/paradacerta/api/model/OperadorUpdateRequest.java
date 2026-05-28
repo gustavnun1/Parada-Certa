@@ -14,7 +14,9 @@ import lombok.Data;
 @Data
 public class OperadorUpdateRequest {
 
-    @Size(max = 100)
+    @Size(min = 3, max = 80, message = "Nome deve ter entre 3 e 80 caracteres")
+    @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$",
+            message = "Nome inválido. O nome não pode conter números nem caracteres especiais.")
     private String nome;
 
     @Size(min = 3, max = 50)

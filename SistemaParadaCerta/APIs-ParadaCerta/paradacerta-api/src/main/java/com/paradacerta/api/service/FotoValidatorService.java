@@ -80,8 +80,7 @@ public class FotoValidatorService {
         String mimeReal = detectarMimeReal(bytes);
         if (mimeReal == null) {
             throw new ConteudoInvalidoException(
-                "Não foi possível enviar esta imagem, pois ela pode conter conteúdo sensível, " +
-                "inadequado ou informações pessoais. Selecione outra foto do estabelecimento."
+                "Arquivo inválido. O conteúdo não parece ser uma imagem JPG, PNG ou WEBP válida."
             );
         }
 

@@ -19,8 +19,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
@@ -247,7 +247,7 @@ fun RegisterScreen(
                             onBackToLogin()
                         }
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -344,7 +344,7 @@ fun RegisterScreen(
 
                     if (password.isNotEmpty()) {
                         LinearProgressIndicator(
-                            progress = passwordStrength.progress,
+                            progress = { passwordStrength.progress },
                             color = passwordStrength.color,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -944,7 +944,7 @@ fun RegisterScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(if (step < 4) "Próximo" else "Finalizar Cadastro")
                     Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.Default.ArrowForward, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                 }
             }
         }

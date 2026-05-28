@@ -16,7 +16,6 @@ import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -30,10 +29,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OperadorService {
-
-    private static final Pattern EMAIL_REGEX = Pattern.compile(
-        "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
-    );
 
     private final OperadorEstacionamentoRepository operadorRepository;
     private final EstacionamentoRepository estacionamentoRepository;
@@ -78,11 +73,12 @@ public class OperadorService {
             throw new ConflictException("Já existe um operador cadastrado com este CPF");
         }
 
-        validarEmail(req.getEmail());
+        String nomeValidado = UserFieldValidator.normalizarNome(req.getNome());
+        String emailValidado = UserFieldValidator.normalizarEmail(req.getEmail());
 
         OperadorEstacionamento op = new OperadorEstacionamento();
         op.setEstacionamentoId(req.getEstacionamentoId());
-        op.setNome(req.getNome().trim());
+        op.setNome(nomeValidado);
         op.setUsuario(usuario);
         op.setSenhaHash(BCrypt.hashpw(req.getSenha(), BCrypt.gensalt(10)));
         op.setAtivo(true);
@@ -90,7 +86,7 @@ public class OperadorService {
 
         // Dados pessoais
         op.setCpf(cpf);
-        op.setEmail(req.getEmail().trim());
+        op.setEmail(emailValidado);
         op.setTelefone(somenteDigitos(req.getTelefone()));
 
         // Endereço
@@ -131,7 +127,7 @@ public class OperadorService {
 
         OperadorEstacionamento op = new OperadorEstacionamento();
         op.setEstacionamentoId(estacionamentoId);
-        op.setNome(nome.trim());
+        op.setNome(UserFieldValidator.normalizarNome(nome));
         op.setUsuario(usr);
         op.setSenhaHash(BCrypt.hashpw(senha, BCrypt.gensalt(10)));
         op.setAtivo(true);
@@ -149,7 +145,7 @@ public class OperadorService {
         OperadorEstacionamento op = carregar(id);
 
         if (req.getNome() != null && !req.getNome().isBlank()) {
-            op.setNome(req.getNome().trim());
+            op.setNome(UserFieldValidator.normalizarNome(req.getNome()));
         }
         if (req.getUsuario() != null && !req.getUsuario().isBlank()) {
             String novo = req.getUsuario().trim();
@@ -163,8 +159,7 @@ public class OperadorService {
         }
 
         if (req.getEmail() != null && !req.getEmail().isBlank()) {
-            validarEmail(req.getEmail());
-            op.setEmail(req.getEmail().trim());
+            op.setEmail(UserFieldValidator.normalizarEmail(req.getEmail()));
         }
         if (req.getTelefone() != null) {
             op.setTelefone(somenteDigitos(req.getTelefone()));
@@ -246,12 +241,6 @@ public class OperadorService {
         int dig2 = (resto < 2) ? 0 : 11 - resto;
         if (dig2 != Character.digit(cpf.charAt(10), 10)) {
             throw new RequisicaoInvalidaException("CPF inválido");
-        }
-    }
-
-    private static void validarEmail(String email) {
-        if (email == null || !EMAIL_REGEX.matcher(email.trim()).matches()) {
-            throw new RequisicaoInvalidaException("E-mail inválido");
         }
     }
 

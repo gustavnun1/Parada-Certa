@@ -11,11 +11,15 @@ public class OperadorCadastroRequest {
     private Integer estacionamentoId;
 
     @NotBlank(message = "Nome é obrigatório")
-    @Size(max = 100)
+    @Size(min = 3, max = 80, message = "Nome deve ter entre 3 e 80 caracteres")
+    @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$",
+            message = "Nome inválido. O nome não pode conter números nem caracteres especiais.")
     private String nomeCompleto;
 
     @NotBlank(message = "E-mail é obrigatório")
-    @Email(message = "E-mail inválido")
+    @Email(message = "Informe um email válido.")
+    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            message = "Informe um email válido.")
     @Size(max = 200)
     private String email;
 

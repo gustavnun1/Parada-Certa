@@ -31,7 +31,9 @@ public class AdminCadastroRequest {
     @Data
     public static class OperadorInicial {
         @NotBlank(message = "Nome do operador e obrigatorio")
-        @Size(max = 100)
+        @Size(min = 3, max = 80, message = "Nome deve ter entre 3 e 80 caracteres")
+        @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$",
+                message = "Nome inválido. O nome não pode conter números nem caracteres especiais.")
         private String nome;
 
         @NotBlank(message = "Usuario do operador e obrigatorio")
@@ -93,7 +95,9 @@ public class AdminCadastroRequest {
     @Data
     public static class Responsavel {
         @NotBlank(message = "Nome do responsavel e obrigatorio")
-        @Size(max = 100)
+        @Size(min = 3, max = 80, message = "Nome deve ter entre 3 e 80 caracteres")
+        @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$",
+                message = "Nome inválido. O nome não pode conter números nem caracteres especiais.")
         private String nome;
 
         @NotBlank(message = "E-mail do responsavel e obrigatorio")

@@ -14,10 +14,14 @@ import java.time.LocalDate;
 @Data
 public class AdminUpdateRequest {
 
-    @Size(max = 100)
+    @Size(min = 3, max = 80, message = "Nome deve ter entre 3 e 80 caracteres")
+    @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$",
+            message = "Nome inválido. O nome não pode conter números nem caracteres especiais.")
     private String nomeCompleto;
 
-    @Email(message = "E-mail inválido")
+    @Email(message = "Informe um email válido.")
+    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            message = "Informe um email válido.")
     @Size(max = 200)
     private String email;
 

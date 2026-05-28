@@ -9,7 +9,7 @@ import java.time.format.ResolverStyle;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-final class UserFieldValidator {
+public final class UserFieldValidator {
 
     private static final Pattern NOME_VALIDO = Pattern.compile("^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$");
     private static final Pattern EMAIL_VALIDO =
@@ -21,7 +21,7 @@ final class UserFieldValidator {
     private UserFieldValidator() {
     }
 
-    static String normalizarNome(String nome) {
+    public static String normalizarNome(String nome) {
         if (nome == null) throw new RequisicaoInvalidaException("Informe o nome.");
         String limpo = nome.trim().replaceAll("\\s+", " ");
         if (limpo.length() < 3) throw new RequisicaoInvalidaException("O nome deve possuir no mínimo 3 caracteres.");
@@ -33,7 +33,7 @@ final class UserFieldValidator {
         return limpo;
     }
 
-    static String normalizarEmail(String email) {
+    public static String normalizarEmail(String email) {
         if (email == null) throw new RequisicaoInvalidaException("Informe um email válido.");
         String limpo = email.trim().toLowerCase(Locale.ROOT);
         if (limpo.length() > 120 || !EMAIL_VALIDO.matcher(limpo).matches()) {

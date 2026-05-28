@@ -3,7 +3,7 @@ package com.example.paradacerta.navigation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -475,7 +475,7 @@ private fun AcessoBloqueadoScreen(
                 title = { Text(titulo, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onVoltar) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

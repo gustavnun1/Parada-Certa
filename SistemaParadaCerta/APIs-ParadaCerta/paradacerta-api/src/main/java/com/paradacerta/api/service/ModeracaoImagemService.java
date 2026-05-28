@@ -67,6 +67,13 @@ public class ModeracaoImagemService {
     /**
      * Modera a imagem. Lança {@link ConteudoInvalidoException} se rejeitada.
      * Retorna silenciosamente se aprovada.
+     *
+     * <p><b>Mensagens distintas para erro real vs. fail-closed</b>: quando a
+     * Vision API responde dizendo que a imagem é sensível ({@code adult/violence/racy}
+     * em {@code LIKELY/VERY_LIKELY}), a mensagem identifica claramente conteúdo
+     * sensível. Quando a chamada falha (timeout, quota, key inválida, resposta
+     * malformada), a mensagem é diferente — assim o usuário entende que pode
+     * tentar de novo e não confunde com um bloqueio definitivo da foto.
      */
     @SuppressWarnings("unchecked")
     public void moderar(byte[] imagemBytes) {
@@ -76,9 +83,11 @@ public class ModeracaoImagemService {
             return;
         }
 
-        String mensagemPadrao =
+        final String mensagemSensivel =
                 "Não foi possível enviar esta imagem, pois ela pode conter conteúdo sensível, " +
                 "inadequado ou informações pessoais. Selecione outra foto do estabelecimento.";
+        final String mensagemFalhaServico =
+                "Não foi possível verificar a imagem no momento. Tente novamente em instantes.";
 
         // Monta corpo: { requests: [{ image: { content: <base64> }, features: [{ type: SAFE_SEARCH_DETECTION }] }] }
         Map<String, Object> request = new LinkedHashMap<>();
@@ -102,31 +111,31 @@ public class ModeracaoImagemService {
             );
         } catch (RestClientException ex) {
             log.error("Falha ao chamar Google Vision (fail-closed; rejeitando imagem): {}", ex.getMessage());
-            throw new ConteudoInvalidoException(mensagemPadrao);
+            throw new ConteudoInvalidoException(mensagemFalhaServico);
         }
 
         if (resposta == null) {
             log.error("Google Vision retornou null (fail-closed; rejeitando imagem).");
-            throw new ConteudoInvalidoException(mensagemPadrao);
+            throw new ConteudoInvalidoException(mensagemFalhaServico);
         }
 
         List<Map<String, Object>> respostas = (List<Map<String, Object>>) resposta.get("responses");
         if (respostas == null || respostas.isEmpty()) {
             log.error("Google Vision sem campo 'responses' (fail-closed).");
-            throw new ConteudoInvalidoException(mensagemPadrao);
+            throw new ConteudoInvalidoException(mensagemFalhaServico);
         }
 
         Map<String, Object> primeira = respostas.get(0);
         Map<String, Object> erro = (Map<String, Object>) primeira.get("error");
         if (erro != null) {
             log.error("Google Vision retornou erro (fail-closed): {}", erro);
-            throw new ConteudoInvalidoException(mensagemPadrao);
+            throw new ConteudoInvalidoException(mensagemFalhaServico);
         }
 
         Map<String, Object> safe = (Map<String, Object>) primeira.get("safeSearchAnnotation");
         if (safe == null) {
             log.error("Google Vision sem safeSearchAnnotation (fail-closed).");
-            throw new ConteudoInvalidoException(mensagemPadrao);
+            throw new ConteudoInvalidoException(mensagemFalhaServico);
         }
 
         boolean rejeitada = false;
@@ -145,7 +154,7 @@ public class ModeracaoImagemService {
 
         if (rejeitada) {
             log.warn("Imagem rejeitada pelo SafeSearch: {}", motivos);
-            throw new ConteudoInvalidoException(mensagemPadrao);
+            throw new ConteudoInvalidoException(mensagemSensivel);
         }
 
         log.debug("Imagem aprovada pelo SafeSearch.");

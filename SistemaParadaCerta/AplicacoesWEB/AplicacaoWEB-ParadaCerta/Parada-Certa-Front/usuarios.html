@@ -37,16 +37,17 @@
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
           <p class="text-green-600 font-semibold mb-2">
-            Operadores do kiosk
+            Operadores e administrador
           </p>
 
           <h2 class="text-3xl md:text-4xl font-bold text-slate-900">
-            Usuários do Kiosk
+            Usuários
           </h2>
 
           <p class="text-slate-600 mt-2 max-w-3xl">
-            Gerencie os operadores que acessam a aplicação de balcão (ParadaCertaManager) para gerar QR Codes de entrada.
-            Estes logins são <strong>independentes</strong> do administrador web — separação total de papéis.
+            Gerencie os usuários deste estacionamento: o <strong>administrador web</strong>
+            (responsável pelo painel) e os <strong>operadores do kiosk</strong> (balcão de entrada).
+            Cada papel possui credenciais e responsabilidades distintas.
           </p>
         </div>
 
@@ -54,7 +55,7 @@
           onclick="abrirNovoUsuario()"
           class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition"
         >
-          Novo Operador
+          Novo operador
         </button>
       </div>
     </section>
@@ -62,11 +63,12 @@
     <!-- AVISO -->
     <section class="mb-8 bg-blue-50 border border-blue-200 rounded-2xl p-5">
       <p class="text-blue-700 font-bold mb-1">
-        Operador do kiosk
+        Administrador e operadores
       </p>
       <p class="text-sm text-slate-700">
-        O operador é a pessoa que utiliza o totem do estacionamento para gerar QR Codes de entrada para os motoristas.
-        Cada operador é vinculado a este estacionamento e autentica apenas na aplicação do kiosk.
+        O <strong>administrador</strong> acessa o painel web e gerencia o estacionamento;
+        os <strong>operadores</strong> utilizam o totem (ParadaCertaManager) para gerar QR Codes
+        de entrada. Os dados sensíveis (CPF, e-mail, telefone) são tratados conforme a LGPD.
       </p>
     </section>
 
@@ -90,15 +92,15 @@
     <!-- CARDS -->
     <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Total de operadores</p>
+        <p class="text-sm text-slate-500">Total de usuários</p>
         <h3 id="cardTotal" class="text-3xl font-bold mt-2 text-blue-600">0</h3>
-        <p class="text-xs text-slate-500 mt-2">Cadastrados neste estacionamento</p>
+        <p class="text-xs text-slate-500 mt-2">Administrador + operadores</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <p class="text-sm text-slate-500">Ativos</p>
         <h3 id="cardAtivos" class="text-3xl font-bold mt-2 text-green-600">0</h3>
-        <p class="text-xs text-slate-500 mt-2">Podem fazer login no kiosk</p>
+        <p class="text-xs text-slate-500 mt-2">Podem fazer login no sistema</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -118,7 +120,7 @@
     <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
       <div class="grid md:grid-cols-3 gap-4">
         <div>
-          <label class="block text-sm text-slate-600 mb-2 font-medium">Buscar operador</label>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Buscar usuário</label>
           <input
             id="busca"
             type="text"
@@ -144,7 +146,7 @@
         <div>
           <label class="block text-sm text-slate-600 mb-2 font-medium">Resumo</label>
           <div class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-700">
-            <span id="totalExibido">0</span> operadores exibidos
+            <span id="totalExibido">0</span> usuários exibidos
           </div>
         </div>
       </div>
@@ -158,7 +160,7 @@
             Lista de usuários
           </h3>
           <p class="text-sm text-slate-500 mt-1">
-            Usuários cadastrados para acessar o sistema administrativo e operacional.
+            Administrador e operadores cadastrados para este estacionamento.
           </p>
         </div>
 
@@ -174,7 +176,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 text-slate-600">
             <tr>
-              <th class="px-6 py-4 text-left font-semibold">ID</th>
+              <th class="px-6 py-4 text-left font-semibold">Tipo</th>
               <th class="px-6 py-4 text-left font-semibold">Nome</th>
               <th class="px-6 py-4 text-left font-semibold">CPF</th>
               <th class="px-6 py-4 text-left font-semibold">E-mail</th>
@@ -191,7 +193,7 @@
       </div>
 
       <div id="mensagemVazia" class="hidden px-6 py-10 text-center text-slate-500">
-        Nenhum operador encontrado.
+        Nenhum usuário encontrado.
       </div>
     </section>
 
@@ -404,6 +406,138 @@
       </div>
     </section>
 
+    <!-- FORMULÁRIO DO ADMINISTRADOR -->
+    <section id="formAdminBox" class="hidden bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900">
+            Editar administrador
+          </h3>
+          <p class="text-sm text-slate-500 mt-1">
+            Atualize os dados do administrador deste estacionamento. CPF e usuário de login não podem ser alterados.
+          </p>
+        </div>
+
+        <button
+          onclick="fecharFormularioAdmin()"
+          class="text-slate-500 hover:text-red-600 text-sm font-semibold"
+        >
+          Fechar
+        </button>
+      </div>
+
+      <input type="hidden" id="adminEditId" />
+
+      <h4 class="text-lg font-bold text-slate-900 mb-3">Dados do administrador</h4>
+      <div class="grid md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Nome completo</label>
+          <input
+            type="text"
+            id="adminNome"
+            maxlength="80"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">
+            CPF <span class="text-xs text-slate-500 font-normal">(imutável)</span>
+          </label>
+          <input
+            type="text"
+            id="adminCpf"
+            readonly
+            class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-900 cursor-not-allowed focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">E-mail</label>
+          <input
+            type="email"
+            id="adminEmail"
+            maxlength="200"
+            placeholder="admin@empresa.com"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Telefone</label>
+          <input
+            type="text"
+            id="adminTelefone"
+            inputmode="tel"
+            maxlength="20"
+            placeholder="(11) 99999-9999"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">
+            Usuário de login <span class="text-xs text-slate-500 font-normal">(imutável)</span>
+          </label>
+          <input
+            type="text"
+            id="adminUsuario"
+            readonly
+            class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-900 cursor-not-allowed font-mono text-sm focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Data de nascimento</label>
+          <input
+            type="date"
+            id="adminDataNascimento"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Nova senha <span class="text-xs text-slate-500 font-normal">(opcional)</span></label>
+          <input
+            type="password"
+            id="adminSenha"
+            minlength="6"
+            placeholder="Deixe em branco para manter a atual"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-green-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-600 mb-2 font-medium">Status</label>
+          <select
+            id="adminAtivo"
+            class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
+          >
+            <option value="true">Ativo</option>
+            <option value="false">Inativo</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="formAdminErro" class="hidden mt-4 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm"></div>
+
+      <div class="flex flex-col sm:flex-row gap-3 mt-6">
+        <button
+          onclick="salvarAdmin()"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition"
+        >
+          Salvar administrador
+        </button>
+
+        <button
+          onclick="fecharFormularioAdmin()"
+          class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-xl transition"
+        >
+          Cancelar
+        </button>
+      </div>
+    </section>
+
   </main>
 
   <script src="pc-config.js"></script>
@@ -412,9 +546,25 @@
   <script>
     const sessao = pcRequireSession();
     const ESTACIONAMENTO_ID = sessao.estacionamentoId;
+    const ADMIN_ID = sessao.id;
 
     let usuarios = [];
+    let admin = null;        // dados do administrador logado (carregado em paralelo)
     let modoFormulario = "editar";
+
+    // Mesma regra do backend (UserFieldValidator.normalizarNome).
+    // Aceita letras (com acentos), espaço, hífen e apóstrofo. Rejeita números e demais caracteres.
+    const NOME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ' \-]+$/;
+
+    function validarNomeLocal(nome) {
+      const limpo = String(nome || "").trim().replace(/\s+/g, " ");
+      if (!limpo) return "Informe o nome.";
+      if (limpo.length < 3) return "O nome deve possuir no mínimo 3 caracteres.";
+      if (limpo.length > 80) return "O nome deve possuir no máximo 80 caracteres.";
+      if (/\d/.test(limpo)) return "O nome não pode conter números.";
+      if (!NOME_REGEX.test(limpo)) return "Nome inválido.";
+      return null; // ok
+    }
 
     const formatarDataHora = pcFormatarDataHora;
 
@@ -467,8 +617,15 @@
 
     // ── Carregamento ────────────────────────────────────────────────────────
     async function carregarUsuarios() {
+      // Operadores e administrador em paralelo. Falha do admin nao bloqueia operadores.
+      const operadoresPromise = pcFetch("/api/operador/estacionamento/" + ESTACIONAMENTO_ID);
+      const adminPromise = pcFetch("/api/admin/" + ADMIN_ID).catch(err => {
+        console.warn("Falha ao carregar dados do administrador:", err);
+        return null;
+      });
+
       try {
-        const lista = await pcFetch("/api/operador/estacionamento/" + ESTACIONAMENTO_ID);
+        const [lista, adminData] = await Promise.all([operadoresPromise, adminPromise]);
 
         usuarios = (Array.isArray(lista) ? lista : []).map(op => ({
           id: op.id,
@@ -480,8 +637,20 @@
           email: op.email || null,
           telefone: op.telefone || null,
           cidade: op.cidade || null,
-          uf: op.uf || null
+          uf: op.uf || null,
+          tipo: "operador"
         }));
+
+        admin = adminData ? {
+          id: adminData.id,
+          nome: adminData.nomeCompleto || "Administrador",
+          usuario: adminData.usuario || "—",
+          ativo: !!adminData.ativo,
+          cpfMascarado: adminData.cpfMascarado || null,
+          email: adminData.email || null,
+          telefone: adminData.telefone || null,
+          tipo: "admin"
+        } : null;
 
         document.getElementById("alertaErro").classList.add("hidden");
 
@@ -495,15 +664,22 @@
       atualizarCards();
     }
 
-    function carregarTabela(lista = usuarios) {
+    function carregarTabela(lista = usuarios, mostrarAdmin = true) {
       const tabela = document.getElementById("tabelaUsuarios");
       const mensagemVazia = document.getElementById("mensagemVazia");
       const totalExibido = document.getElementById("totalExibido");
 
       tabela.innerHTML = "";
-      totalExibido.innerText = lista.length;
 
-      if (lista.length === 0) {
+      // Linha do administrador sempre no topo (quando carregado e visível pelo filtro)
+      if (mostrarAdmin && admin) {
+        tabela.appendChild(criarLinhaAdmin(admin));
+      }
+
+      const totalLinhas = lista.length + (mostrarAdmin && admin ? 1 : 0);
+      totalExibido.innerText = totalLinhas;
+
+      if (totalLinhas === 0) {
         mensagemVazia.classList.remove("hidden");
         return;
       }
@@ -511,77 +687,138 @@
       mensagemVazia.classList.add("hidden");
 
       lista.forEach((u) => {
-        const ativo = !!u.ativo;
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-50 transition";
-
-        const telefoneFormatado = u.telefone ? formatarTelefoneInput(somenteDigitos(u.telefone)) : "—";
-        const cidadeUf = u.cidade
-            ? (u.cidade + (u.uf ? "/" + u.uf : ""))
-            : (u.uf || "—");
-
-        tr.innerHTML = `
-          <td class="px-6 py-4 text-slate-700">#${u.id}</td>
-
-          <td class="px-6 py-4">
-            <div class="font-semibold text-slate-900">${u.nome}</div>
-            <div class="text-xs text-slate-500">Operador do kiosk</div>
-          </td>
-
-          <td class="px-6 py-4 text-slate-700 font-mono text-xs">${formatarCpfMascarado(u.cpfMascarado)}</td>
-
-          <td class="px-6 py-4 text-slate-700">${u.email || "—"}</td>
-
-          <td class="px-6 py-4 text-slate-700">${telefoneFormatado}</td>
-
-          <td class="px-6 py-4 text-slate-700">${cidadeUf}</td>
-
-          <td class="px-6 py-4 text-slate-700 font-mono text-xs">${u.usuario}</td>
-
-          <td class="px-6 py-4">
-            <span class="px-3 py-1 rounded-full text-xs font-semibold ${
-              ativo
-                ? "bg-green-100 text-green-700 border border-green-200"
-                : "bg-red-100 text-red-700 border border-red-200"
-            }">
-              ${ativo ? "Ativo" : "Inativo"}
-            </span>
-          </td>
-
-          <td class="px-6 py-4">
-            <div class="flex flex-wrap gap-2">
-              <button
-                onclick="abrirEdicao(${u.id})"
-                class="bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-bold px-3 py-2 rounded-xl transition text-xs"
-              >
-                Editar
-              </button>
-
-              <button
-                onclick="trocarSenha(${u.id})"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
-              >
-                Trocar senha
-              </button>
-
-              <button
-                onclick="excluirUsuario(${u.id})"
-                class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
-              >
-                Desativar
-              </button>
-            </div>
-          </td>
-        `;
-
-        tabela.appendChild(tr);
+        tabela.appendChild(criarLinhaOperador(u));
       });
     }
 
+    function criarLinhaAdmin(a) {
+      const ativo = !!a.ativo;
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-50 transition bg-purple-50/40";
+      const telefoneFormatado = a.telefone ? formatarTelefoneInput(somenteDigitos(a.telefone)) : "—";
+
+      tr.innerHTML = `
+        <td class="px-6 py-4">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+            Administrador
+          </span>
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="font-semibold text-slate-900">${escapeHtml(a.nome)}</div>
+          <div class="text-xs text-slate-500">Painel web</div>
+        </td>
+
+        <td class="px-6 py-4 text-slate-700 font-mono text-xs">${formatarCpfMascarado(a.cpfMascarado)}</td>
+        <td class="px-6 py-4 text-slate-700">${escapeHtml(a.email || "—")}</td>
+        <td class="px-6 py-4 text-slate-700">${telefoneFormatado}</td>
+        <td class="px-6 py-4 text-slate-700">—</td>
+        <td class="px-6 py-4 text-slate-700 font-mono text-xs">${escapeHtml(a.usuario)}</td>
+
+        <td class="px-6 py-4">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+            ativo
+              ? "bg-green-100 text-green-700 border border-green-200"
+              : "bg-red-100 text-red-700 border border-red-200"
+          }">
+            ${ativo ? "Ativo" : "Inativo"}
+          </span>
+        </td>
+
+        <td class="px-6 py-4">
+          <button
+            onclick="abrirEdicaoAdmin(${a.id})"
+            class="bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-bold px-3 py-2 rounded-xl transition text-xs"
+          >
+            Editar
+          </button>
+        </td>
+      `;
+      return tr;
+    }
+
+    function criarLinhaOperador(u) {
+      const ativo = !!u.ativo;
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-50 transition";
+
+      const telefoneFormatado = u.telefone ? formatarTelefoneInput(somenteDigitos(u.telefone)) : "—";
+      const cidadeUf = u.cidade
+          ? (u.cidade + (u.uf ? "/" + u.uf : ""))
+          : (u.uf || "—");
+
+      tr.innerHTML = `
+        <td class="px-6 py-4">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+            Operador
+          </span>
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="font-semibold text-slate-900">${escapeHtml(u.nome)}</div>
+          <div class="text-xs text-slate-500">Kiosk</div>
+        </td>
+
+        <td class="px-6 py-4 text-slate-700 font-mono text-xs">${formatarCpfMascarado(u.cpfMascarado)}</td>
+        <td class="px-6 py-4 text-slate-700">${escapeHtml(u.email || "—")}</td>
+        <td class="px-6 py-4 text-slate-700">${telefoneFormatado}</td>
+        <td class="px-6 py-4 text-slate-700">${escapeHtml(cidadeUf)}</td>
+        <td class="px-6 py-4 text-slate-700 font-mono text-xs">${escapeHtml(u.usuario)}</td>
+
+        <td class="px-6 py-4">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+            ativo
+              ? "bg-green-100 text-green-700 border border-green-200"
+              : "bg-red-100 text-red-700 border border-red-200"
+          }">
+            ${ativo ? "Ativo" : "Inativo"}
+          </span>
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="flex flex-wrap gap-2">
+            <button
+              onclick="abrirEdicao(${u.id})"
+              class="bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-bold px-3 py-2 rounded-xl transition text-xs"
+            >
+              Editar
+            </button>
+
+            <button
+              onclick="trocarSenha(${u.id})"
+              class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
+            >
+              Trocar senha
+            </button>
+
+            <button
+              onclick="excluirUsuario(${u.id})"
+              class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs"
+            >
+              Desativar
+            </button>
+          </div>
+        </td>
+      `;
+      return tr;
+    }
+
+    function escapeHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
     function atualizarCards() {
-      const total = usuarios.length;
-      const ativos = usuarios.filter(u => u.ativo).length;
-      const inativos = total - ativos;
+      const totalOps = usuarios.length;
+      const ativosOps = usuarios.filter(u => u.ativo).length;
+      // Conta admin no total e nos ativos/inativos
+      const adminAtivo = admin && admin.ativo ? 1 : 0;
+      const adminInativo = admin && !admin.ativo ? 1 : 0;
+      const adminCount = admin ? 1 : 0;
+      const total = totalOps + adminCount;
+      const ativos = ativosOps + adminAtivo;
+      const inativos = (totalOps - ativosOps) + adminInativo;
 
       document.getElementById("cardTotal").innerText = total;
       document.getElementById("cardAtivos").innerText = ativos;
@@ -606,7 +843,24 @@
         return encontrouBusca && encontrouStatus;
       });
 
-      carregarTabela(filtrados);
+      // Aplica os mesmos filtros ao admin (mostra/oculta no topo)
+      let mostrarAdmin = !!admin;
+      if (admin) {
+        const adminMatchBusca =
+          !busca ||
+          String(admin.nome || "").toLowerCase().includes(busca) ||
+          String(admin.usuario || "").toLowerCase().includes(busca) ||
+          String(admin.email || "").toLowerCase().includes(busca);
+
+        const adminMatchStatus =
+          status === "todos" ||
+          (status === "ativo" && admin.ativo) ||
+          (status === "inativo" && !admin.ativo);
+
+        mostrarAdmin = adminMatchBusca && adminMatchStatus;
+      }
+
+      carregarTabela(filtrados, mostrarAdmin);
     }
 
     // ── Formulário ─────────────────────────────────────────────────────────
@@ -700,7 +954,8 @@
       const uf           = document.getElementById("editUf").value.trim().toUpperCase();
 
       // Validações comuns
-      if (!nome) { mostrarErroForm("Informe o nome do operador."); return; }
+      const erroNome = validarNomeLocal(nome);
+      if (erroNome) { mostrarErroForm(erroNome); return; }
       if (!usr || !validarUsuario(usr)) {
         mostrarErroForm("Usuário inválido. Use 3 a 50 caracteres entre letras, números, ponto, hífen ou underline.");
         return;
@@ -708,7 +963,7 @@
 
       if (modoFormulario === "novo") {
         if (!validarCpfLocal(cpfDigits)) { mostrarErroForm("CPF inválido."); return; }
-        if (!validarEmailLocal(email))   { mostrarErroForm("E-mail inválido."); return; }
+        if (!validarEmailLocal(email))   { mostrarErroForm("Informe um email válido."); return; }
         if (telefoneDigits.length < 8)   { mostrarErroForm("Telefone inválido."); return; }
         if (cepDigits.length !== 8)      { mostrarErroForm("CEP deve ter 8 dígitos."); return; }
         if (!logradouro || !numero || !bairro || !cidade || uf.length !== 2) {
@@ -721,7 +976,7 @@
         }
       } else {
         // Edição: e-mail é editável, então valida quando fornecido
-        if (email && !validarEmailLocal(email)) { mostrarErroForm("E-mail inválido."); return; }
+        if (email && !validarEmailLocal(email)) { mostrarErroForm("Informe um email válido."); return; }
         if (cepDigits && cepDigits.length !== 8) { mostrarErroForm("CEP deve ter 8 dígitos."); return; }
       }
 
@@ -787,6 +1042,90 @@
       } catch (e) {
         console.error("Erro ao salvar operador:", e);
         mostrarErroForm(e.message || "Nao foi possivel salvar o operador.");
+      }
+    }
+
+    // ── Administrador ──────────────────────────────────────────────────────
+    function fecharFormularioAdmin() {
+      document.getElementById("formAdminBox").classList.add("hidden");
+      document.getElementById("formAdminErro").classList.add("hidden");
+    }
+
+    function mostrarErroFormAdmin(msg) {
+      const el = document.getElementById("formAdminErro");
+      el.innerText = msg;
+      el.classList.remove("hidden");
+    }
+
+    async function abrirEdicaoAdmin(id) {
+      const box = document.getElementById("formAdminBox");
+      box.classList.remove("hidden");
+      document.getElementById("formAdminErro").classList.add("hidden");
+
+      try {
+        const a = await pcFetch("/api/admin/" + id);
+        document.getElementById("adminEditId").value = a.id;
+        document.getElementById("adminNome").value = a.nomeCompleto || "";
+        document.getElementById("adminCpf").value = a.cpfMascarado || "";
+        document.getElementById("adminEmail").value = a.email || "";
+        document.getElementById("adminTelefone").value = a.telefone ? formatarTelefoneInput(somenteDigitos(a.telefone)) : "";
+        document.getElementById("adminUsuario").value = a.usuario || "";
+        document.getElementById("adminAtivo").value = a.ativo ? "true" : "false";
+        document.getElementById("adminSenha").value = "";
+        // dataNascimento nao vem em AdminResponse (mascaramento padrao); deixa em branco
+        document.getElementById("adminDataNascimento").value = "";
+      } catch (e) {
+        console.error("Erro ao carregar administrador:", e);
+        mostrarErroFormAdmin(e.message || "Não foi possível carregar o administrador.");
+      }
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    async function salvarAdmin() {
+      const id           = document.getElementById("adminEditId").value;
+      const nome         = document.getElementById("adminNome").value.trim();
+      const email        = document.getElementById("adminEmail").value.trim();
+      const telefoneDigits = somenteDigitos(document.getElementById("adminTelefone").value);
+      const senha        = document.getElementById("adminSenha").value;
+      const ativo        = document.getElementById("adminAtivo").value === "true";
+      const dtNasc       = document.getElementById("adminDataNascimento").value;
+
+      const erroNome = validarNomeLocal(nome);
+      if (erroNome) { mostrarErroFormAdmin(erroNome); return; }
+      if (email && !validarEmailLocal(email)) { mostrarErroFormAdmin("Informe um email válido."); return; }
+      if (senha && senha.length < 6) { mostrarErroFormAdmin("A nova senha deve ter ao menos 6 caracteres."); return; }
+
+      try {
+        await pcFetch("/api/admin/" + id, {
+          method: "PUT",
+          body: JSON.stringify({
+            nomeCompleto: nome,
+            email: email || null,
+            telefone: telefoneDigits || null,
+            dataNascimento: dtNasc || null,
+            senha: senha || null,
+            ativo: ativo
+          })
+        });
+
+        // Mantem sessao alinhada com nome/email atualizados
+        try {
+          const sess = pcGetSession();
+          if (sess && Number(sess.id) === Number(id)) {
+            sess.nomeCompleto = nome;
+            if (email) sess.email = email;
+            if (telefoneDigits) sess.telefone = telefoneDigits;
+            localStorage.setItem("adminLogado", JSON.stringify(sess));
+          }
+        } catch (_) { /* ignorado */ }
+
+        alert("Administrador atualizado com sucesso.");
+        fecharFormularioAdmin();
+        carregarUsuarios();
+      } catch (e) {
+        console.error("Erro ao salvar administrador:", e);
+        mostrarErroFormAdmin(e.message || "Não foi possível salvar o administrador.");
       }
     }
 
@@ -888,6 +1227,14 @@
       ufEl.addEventListener("input", e => {
         e.target.value = e.target.value.toUpperCase().slice(0,2);
       });
+
+      // Máscara de telefone do administrador
+      const adminTelEl = document.getElementById("adminTelefone");
+      if (adminTelEl) {
+        adminTelEl.addEventListener("input", e => {
+          e.target.value = formatarTelefoneInput(somenteDigitos(e.target.value));
+        });
+      }
     });
 
     const sair = pcSair;

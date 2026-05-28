@@ -787,6 +787,19 @@
       return normalizarCidade(v) === "sao paulo";
     }
 
+    // Mesma regra do backend (UserFieldValidator.normalizarNome):
+    // letras, acentos, hifen, apostrofo e espaco. Rejeita numeros e demais caracteres.
+    const NOME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ' \-]+$/;
+    function validarNomeLocal(nome) {
+      const limpo = String(nome || "").trim().replace(/\s+/g, " ");
+      if (!limpo) return "Informe o nome.";
+      if (limpo.length < 3) return "O nome deve possuir no mínimo 3 caracteres.";
+      if (limpo.length > 80) return "O nome deve possuir no máximo 80 caracteres.";
+      if (/\d/.test(limpo)) return "O nome não pode conter números.";
+      if (!NOME_REGEX.test(limpo)) return "Nome inválido.";
+      return null;
+    }
+
     function validarEmailLocal(email) {
       return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(String(email || "").trim());
     }
@@ -1177,6 +1190,20 @@
         return;
       }
 
+      // Nome do responsável (administrador)
+      const erroNomeResp = validarNomeLocal(document.getElementById("nomeResponsavel").value);
+      if (erroNomeResp) {
+        mostrarErro("Nome do responsável: " + erroNomeResp);
+        return;
+      }
+
+      // E-mail do responsável
+      const emailResp = document.getElementById("email").value.trim();
+      if (!validarEmailLocal(emailResp)) {
+        mostrarErro("Informe um email válido para o responsável.");
+        return;
+      }
+
       const cpfRespDigits = somenteDigitos(document.getElementById("cpfResponsavel").value);
       if (!validarCpfLocal(cpfRespDigits)) {
         mostrarErro("CPF do responsavel invalido.");
@@ -1268,8 +1295,9 @@
       const opCidade      = document.getElementById("opCidade").value.trim();
       const opUf          = document.getElementById("opUf").value.trim().toUpperCase();
 
-      if (!opNome) {
-        mostrarErro("Informe o nome do operador do kiosk.");
+      const erroNomeOp = validarNomeLocal(opNome);
+      if (erroNomeOp) {
+        mostrarErro("Nome do operador: " + erroNomeOp);
         return;
       }
       if (!validarCpfLocal(opCpfDigits)) {
@@ -1277,7 +1305,7 @@
         return;
       }
       if (!validarEmailLocal(opEmail)) {
-        mostrarErro("E-mail do operador inválido.");
+        mostrarErro("Informe um email válido para o operador.");
         return;
       }
       if (opTelDigits.length < 8) {

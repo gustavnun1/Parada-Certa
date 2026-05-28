@@ -18,7 +18,9 @@ public class OperadorRequest {
 
     // ── Identificação ────────────────────────────────────────────────────────
     @NotBlank(message = "Nome é obrigatório")
-    @Size(max = 100)
+    @Size(min = 3, max = 80, message = "Nome deve ter entre 3 e 80 caracteres")
+    @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$",
+            message = "Nome inválido. O nome não pode conter números nem caracteres especiais.")
     private String nome;
 
     @NotBlank(message = "Usuário é obrigatório")

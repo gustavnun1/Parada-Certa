@@ -79,7 +79,8 @@ public class AdminService {
         AdminCadastroRequest.Responsavel resp = req.getResponsavel();
         AdminCadastroRequest.EstacionamentoDados estData = req.getEstacionamento();
 
-        String email = resp.getEmail().trim();
+        String nomeResp = UserFieldValidator.normalizarNome(resp.getNome());
+        String email = UserFieldValidator.normalizarEmail(resp.getEmail());
         if (admRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("Já existe um administrador com este e-mail");
         }
@@ -168,7 +169,7 @@ public class AdminService {
         // 3. Cria o admin responsável (BCrypt)
         AdmEstacionamento adm = new AdmEstacionamento();
         adm.setEstacionamentoId(est.getId());
-        adm.setNomeCompleto(resp.getNome().trim());
+        adm.setNomeCompleto(nomeResp);
         adm.setEmail(email);
         adm.setTelefone(resp.getTelefone() == null ? null : resp.getTelefone().trim());
         adm.setCpf(cpfAdmin);
@@ -257,7 +258,8 @@ public class AdminService {
             throw new UsuarioNaoEncontradoException("Estacionamento não encontrado");
         }
 
-        String email = req.getEmail().trim();
+        String nomeValidado = UserFieldValidator.normalizarNome(req.getNomeCompleto());
+        String email = UserFieldValidator.normalizarEmail(req.getEmail());
         if (admRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("Já existe um administrador com este e-mail");
         }
@@ -277,7 +279,7 @@ public class AdminService {
 
         AdmEstacionamento adm = new AdmEstacionamento();
         adm.setEstacionamentoId(req.getEstacionamentoId());
-        adm.setNomeCompleto(req.getNomeCompleto().trim());
+        adm.setNomeCompleto(nomeValidado);
         adm.setEmail(email);
         adm.setTelefone(req.getTelefone());
         adm.setCpf(cpf);
@@ -295,11 +297,11 @@ public class AdminService {
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Administrador não encontrado"));
 
         if (req.getNomeCompleto() != null && !req.getNomeCompleto().isBlank()) {
-            adm.setNomeCompleto(req.getNomeCompleto().trim());
+            adm.setNomeCompleto(UserFieldValidator.normalizarNome(req.getNomeCompleto()));
         }
 
         if (req.getEmail() != null && !req.getEmail().isBlank()) {
-            String novoEmail = req.getEmail().trim();
+            String novoEmail = UserFieldValidator.normalizarEmail(req.getEmail());
             if (!novoEmail.equalsIgnoreCase(adm.getEmail() == null ? "" : adm.getEmail())
                     && admRepository.existsByEmailIgnoreCase(novoEmail)) {
                 throw new ConflictException("E-mail já em uso");
