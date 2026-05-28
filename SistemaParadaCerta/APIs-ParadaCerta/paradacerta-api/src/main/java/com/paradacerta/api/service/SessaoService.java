@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
@@ -30,6 +31,8 @@ import org.springframework.jdbc.core.SqlParameter;
 @Service
 @RequiredArgsConstructor
 public class SessaoService {
+    private static final ZoneId ZONE_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
+    private static final Duration TOLERANCIA_RELOGIO_DISPOSITIVO = Duration.ofMinutes(10);
 
     private final SessaoRepository              sessaoRepository;
     private final EstacionamentoRepository      estacionamentoRepository;
@@ -156,7 +159,7 @@ public class SessaoService {
             throw new ConflictException("Estacionamento sem vagas disponíveis");
         }
 
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora = horaEntradaApp(req.getHoraEntradaDispositivoMs());
         String qrCode = java.util.UUID.randomUUID().toString();
 
         SessaoEstacionamento sessao = new SessaoEstacionamento();
@@ -240,10 +243,7 @@ public class SessaoService {
                     .orElse(null);
         }
 
-        long horaEntradaMs = sessao.getHoraEntrada()
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
+        long horaEntradaMs = toEpochMillisSaoPaulo(sessao.getHoraEntrada());
 
         return Optional.of(new SessaoAtivaResponse(
                 String.valueOf(sessao.getId()),
@@ -282,7 +282,7 @@ public class SessaoService {
             return; // idempotente
         }
 
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora = nowSaoPaulo();
         sessao.setStatus(SessaoStatus.ENCERRADA);
         sessao.setHoraSaida(agora);
         sessao.setHoraPagamento(agora);
@@ -330,8 +330,8 @@ public class SessaoService {
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Estacionamento não encontrado"));
 
         LocalDateTime fim = sessao.getStatus() == SessaoStatus.ATIVA
-                ? LocalDateTime.now()
-                : (sessao.getHoraSaida() != null ? sessao.getHoraSaida() : LocalDateTime.now());
+                ? nowSaoPaulo()
+                : (sessao.getHoraSaida() != null ? sessao.getHoraSaida() : nowSaoPaulo());
 
         long minutosPermanencia = Math.max(
                 0L, Duration.between(sessao.getHoraEntrada(), fim).toMinutes());
@@ -381,6 +381,29 @@ public class SessaoService {
             return sessao.getValorPago();
         }
         return est.getPrecoHora();
+    }
+
+    private LocalDateTime horaEntradaApp(Long horaEntradaDispositivoMs) {
+        LocalDateTime agora = nowSaoPaulo();
+        if (horaEntradaDispositivoMs == null || horaEntradaDispositivoMs <= 0) {
+            return agora;
+        }
+
+        Instant instanteDispositivo = Instant.ofEpochMilli(horaEntradaDispositivoMs);
+        Instant instanteServidor = agora.atZone(ZONE_SAO_PAULO).toInstant();
+        Duration diferenca = Duration.between(instanteDispositivo, instanteServidor).abs();
+        if (diferenca.compareTo(TOLERANCIA_RELOGIO_DISPOSITIVO) > 0) {
+            return agora;
+        }
+        return LocalDateTime.ofInstant(instanteDispositivo, ZONE_SAO_PAULO);
+    }
+
+    private LocalDateTime nowSaoPaulo() {
+        return LocalDateTime.now(ZONE_SAO_PAULO);
+    }
+
+    private long toEpochMillisSaoPaulo(LocalDateTime dataHora) {
+        return dataHora.atZone(ZONE_SAO_PAULO).toInstant().toEpochMilli();
     }
 
     private int extractSqlErrorCode(DataAccessException e) {

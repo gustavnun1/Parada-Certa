@@ -23,7 +23,10 @@ function loadPcApi(overrides = {}) {
     FormData: class FormData {},
     localStorage: storage,
     setTimeout: () => 1,
-    window: { location: { href: "" } },
+    window: {
+      PC_API_BASE: overrides.apiBase,
+      location: { href: "", hostname: overrides.hostname || "parada-certa-murex.vercel.app" }
+    },
     document: {
       readyState: "loading",
       body: { appendChild() {} },
@@ -75,6 +78,7 @@ test("pcFetch adiciona base URL, content-type e retorna JSON", async () => {
   let capturedUrl;
   let capturedOptions;
   const { context } = loadPcApi({
+    apiBase: "https://parada-certa-production.up.railway.app",
     fetch: async (url, options) => {
       capturedUrl = url;
       capturedOptions = options;
@@ -90,7 +94,7 @@ test("pcFetch adiciona base URL, content-type e retorna JSON", async () => {
 
   const body = await context.pcFetch("/api/teste", { method: "POST", body: JSON.stringify({ ok: true }) });
 
-  assert.equal(capturedUrl, "http://localhost:8080/api/teste");
+  assert.equal(capturedUrl, "https://parada-certa-production.up.railway.app/api/teste");
   assert.equal(capturedOptions.headers.Accept, "application/json");
   assert.equal(capturedOptions.headers["Content-Type"], "application/json");
   assert.deepEqual(body, { sucesso: true });

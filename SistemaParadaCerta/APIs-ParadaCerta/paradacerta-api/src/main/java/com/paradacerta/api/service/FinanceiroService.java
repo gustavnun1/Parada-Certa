@@ -16,6 +16,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FinanceiroService {
+    private static final ZoneId ZONE_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
     private final SessaoRepository           sessaoRepository;
     private final EstacionamentoRepository   estacionamentoRepository;
@@ -125,8 +127,9 @@ public class FinanceiroService {
                 .setScale(2, RoundingMode.HALF_UP);
 
         // Pagamentos hoje (sempre, independente do filtro acima)
-        LocalDateTime inicioHoje = LocalDate.now().atStartOfDay();
-        LocalDateTime fimHoje    = LocalDate.now().atTime(LocalTime.MAX);
+        LocalDate hoje = hojeSaoPaulo();
+        LocalDateTime inicioHoje = hoje.atStartOfDay();
+        LocalDateTime fimHoje    = hoje.atTime(LocalTime.MAX);
         long pagamentosHoje = sessaoRepository.countByEstacionamentoStatusAndPagamentoPeriodo(
                 estacionamentoId, SessaoStatus.ENCERRADA, inicioHoje, fimHoje);
 
@@ -148,17 +151,36 @@ public class FinanceiroService {
     // ── Período → intervalo de datas ────────────────────────────────────────
 
     private LocalDateTime[] intervaloDe(String periodo) {
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = hojeSaoPaulo();
         LocalDateTime inicio;
-        LocalDateTime fim = hoje.atTime(LocalTime.MAX);
+        LocalDateTime fim;
 
         switch (periodo.toLowerCase()) {
-            case "hoje" -> inicio = hoje.atStartOfDay();
-            case "semana" -> inicio = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay();
-            case "mes" -> inicio = hoje.withDayOfMonth(1).atStartOfDay();
-            case "ano" -> inicio = hoje.withDayOfYear(1).atStartOfDay();
-            default -> inicio = LocalDate.of(2000, 1, 1).atStartOfDay();
+            case "hoje" -> {
+                inicio = hoje.atStartOfDay();
+                fim = hoje.atTime(LocalTime.MAX);
+            }
+            case "semana" -> {
+                inicio = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay();
+                fim = hoje.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+            }
+            case "mes" -> {
+                inicio = hoje.withDayOfMonth(1).atStartOfDay();
+                fim = hoje.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+            }
+            case "ano" -> {
+                inicio = hoje.withDayOfYear(1).atStartOfDay();
+                fim = hoje.with(TemporalAdjusters.lastDayOfYear()).atTime(LocalTime.MAX);
+            }
+            default -> {
+                inicio = LocalDate.of(2000, 1, 1).atStartOfDay();
+                fim = hoje.atTime(LocalTime.MAX);
+            }
         }
         return new LocalDateTime[]{inicio, fim};
+    }
+
+    private LocalDate hojeSaoPaulo() {
+        return LocalDate.now(ZONE_SAO_PAULO);
     }
 }

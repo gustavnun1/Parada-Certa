@@ -100,6 +100,7 @@
             <option value="semana">Esta semana</option>
             <option value="mes">Este mês</option>
             <option value="ano">Este ano</option>
+            <option value="todos">Histórico completo</option>
           </select>
         </div>
 
@@ -121,21 +122,21 @@
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Total de vagas</p>
+        <p class="text-sm text-slate-500">Entradas no período</p>
         <h3 id="cardTotalVagas" class="text-3xl font-bold mt-2 text-blue-600">0</h3>
-        <p class="text-xs text-slate-500 mt-2">Capacidade cadastrada</p>
+        <p class="text-xs text-slate-500 mt-2">Histórico conforme filtro</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Vagas disponíveis</p>
+        <p class="text-sm text-slate-500">Sessões encerradas</p>
         <h3 id="cardDisponiveis" class="text-3xl font-bold mt-2 text-green-600">0</h3>
-        <p class="text-xs text-slate-500 mt-2">Disponibilidade atual</p>
+        <p class="text-xs text-slate-500 mt-2">Finalizadas no período</p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Receita estimada</p>
+        <p class="text-sm text-slate-500">Receita confirmada</p>
         <h3 id="cardReceita" class="text-3xl font-bold mt-2 text-green-600">R$ 0,00</h3>
-        <p class="text-xs text-slate-500 mt-2">Estimativa baseada em ocupação</p>
+        <p class="text-xs text-slate-500 mt-2">Pagamentos no período</p>
       </div>
     </section>
 
@@ -151,7 +152,7 @@
         <div class="space-y-4">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm text-slate-600">Ocupação estimada</span>
+              <span class="text-sm text-slate-600">Ocupação por entradas</span>
               <span id="ocupacaoTexto" class="text-sm font-bold text-green-600">0%</span>
             </div>
 
@@ -162,12 +163,12 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <p class="text-xs text-slate-500">Ocupadas</p>
+              <p class="text-xs text-slate-500">Entradas</p>
               <p id="ocupadasInfo" class="text-2xl font-bold text-slate-900">0</p>
             </div>
 
             <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-              <p class="text-xs text-green-700">Livres</p>
+              <p class="text-xs text-green-700">Encerradas</p>
               <p id="livresInfo" class="text-2xl font-bold text-green-700">0</p>
             </div>
           </div>
@@ -182,17 +183,17 @@
 
         <div class="space-y-4">
           <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p class="text-sm text-blue-700">Vagas reserváveis</p>
+            <p class="text-sm text-blue-700">Reservas no período</p>
             <p id="reservaveisInfo" class="text-3xl font-bold text-blue-700 mt-1">0</p>
           </div>
 
           <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-            <p class="text-sm text-yellow-700">Reservas atuais</p>
+            <p class="text-sm text-yellow-700">Canceladas no período</p>
             <p id="reservadasInfo" class="text-3xl font-bold text-yellow-700 mt-1">0</p>
           </div>
 
           <p class="text-sm text-slate-600">
-            O limite de reservas é definido pela quantidade de vagas reserváveis cadastradas.
+            Os números acima usam o histórico filtrado pela data de entrada da sessão.
           </p>
         </div>
       </div>
@@ -205,17 +206,17 @@
 
         <div class="space-y-4">
           <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-            <p class="text-sm text-green-700">Preço médio/hora</p>
+            <p class="text-sm text-green-700">Ticket médio</p>
             <p id="precoMedioInfo" class="text-3xl font-bold text-green-700 mt-1">R$ 0,00</p>
           </div>
 
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <p class="text-sm text-slate-500">Ticket simulado</p>
+            <p class="text-sm text-slate-500">Maior pagamento</p>
             <p id="ticketInfo" class="text-3xl font-bold text-slate-900 mt-1">R$ 0,00</p>
           </div>
 
           <p class="text-sm text-slate-600">
-            A receita real considera sessões, pagamentos e faturamento confirmados no período.
+            A receita considera sessões encerradas com pagamento confirmado no período.
           </p>
         </div>
       </div>
@@ -247,11 +248,11 @@
           <thead class="bg-slate-50 text-slate-600">
             <tr>
               <th class="px-6 py-4 text-left font-semibold">Estacionamento</th>
-              <th class="px-6 py-4 text-left font-semibold">Vagas</th>
-              <th class="px-6 py-4 text-left font-semibold">Ocupação</th>
+              <th class="px-6 py-4 text-left font-semibold">Entradas</th>
+              <th class="px-6 py-4 text-left font-semibold">Encerradas</th>
               <th class="px-6 py-4 text-left font-semibold">Reservas</th>
-              <th class="px-6 py-4 text-left font-semibold">Preço/hora</th>
-              <th class="px-6 py-4 text-left font-semibold">Receita estimada</th>
+              <th class="px-6 py-4 text-left font-semibold">Ticket médio</th>
+              <th class="px-6 py-4 text-left font-semibold">Receita confirmada</th>
               <th class="px-6 py-4 text-left font-semibold">Status</th>
             </tr>
           </thead>
@@ -271,8 +272,7 @@
         Receita real
       </p>
       <p class="text-sm text-green-800">
-        Ao selecionar um estacionamento específico, o card "Receita estimada" passa a refletir o total
-        efetivamente recebido no período escolhido.
+        Os indicadores históricos usam as entradas e pagamentos registrados dentro do período escolhido.
       </p>
     </section>
 
@@ -287,28 +287,73 @@
 
     let estacionamentos = [];
     let relatorioAtual = [];
+    let relatorioMetricas = new Map();
 
     const formatarMoeda = pcFormatarMoeda;
     const normalizarAtivo = pcAtivoValor;
 
-    function calcularReceitaEstimada(e) {
-      const total = Number(e.qtdVagasTotais || 0);
-      const disponiveis = Number(e.qtdVagasDisponiveis || 0);
-      const ocupadas = Math.max(total - disponiveis, 0);
-      const preco = Number(e.precoHora || 0);
-
-      return ocupadas * preco;
+    function metricaVazia() {
+      return {
+        totalSessoes: 0,
+        totalEncerradas: 0,
+        totalReservas: 0,
+        sessoesCanceladas: 0,
+        ocupacaoMediaPct: 0,
+        ticketMedio: 0,
+        totalRecebido: 0,
+        maiorPagamento: 0
+      };
     }
 
-    function calcularOcupacao(e) {
-      const total = Number(e.qtdVagasTotais || 0);
-      const disponiveis = Number(e.qtdVagasDisponiveis || 0);
+    function metricaDe(estacionamentoId) {
+      return relatorioMetricas.get(Number(estacionamentoId)) || metricaVazia();
+    }
 
-      if (total <= 0) return 0;
+    function somaMetricas(lista) {
+      return lista.reduce((acc, e) => {
+        const m = metricaDe(e.id);
+        acc.totalSessoes += Number(m.totalSessoes || 0);
+        acc.totalEncerradas += Number(m.totalEncerradas || 0);
+        acc.totalReservas += Number(m.totalReservas || 0);
+        acc.sessoesCanceladas += Number(m.sessoesCanceladas || 0);
+        acc.totalRecebido += Number(m.totalRecebido || 0);
+        acc.maiorPagamento = Math.max(acc.maiorPagamento, Number(m.maiorPagamento || 0));
+        if (Number(m.ticketMedio || 0) > 0) {
+          acc._ticketSoma += Number(m.ticketMedio || 0);
+          acc._ticketQtd += 1;
+        }
+        return acc;
+      }, { ...metricaVazia(), _ticketSoma: 0, _ticketQtd: 0 });
+    }
 
-      const ocupadas = Math.max(total - disponiveis, 0);
+    async function carregarMetricasPeriodo() {
+      const periodo = document.getElementById("periodo").value;
+      const novaMetricas = new Map();
 
-      return Math.round((ocupadas / total) * 100);
+      await Promise.all(relatorioAtual.map(async (e) => {
+        try {
+          const [analitico, financeiro] = await Promise.all([
+            pcFetch("/api/operacao/" + e.id + "/analitico?periodo=" + encodeURIComponent(periodo)),
+            pcFetch("/api/financeiro/" + e.id + "/resumo?periodo=" + encodeURIComponent(periodo))
+          ]);
+
+          novaMetricas.set(Number(e.id), {
+            totalSessoes: Number(analitico?.totalSessoes || 0),
+            totalEncerradas: Number(analitico?.totalEncerradas || 0),
+            totalReservas: Number(analitico?.totalReservas || 0),
+            sessoesCanceladas: Number(analitico?.sessoesCanceladas || 0),
+            ocupacaoMediaPct: Number(analitico?.ocupacaoMediaPct || 0),
+            ticketMedio: Number(financeiro?.ticketMedio ?? analitico?.ticketMedio ?? 0),
+            totalRecebido: Number(financeiro?.totalRecebido || 0),
+            maiorPagamento: Number(financeiro?.maiorPagamento || 0)
+          });
+        } catch (erro) {
+          console.warn("Falha ao carregar métricas do relatório:", e.id, erro.message);
+          novaMetricas.set(Number(e.id), metricaVazia());
+        }
+      }));
+
+      relatorioMetricas = novaMetricas;
     }
 
     async function carregarEstacionamentos() {
@@ -355,77 +400,41 @@
         relatorioAtual = estacionamentos.filter((e) => String(e.id) === String(estacionamentoId));
       }
 
+      await carregarMetricasPeriodo();
       atualizarCards();
       atualizarIndicadores();
       preencherTabela();
-      await atualizarReceitaReal(); // sobrescreve a "Receita estimada" com valor real do periodo
-    }
-
-    async function atualizarReceitaReal() {
-      const estacionamentoId = document.getElementById("selectEstacionamento").value;
-      const periodo = document.getElementById("periodo").value;
-      if (estacionamentoId === "todos" || relatorioAtual.length === 0) return;
-      try {
-        const r = await pcFetch("/api/financeiro/" + estacionamentoId + "/resumo?periodo=" + encodeURIComponent(periodo));
-        document.getElementById("cardReceita").innerText = formatarMoeda(r.totalRecebido);
-      } catch (e) {
-        // se falhar, mantem a estimativa local
-        console.warn("Falha ao buscar receita real:", e.message);
-      }
     }
 
     function atualizarCards() {
       const totalEstacionamentos = relatorioAtual.length;
-
-      const totalVagas = relatorioAtual.reduce((soma, e) => {
-        return soma + Number(e.qtdVagasTotais || 0);
-      }, 0);
-
-      const totalDisponiveis = relatorioAtual.reduce((soma, e) => {
-        return soma + Number(e.qtdVagasDisponiveis || 0);
-      }, 0);
-
-      const receita = relatorioAtual.reduce((soma, e) => {
-        return soma + calcularReceitaEstimada(e);
-      }, 0);
+      const metricas = somaMetricas(relatorioAtual);
 
       document.getElementById("cardEstacionamentos").innerText = totalEstacionamentos;
-      document.getElementById("cardTotalVagas").innerText = totalVagas;
-      document.getElementById("cardDisponiveis").innerText = totalDisponiveis;
-      document.getElementById("cardReceita").innerText = formatarMoeda(receita);
+      document.getElementById("cardTotalVagas").innerText = metricas.totalSessoes;
+      document.getElementById("cardDisponiveis").innerText = metricas.totalEncerradas;
+      document.getElementById("cardReceita").innerText = formatarMoeda(metricas.totalRecebido);
     }
 
     function atualizarIndicadores() {
-      const totalVagas = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasTotais || 0), 0);
-      const disponiveis = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasDisponiveis || 0), 0);
-      const ocupadas = Math.max(totalVagas - disponiveis, 0);
-
-      const ocupacao = totalVagas > 0 ? Math.round((ocupadas / totalVagas) * 100) : 0;
-
-      const reservaveis = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasReservaveis || 0), 0);
-      const reservadas = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasReservadas || 0), 0);
-
-      const precos = relatorioAtual
-        .map((e) => Number(e.precoHora || 0))
-        .filter((v) => v > 0);
-
-      const precoMedio = precos.length
-        ? precos.reduce((soma, v) => soma + v, 0) / precos.length
+      const metricas = somaMetricas(relatorioAtual);
+      const capacidade = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasTotais || 0), 0);
+      const ocupacao = capacidade > 0
+        ? Math.round((metricas.totalSessoes / capacidade) * 100)
         : 0;
-
-      const ticket = precoMedio * 2;
+      const ticketMedio = metricas._ticketQtd > 0 ? metricas._ticketSoma / metricas._ticketQtd : 0;
 
       document.getElementById("ocupacaoTexto").innerText = `${ocupacao}%`;
-      document.getElementById("barraOcupacao").style.width = `${ocupacao}%`;
+      document.getElementById("barraOcupacao").style.width = `${Math.min(ocupacao, 100)}%`;
 
-      document.getElementById("ocupadasInfo").innerText = ocupadas;
-      document.getElementById("livresInfo").innerText = disponiveis;
+      document.getElementById("ocupadasInfo").innerText = metricas.totalSessoes;
+      document.getElementById("livresInfo").innerText = metricas.totalEncerradas;
 
-      document.getElementById("reservaveisInfo").innerText = reservaveis;
-      document.getElementById("reservadasInfo").innerText = reservadas;
+      document.getElementById("reservaveisInfo").innerText = metricas.totalReservas;
+      document.getElementById("reservadasInfo").innerText = metricas.sessoesCanceladas;
 
-      document.getElementById("precoMedioInfo").innerText = formatarMoeda(precoMedio);
-      document.getElementById("ticketInfo").innerText = formatarMoeda(ticket);
+      document.getElementById("precoMedioInfo").innerText = formatarMoeda(ticketMedio);
+      document.getElementById("ticketInfo").innerText = formatarMoeda(metricas.maiorPagamento);
     }
 
     function preencherTabela() {
@@ -442,12 +451,13 @@
       mensagemVazia.classList.add("hidden");
 
       relatorioAtual.forEach((e) => {
-        const total = Number(e.qtdVagasTotais || 0);
-        const disponiveis = Number(e.qtdVagasDisponiveis || 0);
-        const reservaveis = Number(e.qtdVagasReservaveis || 0);
-        const reservadas = Number(e.qtdVagasReservadas || 0);
-        const ocupacao = calcularOcupacao(e);
-        const receita = calcularReceitaEstimada(e);
+        const m = metricaDe(e.id);
+        const entradas = Number(m.totalSessoes || 0);
+        const encerradas = Number(m.totalEncerradas || 0);
+        const reservas = Number(m.totalReservas || 0);
+        const canceladas = Number(m.sessoesCanceladas || 0);
+        const ticketMedio = Number(m.ticketMedio || 0);
+        const receita = Number(m.totalRecebido || 0);
         const ativo = normalizarAtivo(e.ativo);
 
         const tr = document.createElement("tr");
@@ -460,26 +470,22 @@
           </td>
 
           <td class="px-6 py-4">
-            <div class="font-semibold text-slate-900">${disponiveis}/${total}</div>
-            <div class="text-xs text-slate-500">disponíveis/total</div>
+            <div class="font-semibold text-slate-900">${entradas}</div>
+            <div class="text-xs text-slate-500">entradas no filtro</div>
           </td>
 
           <td class="px-6 py-4">
-            <div class="flex items-center gap-3">
-              <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-                <div class="h-full bg-green-600 rounded-full" style="width: ${ocupacao}%"></div>
-              </div>
-              <span class="font-semibold text-slate-900">${ocupacao}%</span>
-            </div>
+            <div class="font-semibold text-slate-900">${encerradas}</div>
+            <div class="text-xs text-slate-500">sessões pagas/finalizadas</div>
           </td>
 
           <td class="px-6 py-4">
-            <div class="font-semibold text-slate-900">${reservadas}/${reservaveis}</div>
-            <div class="text-xs text-slate-500">reservadas/limite</div>
+            <div class="font-semibold text-slate-900">${reservas}</div>
+            <div class="text-xs text-slate-500">${canceladas} canceladas</div>
           </td>
 
           <td class="px-6 py-4 font-bold text-green-600">
-            ${formatarMoeda(e.precoHora)}
+            ${formatarMoeda(ticketMedio)}
           </td>
 
           <td class="px-6 py-4 font-bold text-slate-900">
@@ -508,13 +514,9 @@
       }
 
       const totalEstacionamentos = relatorioAtual.length;
-      const totalVagas = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasTotais || 0), 0);
-      const disponiveis = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasDisponiveis || 0), 0);
-      const ocupadas = Math.max(totalVagas - disponiveis, 0);
-      const ocupacao = totalVagas > 0 ? Math.round((ocupadas / totalVagas) * 100) : 0;
-      const reservaveis = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasReservaveis || 0), 0);
-      const reservadas = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasReservadas || 0), 0);
-      const receita = relatorioAtual.reduce((soma, e) => soma + calcularReceitaEstimada(e), 0);
+      const metricas = somaMetricas(relatorioAtual);
+      const capacidade = relatorioAtual.reduce((soma, e) => soma + Number(e.qtdVagasTotais || 0), 0);
+      const ocupacao = capacidade > 0 ? Math.round((metricas.totalSessoes / capacidade) * 100) : 0;
 
       const estacionamentoNome = document.getElementById("selectEstacionamento").selectedOptions[0]?.textContent || "Todos";
       const tipo    = document.getElementById("tipoRelatorio").selectedOptions[0]?.textContent || "Resumo geral";
@@ -564,16 +566,14 @@
 
       const linhasHtml = relatorioAtual.map(e => {
         const total = Number(e.qtdVagasTotais || 0);
-        const disp  = Number(e.qtdVagasDisponiveis || 0);
-        const resv  = Number(e.qtdVagasReservaveis || 0);
-        const resd  = Number(e.qtdVagasReservadas || 0);
+        const m = metricaDe(e.id);
         return '<tr>'
           + '<td><strong>' + esc(e.nome || '-') + '</strong><br><span>' + esc(e.endereco || '-') + '</span></td>'
-          + '<td>' + disp + '/' + total + '</td>'
-          + '<td>' + calcularOcupacao(e) + '%</td>'
-          + '<td>' + resd + '/' + resv + '</td>'
-          + '<td>' + esc(formatarMoeda(e.precoHora)) + '</td>'
-          + '<td>' + esc(formatarMoeda(calcularReceitaEstimada(e))) + '</td>'
+          + '<td>' + Number(m.totalSessoes || 0) + '<br><span>capacidade: ' + total + '</span></td>'
+          + '<td>' + Number(m.totalEncerradas || 0) + '</td>'
+          + '<td>' + Number(m.totalReservas || 0) + '<br><span>' + Number(m.sessoesCanceladas || 0) + ' canceladas</span></td>'
+          + '<td>' + esc(formatarMoeda(m.ticketMedio || 0)) + '</td>'
+          + '<td>' + esc(formatarMoeda(m.totalRecebido || 0)) + '</td>'
           + '<td>' + (normalizarAtivo(e.ativo) ? 'Ativo' : 'Inativo') + '</td>'
           + '</tr>';
       }).join('');
@@ -586,20 +586,20 @@
         + '<br><strong>Período:</strong> ' + esc(periodo) + '</p>'
         + '<section class="grid">'
         +   '<div class="card"><p>Estacionamentos</p><strong>' + totalEstacionamentos + '</strong></div>'
-        +   '<div class="card"><p>Total de vagas</p><strong>' + totalVagas + '</strong></div>'
-        +   '<div class="card"><p>Disponíveis</p><strong>' + disponiveis + '</strong></div>'
-        +   '<div class="card"><p>Receita estimada</p><strong>' + esc(formatarMoeda(receita)) + '</strong></div>'
+        +   '<div class="card"><p>Entradas no período</p><strong>' + metricas.totalSessoes + '</strong></div>'
+        +   '<div class="card"><p>Encerradas</p><strong>' + metricas.totalEncerradas + '</strong></div>'
+        +   '<div class="card"><p>Receita confirmada</p><strong>' + esc(formatarMoeda(metricas.totalRecebido)) + '</strong></div>'
         + '</section>'
         + '<section class="grid" style="margin-top:10px">'
-        +   '<div class="card"><p>Ocupadas</p><strong>' + ocupadas + '</strong></div>'
-        +   '<div class="card"><p>Ocupação</p><strong>' + ocupacao + '%</strong></div>'
-        +   '<div class="card"><p>Reserváveis</p><strong>' + reservaveis + '</strong></div>'
-        +   '<div class="card"><p>Reservadas</p><strong>' + reservadas + '</strong></div>'
+        +   '<div class="card"><p>Capacidade atual</p><strong>' + capacidade + '</strong></div>'
+        +   '<div class="card"><p>Entradas/capacidade</p><strong>' + ocupacao + '%</strong></div>'
+        +   '<div class="card"><p>Reservas</p><strong>' + metricas.totalReservas + '</strong></div>'
+        +   '<div class="card"><p>Canceladas</p><strong>' + metricas.sessoesCanceladas + '</strong></div>'
         + '</section>'
         + '<h2>Detalhamento por estacionamento</h2>'
         + '<table><thead><tr>'
-        +   '<th>Estacionamento</th><th>Vagas</th><th>Ocupação</th><th>Reservas</th>'
-        +   '<th>Preço/hora</th><th>Receita</th><th>Status</th>'
+        +   '<th>Estacionamento</th><th>Entradas</th><th>Encerradas</th><th>Reservas</th>'
+        +   '<th>Ticket médio</th><th>Receita</th><th>Status</th>'
         + '</tr></thead><tbody>' + linhasHtml + '</tbody></table>'
         + '<div class="footer">Documento gerado pelo painel Parada Certa.</div>';
 

@@ -305,6 +305,7 @@ fun AppNavGraph(
             val deleteViewModel: DeleteViewModel = viewModel()
 
             val saveState by saveViewModel.saveState.collectAsState()
+            val addressStateSave by saveViewModel.addressStateSave.collectAsState()
             val deleteState by deleteViewModel.deleteState.collectAsState()
 
             LaunchedEffect(saveState.isSuccess) {
@@ -344,7 +345,7 @@ fun AppNavGraph(
                     if (cpf.isNotEmpty()) {
                         saveViewModel.saveUser(
                             nome = nome, email = email,
-                            senha = senha.ifEmpty { userData?.senha ?: "" },
+                            senha = senha,
                             cpf = cpf,
                             dataNascimento = dataNascimento, numeroCelular = numeroCelular,
                             cep = cep, logradouro = logradouro, numero = numero,
@@ -356,7 +357,9 @@ fun AppNavGraph(
                     userData?.cpf?.let { cpf -> deleteViewModel.deleteAccount(cpf) }
                 },
                 saveState = saveState,
-                deleteState = deleteState
+                deleteState = deleteState,
+                addressState = addressStateSave,
+                onFetchCep = saveViewModel::fetchCep
             )
         }
 

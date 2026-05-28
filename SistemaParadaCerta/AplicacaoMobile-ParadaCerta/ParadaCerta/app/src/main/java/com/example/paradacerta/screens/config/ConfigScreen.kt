@@ -1,20 +1,56 @@
 package com.example.paradacerta.screens.config
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
 import com.example.paradacerta.models.Cliente
 import com.example.paradacerta.models.Endereco
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import com.example.paradacerta.validation.UserFieldValidator
+import com.example.paradacerta.viewmodel.AddressStateSave
 import com.example.paradacerta.viewmodel.DeleteState
 import com.example.paradacerta.viewmodel.SaveState
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,21 +73,21 @@ fun ConfigScreen(
     ) -> Unit,
     onDeleteAccount: () -> Unit,
     saveState: SaveState = SaveState(),
-    deleteState: DeleteState = DeleteState()
+    deleteState: DeleteState = DeleteState(),
+    addressState: AddressStateSave = AddressStateSave(),
+    onFetchCep: (String) -> Unit = {}
 ) {
     var nome by remember { mutableStateOf(cliente.nome) }
     var email by remember { mutableStateOf(cliente.email) }
     var senha by remember { mutableStateOf("") }
-    var numeroCelular by remember { mutableStateOf(cliente.numeroCelular) }
+    var numeroCelular by remember { mutableStateOf(formatTelefone(cliente.numeroCelular)) }
 
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     var dataNascimento by remember {
-        mutableStateOf(
-            cliente.dataNascimento?.let { dateFormat.format(it) } ?: ""
-        )
+        mutableStateOf(cliente.dataNascimento?.let { dateFormat.format(it) } ?: "")
     }
 
-    var cep by remember { mutableStateOf(endereco?.cep ?: "") }
+    var cep by remember { mutableStateOf(UserFieldValidator.somenteDigitos(endereco?.cep ?: "")) }
     var logradouro by remember { mutableStateOf(endereco?.logradouro ?: "") }
     var numero by remember { mutableStateOf(endereco?.numero ?: "") }
     var complemento by remember { mutableStateOf(endereco?.complemento ?: "") }
@@ -59,7 +95,42 @@ fun ConfigScreen(
     var cidade by remember { mutableStateOf(endereco?.cidade ?: "") }
     var estado by remember { mutableStateOf(endereco?.estado ?: "") }
 
+    var nomeError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var senhaError by remember { mutableStateOf<String?>(null) }
+    var dataError by remember { mutableStateOf<String?>(null) }
+    var telefoneError by remember { mutableStateOf<String?>(null) }
+    var cepError by remember { mutableStateOf<String?>(null) }
+    var numeroError by remember { mutableStateOf<String?>(null) }
+    var enderecoError by remember { mutableStateOf<String?>(null) }
+    var isLoadingCep by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val nextField = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+    val doneField = KeyboardActions(onDone = { focusManager.clearFocus() })
+
+    LaunchedEffect(addressState) {
+        val recebeuEndereco = addressState.logradouro.isNotBlank() ||
+            addressState.bairro.isNotBlank() ||
+            addressState.cidade.isNotBlank() ||
+            addressState.estado.isNotBlank()
+        if (addressState.error == null && !recebeuEndereco) return@LaunchedEffect
+
+        isLoadingCep = false
+        cepError = addressState.error
+        if (addressState.error == null) {
+            logradouro = addressState.logradouro
+            bairro = addressState.bairro
+            cidade = addressState.cidade
+            estado = addressState.estado
+            enderecoError = null
+        } else {
+            logradouro = ""
+            bairro = ""
+            cidade = ""
+            estado = ""
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -70,7 +141,6 @@ fun ConfigScreen(
             )
         }
     ) { paddingValues ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -78,16 +148,21 @@ fun ConfigScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-            item {
-                Text("Dados Pessoais", style = MaterialTheme.typography.titleMedium)
-            }
+            item { Text("Dados Pessoais", style = MaterialTheme.typography.titleMedium) }
 
             item {
                 OutlinedTextField(
                     value = nome,
-                    onValueChange = { nome = it },
+                    onValueChange = {
+                        nome = it
+                        nomeError = UserFieldValidator.validarNome(it)
+                    },
                     label = { Text("Nome") },
+                    isError = nomeError != null,
+                    supportingText = { nomeError?.let { Text(it) } },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = nextField,
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -95,8 +170,19 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it.trim()
+                        emailError = UserFieldValidator.validarEmail(email)
+                    },
                     label = { Text("E-mail") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = nextField,
+                    isError = emailError != null,
+                    supportingText = { emailError?.let { Text(it) } },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -104,8 +190,20 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = senha,
-                    onValueChange = { senha = it },
+                    onValueChange = {
+                        senha = it
+                        senhaError = UserFieldValidator.validarSenha(it, obrigatoria = false)
+                    },
                     label = { Text("Nova Senha (deixe vazio para não alterar)") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = nextField,
+                    isError = senhaError != null,
+                    supportingText = { senhaError?.let { Text(it) } },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -113,9 +211,20 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = dataNascimento,
-                    onValueChange = { dataNascimento = it },
+                    onValueChange = {
+                        dataNascimento = formatData(it)
+                        dataError = UserFieldValidator.validarDataNascimento(dataNascimento)
+                    },
                     label = { Text("Data de Nascimento") },
                     placeholder = { Text("DD/MM/AAAA") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = nextField,
+                    isError = dataError != null,
+                    supportingText = { dataError?.let { Text(it) } },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -123,8 +232,19 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = numeroCelular,
-                    onValueChange = { numeroCelular = it },
+                    onValueChange = {
+                        numeroCelular = formatTelefone(it)
+                        telefoneError = UserFieldValidator.validarTelefone(numeroCelular)
+                    },
                     label = { Text("Celular") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Phone,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = nextField,
+                    isError = telefoneError != null,
+                    supportingText = { telefoneError?.let { Text(it) } },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -137,8 +257,40 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = cep,
-                    onValueChange = { cep = it },
+                    onValueChange = {
+                        val novoCep = UserFieldValidator.somenteDigitos(it).take(8)
+                        if (novoCep != cep) {
+                            cep = novoCep
+                            cepError = UserFieldValidator.validarCep(novoCep)
+                            logradouro = ""
+                            bairro = ""
+                            cidade = ""
+                            estado = ""
+                            enderecoError = null
+                            if (novoCep.length == 8) {
+                                isLoadingCep = true
+                                cepError = null
+                                onFetchCep(novoCep)
+                            } else {
+                                isLoadingCep = false
+                            }
+                        }
+                    },
                     label = { Text("CEP") },
+                    placeholder = { Text("00000000") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = nextField,
+                    isError = cepError != null,
+                    supportingText = { cepError?.let { Text(it) } },
+                    trailingIcon = {
+                        if (isLoadingCep) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        }
+                    },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -146,8 +298,11 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = logradouro,
-                    onValueChange = { logradouro = it },
+                    onValueChange = {},
                     label = { Text("Logradouro") },
+                    readOnly = true,
+                    enabled = false,
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -155,8 +310,19 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = numero,
-                    onValueChange = { numero = it },
+                    onValueChange = {
+                        numero = it.trim().take(10)
+                        numeroError = UserFieldValidator.validarNumeroEndereco(numero)
+                    },
                     label = { Text("Número") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = nextField,
+                    isError = numeroError != null,
+                    supportingText = { numeroError?.let { Text(it) } },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -164,8 +330,11 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = complemento,
-                    onValueChange = { complemento = it },
+                    onValueChange = { complemento = it.take(60) },
                     label = { Text("Complemento") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = doneField,
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -173,8 +342,11 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = bairro,
-                    onValueChange = { bairro = it },
+                    onValueChange = {},
                     label = { Text("Bairro") },
+                    readOnly = true,
+                    enabled = false,
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -182,8 +354,11 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = cidade,
-                    onValueChange = { cidade = it },
+                    onValueChange = {},
                     label = { Text("Cidade") },
+                    readOnly = true,
+                    enabled = false,
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -191,26 +366,73 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = estado,
-                    onValueChange = { estado = it },
+                    onValueChange = {},
                     label = { Text("Estado (UF)") },
+                    readOnly = true,
+                    enabled = false,
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+            enderecoError?.let { erro ->
+                item {
+                    Text(
+                        text = erro,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
+
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
             item {
                 Button(
                     onClick = {
-                        onSaveChanges(
-                            nome, email, senha, dataNascimento, numeroCelular,
-                            cep, logradouro, numero, complemento, bairro, cidade, estado
-                        )
+                        nomeError = UserFieldValidator.validarNome(nome)
+                        emailError = UserFieldValidator.validarEmail(email)
+                        senhaError = UserFieldValidator.validarSenha(senha, obrigatoria = false)
+                        dataError = UserFieldValidator.validarDataNascimento(dataNascimento)
+                        telefoneError = UserFieldValidator.validarTelefone(numeroCelular)
+                        cepError = UserFieldValidator.validarCep(cep)
+                        numeroError = UserFieldValidator.validarNumeroEndereco(numero)
+                        enderecoError = if (
+                            logradouro.isBlank() || bairro.isBlank() ||
+                            cidade.isBlank() || estado.length != 2
+                        ) {
+                            "Informe um CEP válido para preencher o endereço."
+                        } else null
+
+                        if (listOf(
+                                nomeError,
+                                emailError,
+                                senhaError,
+                                dataError,
+                                telefoneError,
+                                cepError,
+                                numeroError,
+                                enderecoError
+                            ).all { it == null }
+                        ) {
+                            onSaveChanges(
+                                nome.trim(),
+                                email.trim(),
+                                senha,
+                                dataNascimento,
+                                numeroCelular,
+                                cep,
+                                logradouro,
+                                numero,
+                                complemento.trim(),
+                                bairro,
+                                cidade,
+                                estado
+                            )
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !saveState.isLoading && !deleteState.isLoading
+                    enabled = !saveState.isLoading && !deleteState.isLoading && !isLoadingCep
                 ) {
                     if (saveState.isLoading) {
                         CircularProgressIndicator(
@@ -224,20 +446,7 @@ fun ConfigScreen(
             }
 
             if (saveState.errorMessage != null) {
-                item {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Text(
-                            text = saveState.errorMessage,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(12.dp),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
+                item { ErrorCard(saveState.errorMessage) }
             }
 
             item {
@@ -264,20 +473,7 @@ fun ConfigScreen(
             }
 
             if (deleteState.errorMessage != null) {
-                item {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Text(
-                            text = deleteState.errorMessage,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(12.dp),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
+                item { ErrorCard(deleteState.errorMessage) }
             }
         }
     }
@@ -301,5 +497,39 @@ fun ConfigScreen(
             title = { Text("Excluir Conta") },
             text = { Text("Tem certeza que deseja apagar sua conta? Essa ação não pode ser desfeita.") }
         )
+    }
+}
+
+@Composable
+private fun ErrorCard(message: String) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+            modifier = Modifier.padding(12.dp),
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+private fun formatData(valor: String): String {
+    val digits = UserFieldValidator.somenteDigitos(valor).take(8)
+    return when {
+        digits.length <= 2 -> digits
+        digits.length <= 4 -> "${digits.substring(0, 2)}/${digits.substring(2)}"
+        else -> "${digits.substring(0, 2)}/${digits.substring(2, 4)}/${digits.substring(4)}"
+    }
+}
+
+private fun formatTelefone(valor: String): String {
+    val digits = UserFieldValidator.somenteDigitos(valor).take(11)
+    return when {
+        digits.length <= 2 -> digits
+        digits.length <= 7 -> "(${digits.substring(0, 2)}) ${digits.substring(2)}"
+        else -> "(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}"
     }
 }

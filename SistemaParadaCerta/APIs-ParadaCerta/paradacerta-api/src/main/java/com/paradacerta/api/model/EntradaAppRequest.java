@@ -15,4 +15,6 @@ public class EntradaAppRequest {
 
     @NotBlank(message = "Placa do veículo é obrigatória")
     private String placa;
+
+    private Long horaEntradaDispositivoMs;
 }

@@ -8,6 +8,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -16,7 +17,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
@@ -107,6 +111,7 @@ private fun Passo1Solicitar(
     var isCpfMode by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var cpf by remember { mutableStateOf(TextFieldValue("")) }
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(isCpfMode) {
         email = ""
@@ -167,7 +172,11 @@ private fun Passo1Solicitar(
                 onValueChange = { email = it },
                 label = { Text("E-mail") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -193,7 +202,11 @@ private fun Passo1Solicitar(
                 label = { Text("CPF") },
                 placeholder = { Text("000.000.000-00") },
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -245,6 +258,9 @@ private fun Passo2Confirmar(
     var senhaVisible by remember { mutableStateOf(false) }
     var confirmarVisible by remember { mutableStateOf(false) }
     var senhaError by remember { mutableStateOf<String?>(null) }
+    val focusManager = LocalFocusManager.current
+    val nextField = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+    val doneField = KeyboardActions(onDone = { focusManager.clearFocus() })
 
     Column(
         modifier = Modifier
@@ -291,7 +307,11 @@ private fun Passo2Confirmar(
             onValueChange = { if (it.all { c -> c.isDigit() } && it.length <= 6) codigo = it },
             label = { Text("Código de 6 dígitos") },
             leadingIcon = { Icon(Icons.Default.Key, contentDescription = null) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.NumberPassword,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = nextField,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -310,6 +330,11 @@ private fun Passo2Confirmar(
             },
             visualTransformation = if (senhaVisible) VisualTransformation.None else PasswordVisualTransformation(),
             isError = senhaError != null,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = nextField,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -328,6 +353,11 @@ private fun Passo2Confirmar(
             },
             visualTransformation = if (confirmarVisible) VisualTransformation.None else PasswordVisualTransformation(),
             isError = senhaError != null,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = doneField,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )

@@ -23,6 +23,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OperacaoService {
+    private static final ZoneId ZONE_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
     private final SessaoRepository              sessaoRepository;
     private final EstacionamentoRepository      estacionamentoRepository;
@@ -99,8 +101,9 @@ public class OperacaoService {
             throw new UsuarioNaoEncontradoException("Estacionamento não encontrado");
         }
 
-        LocalDateTime inicioHoje = LocalDate.now().atStartOfDay();
-        LocalDateTime fimHoje    = LocalDate.now().atTime(LocalTime.MAX);
+        LocalDate hoje = hojeSaoPaulo();
+        LocalDateTime inicioHoje = hoje.atStartOfDay();
+        LocalDateTime fimHoje    = hoje.atTime(LocalTime.MAX);
 
         long ativas       = sessaoRepository.countByEstacionamentoIdAndStatus(estacionamentoId, SessaoStatus.ATIVA);
         long encerradas   = sessaoRepository.countByEstacionamentoStatusAndPagamentoPeriodo(
@@ -233,7 +236,7 @@ public class OperacaoService {
     }
 
     private Periodo resolverPeriodo(String p) {
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = hojeSaoPaulo();
         switch (p) {
             case "hoje":
                 return new Periodo(hoje.atStartOfDay(), hoje.atTime(LocalTime.MAX));
@@ -262,6 +265,14 @@ public class OperacaoService {
         final LocalDateTime inicio;
         final LocalDateTime fim;
         Periodo(LocalDateTime inicio, LocalDateTime fim) { this.inicio = inicio; this.fim = fim; }
+    }
+
+    private LocalDate hojeSaoPaulo() {
+        return LocalDate.now(ZONE_SAO_PAULO);
+    }
+
+    private LocalDateTime nowSaoPaulo() {
+        return LocalDateTime.now(ZONE_SAO_PAULO);
     }
 
     // ── Relatório regional (PREMIUM) ─────────────────────────────────────────
@@ -479,7 +490,7 @@ public class OperacaoService {
             throw new ConflictException("Sessão já encerrada ou cancelada");
         }
 
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora = nowSaoPaulo();
         sessao.setStatus(SessaoStatus.ENCERRADA);
         sessao.setHoraSaida(agora);
         sessao.setHoraPagamento(agora);
@@ -514,7 +525,7 @@ public class OperacaoService {
         // CANCELADA é preservado para auditoria.
         sessao.setValorPago(BigDecimal.ZERO);
         sessao.setStatus(SessaoStatus.CANCELADA);
-        sessao.setHoraSaida(LocalDateTime.now());
+        sessao.setHoraSaida(nowSaoPaulo());
         sessaoRepository.save(sessao);
 
         // Notificação ao motorista. NÃO reverte cancelamento em caso de falha.
@@ -558,7 +569,7 @@ public class OperacaoService {
         boolean eraReserva = Boolean.TRUE.equals(sessao.getReservado());
         sessao.setValorPago(BigDecimal.ZERO);
         sessao.setStatus(SessaoStatus.CANCELADA);
-        sessao.setHoraSaida(LocalDateTime.now());
+        sessao.setHoraSaida(nowSaoPaulo());
         sessaoRepository.save(sessao);
 
         // E-mail é exclusivo do fluxo de RESERVA cancelada pelo admin.

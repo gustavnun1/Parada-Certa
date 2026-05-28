@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -51,8 +52,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -62,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.screens.common.VEHICLE_BRANDS
 import com.example.paradacerta.validation.PlacaValidator
+import com.example.paradacerta.validation.UserFieldValidator
 import com.example.paradacerta.viewmodel.RegisterViewModel
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
@@ -103,6 +108,9 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel()
 ) {
     var step by remember { mutableStateOf(1) }
+    val focusManager = LocalFocusManager.current
+    val nextField = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+    val doneField = KeyboardActions(onDone = { focusManager.clearFocus() })
 
     // Dados Pessoais
     var name by remember { mutableStateOf("") }
@@ -114,6 +122,13 @@ fun RegisterScreen(
     var cpf by remember { mutableStateOf(TextFieldValue("")) }
     var dtnascimento by remember { mutableStateOf(TextFieldValue("")) }
     var numCelular by remember { mutableStateOf(TextFieldValue("")) }
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+    var cpfError by remember { mutableStateOf<String?>(null) }
+    var birthDateError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
 
     // Dados do Veículo
     var plate by remember { mutableStateOf("") }
@@ -147,6 +162,8 @@ fun RegisterScreen(
     var isLoadingCep by remember { mutableStateOf(false) }
     var cepError by remember { mutableStateOf<String?>(null) }
     var cepLengthError by remember { mutableStateOf(false) }
+    var numeroError by remember { mutableStateOf<String?>(null) }
+    var enderecoError by remember { mutableStateOf<String?>(null) }
     var showCidadeDialog by remember { mutableStateOf(false) }
     var cidadeForaCobertura by remember { mutableStateOf("") }
 
@@ -168,6 +185,7 @@ fun RegisterScreen(
             bairro = addressState.bairro
             cidade = addressState.cidade
             estado = addressState.estado
+            enderecoError = null
             // Bloqueia cidades fora da cobertura
             if (addressState.cidade.isNotBlank() &&
                 !addressState.cidade.trim().equals("São Paulo", ignoreCase = true)
@@ -175,6 +193,11 @@ fun RegisterScreen(
                 cidadeForaCobertura = addressState.cidade
                 showCidadeDialog = true
             }
+        } else {
+            logradouro = ""
+            bairro = ""
+            cidade = ""
+            estado = ""
         }
     }
 
@@ -253,27 +276,57 @@ fun RegisterScreen(
 
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { name = it },
+                        onValueChange = {
+                            name = it
+                            nameError = UserFieldValidator.validarNome(it)
+                        },
                         label = { Text("Nome completo") },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        isError = nameError != null,
+                        supportingText = { nameError?.let { Text(it) } },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = nextField,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it.trim()
+                            emailError = UserFieldValidator.validarEmail(email)
+                        },
                         label = { Text("E-mail") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = nextField,
+                        isError = emailError != null,
+                        supportingText = { emailError?.let { Text(it) } },
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     // Senha com indicador de força
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            passwordError = UserFieldValidator.validarSenha(it)
+                            confirmPasswordError = if (confirmPassword.isNotEmpty() && it != confirmPassword) {
+                                "As senhas não coincidem."
+                            } else null
+                        },
                         label = { Text("Senha") },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        isError = password.isNotEmpty() && !isPasswordStrong(password),
+                        isError = passwordError != null,
+                        supportingText = { passwordError?.let { Text(it) } },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = nextField,
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
@@ -282,6 +335,7 @@ fun RegisterScreen(
                                 )
                             }
                         },
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -307,10 +361,19 @@ fun RegisterScreen(
 
                     OutlinedTextField(
                         value = confirmPassword,
-                        onValueChange = { confirmPassword = it },
+                        onValueChange = {
+                            confirmPassword = it
+                            confirmPasswordError = if (password != it) "As senhas não coincidem." else null
+                        },
                         label = { Text("Repetir Senha") },
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        isError = confirmPassword.isNotEmpty() && password != confirmPassword,
+                        isError = confirmPasswordError != null,
+                        supportingText = { confirmPasswordError?.let { Text(it) } },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = nextField,
                         trailingIcon = {
                             IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                                 Icon(
@@ -319,6 +382,7 @@ fun RegisterScreen(
                                 )
                             }
                         },
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -352,10 +416,18 @@ fun RegisterScreen(
                             }
                             if (newCursorPosition > formatted.length) newCursorPosition = formatted.length
                             cpf = TextFieldValue(text = formatted, selection = TextRange(newCursorPosition))
+                            cpfError = UserFieldValidator.validarCpf(formatted)
                         },
                         label = { Text("CPF") },
                         placeholder = { Text("000.000.000-00") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = nextField,
+                        isError = cpfError != null,
+                        supportingText = { cpfError?.let { Text(it) } },
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -380,10 +452,18 @@ fun RegisterScreen(
                             }
                             if (newCursorPosition > formatted.length) newCursorPosition = formatted.length
                             dtnascimento = TextFieldValue(text = formatted, selection = TextRange(newCursorPosition))
+                            birthDateError = UserFieldValidator.validarDataNascimento(formatted)
                         },
                         label = { Text("Data de Nascimento") },
                         placeholder = { Text("DD/MM/AAAA") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = nextField,
+                        isError = birthDateError != null,
+                        supportingText = { birthDateError?.let { Text(it) } },
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -408,10 +488,18 @@ fun RegisterScreen(
                             }
                             if (newCursorPosition > formatted.length) newCursorPosition = formatted.length
                             numCelular = TextFieldValue(text = formatted, selection = TextRange(newCursorPosition))
+                            phoneError = UserFieldValidator.validarTelefone(formatted)
                         },
                         label = { Text("Número do Telefone") },
                         placeholder = { Text("(00) 00000-0000") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = doneField,
+                        isError = phoneError != null,
+                        supportingText = { phoneError?.let { Text(it) } },
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -429,6 +517,9 @@ fun RegisterScreen(
                         supportingText = if (plate.isNotBlank() && !plateIsValid) {
                             { Text(PlacaValidator.MENSAGEM_FORMATO_INVALIDO) }
                         } else null,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = doneField,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -545,17 +636,30 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = cep,
                         onValueChange = {
-                            cep = it.filter { char -> char.isDigit() }.take(8)
+                            val novoCep = it.filter { char -> char.isDigit() }.take(8)
+                            cep = novoCep
                             cepLengthError = false
-                            if (cep.length == 8) {
+                            cepError = UserFieldValidator.validarCep(novoCep)
+                            logradouro = ""
+                            bairro = ""
+                            cidade = ""
+                            estado = ""
+                            enderecoError = null
+                            if (novoCep.length == 8) {
                                 isLoadingCep = true
                                 cepError = null
-                                viewModel.fetchCep(cep)
+                                viewModel.fetchCep(novoCep)
+                            } else {
+                                isLoadingCep = false
                             }
                         },
                         label = { Text("CEP") },
                         placeholder = { Text("00000000") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = nextField,
                         modifier = Modifier.fillMaxWidth(),
                         isError = cepError != null || cepLengthError,
                         trailingIcon = {
@@ -565,7 +669,8 @@ fun RegisterScreen(
                                     strokeWidth = 2.dp
                                 )
                             }
-                        }
+                        },
+                        singleLine = true
                     )
 
                     when {
@@ -586,13 +691,22 @@ fun RegisterScreen(
                         onValueChange = {},
                         label = { Text("Logradouro") },
                         enabled = false,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     OutlinedTextField(
                         value = numero,
-                        onValueChange = { numero = it },
+                        onValueChange = {
+                            numero = it.trim().take(10)
+                            numeroError = UserFieldValidator.validarNumeroEndereco(numero)
+                        },
                         label = { Text("Número") },
+                        isError = numeroError != null,
+                        supportingText = { numeroError?.let { Text(it) } },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = nextField,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -600,6 +714,9 @@ fun RegisterScreen(
                         value = complemento,
                         onValueChange = { complemento = it },
                         label = { Text("Complemento (opcional)") },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = doneField,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -608,6 +725,7 @@ fun RegisterScreen(
                         onValueChange = {},
                         label = { Text("Bairro") },
                         enabled = false,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -616,6 +734,7 @@ fun RegisterScreen(
                         onValueChange = {},
                         label = { Text("Cidade") },
                         enabled = false,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -625,10 +744,19 @@ fun RegisterScreen(
                         label = { Text("Estado (UF)") },
                         placeholder = { Text("SP") },
                         enabled = false,
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     // Aviso visível quando cidade não é São Paulo
+                    enderecoError?.let { error ->
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
                     if (cidade.isNotBlank() &&
                         !cidade.trim().equals("São Paulo", ignoreCase = true)
                     ) {
@@ -729,13 +857,25 @@ fun RegisterScreen(
                 onClick = {
                     when (step) {
                         1 -> {
-                            if (name.isBlank() || email.isBlank() ||
-                                !isPasswordStrong(password) ||
-                                password != confirmPassword ||
-                                cpf.text.replace("[^0-9]".toRegex(), "").length != 11 ||
-                                !dtnascimento.text.matches(Regex("\\d{2}/\\d{2}/\\d{4}"))) {
-                                showError = true
-                            } else {
+                            nameError = UserFieldValidator.validarNome(name)
+                            emailError = UserFieldValidator.validarEmail(email)
+                            passwordError = UserFieldValidator.validarSenha(password)
+                            confirmPasswordError = if (password != confirmPassword) "As senhas não coincidem." else null
+                            cpfError = UserFieldValidator.validarCpf(cpf.text)
+                            birthDateError = UserFieldValidator.validarDataNascimento(dtnascimento.text)
+                            phoneError = UserFieldValidator.validarTelefone(numCelular.text)
+
+                            showError = listOf(
+                                nameError,
+                                emailError,
+                                passwordError,
+                                confirmPasswordError,
+                                cpfError,
+                                birthDateError,
+                                phoneError
+                            ).any { it != null }
+
+                            if (!showError) {
                                 showError = false
                                 step++
                             }
@@ -750,10 +890,16 @@ fun RegisterScreen(
                         }
                         3 -> {
                             val cidadeValida = cidade.trim().equals("São Paulo", ignoreCase = true)
+                            cepError = UserFieldValidator.validarCep(cep)
+                            numeroError = UserFieldValidator.validarNumeroEndereco(numero)
+                            enderecoError = if (logradouro.isBlank() || bairro.isBlank() ||
+                                cidade.isBlank() || estado.length != 2
+                            ) {
+                                "Informe um CEP válido para preencher o endereço."
+                            } else null
                             if (cep.length != 8) {
                                 cepLengthError = true
-                            } else if (logradouro.isBlank() || numero.isBlank() ||
-                                bairro.isBlank() || cidade.isBlank() || estado.length != 2) {
+                            } else if (numeroError != null || enderecoError != null) {
                                 showError = true
                             } else if (!cidadeValida) {
                                 cidadeForaCobertura = cidade

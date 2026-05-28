@@ -19,6 +19,7 @@ import java.time.ZoneId;
 @Service
 @RequiredArgsConstructor
 public class ReservaService {
+    private static final ZoneId ZONE_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
     private final SessaoRepository              sessaoRepository;
     private final EstacionamentoRepository      estacionamentoRepository;
@@ -67,7 +68,7 @@ public class ReservaService {
         }
 
         // Cria a sessão de reserva
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora = nowSaoPaulo();
         String qrCode = java.util.UUID.randomUUID().toString();
 
         String placa = req.getPlaca() != null ? req.getPlaca().toUpperCase() : null;
@@ -93,10 +94,7 @@ public class ReservaService {
                     .orElse(null);
         }
 
-        long horaEntradaMs = agora
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
+        long horaEntradaMs = toEpochMillisSaoPaulo(agora);
 
         return new ReservaResponse(
                 String.valueOf(sessao.getId()),
@@ -130,7 +128,7 @@ public class ReservaService {
         BigDecimal reembolso = valorPago.multiply(new BigDecimal("0.15")).setScale(2, RoundingMode.HALF_UP);
 
         sessao.setStatus(SessaoStatus.CANCELADA);
-        sessao.setHoraSaida(LocalDateTime.now());
+        sessao.setHoraSaida(nowSaoPaulo());
         // Reserva cancelada não gera receita no painel admin: o valorPago é
         // zerado para que os totais financeiros (dashboard, financeiro, ticket
         // médio, gráficos) não contabilizem cancelamentos. A multa contratual
@@ -175,7 +173,7 @@ public class ReservaService {
         }
 
         sessao.setStatus(SessaoStatus.ENCERRADA);
-        sessao.setHoraSaida(LocalDateTime.now());
+        sessao.setHoraSaida(nowSaoPaulo());
         sessaoRepository.save(sessao);
 
         return ApiResponse.ok("Reserva finalizada. Boa permanência!");
@@ -217,8 +215,16 @@ public class ReservaService {
      * Valor negativo indica que ainda está dentro do período coberto.
      */
     private long calcularExtraMinutos(LocalDateTime horaEntrada) {
-        long totalMinutos = Duration.between(horaEntrada, LocalDateTime.now()).toMinutes();
+        long totalMinutos = Duration.between(horaEntrada, nowSaoPaulo()).toMinutes();
         return totalMinutos - 60; // desconta a 1 hora coberta pela reserva
+    }
+
+    private LocalDateTime nowSaoPaulo() {
+        return LocalDateTime.now(ZONE_SAO_PAULO);
+    }
+
+    private long toEpochMillisSaoPaulo(LocalDateTime dataHora) {
+        return dataHora.atZone(ZONE_SAO_PAULO).toInstant().toEpochMilli();
     }
 
     /**

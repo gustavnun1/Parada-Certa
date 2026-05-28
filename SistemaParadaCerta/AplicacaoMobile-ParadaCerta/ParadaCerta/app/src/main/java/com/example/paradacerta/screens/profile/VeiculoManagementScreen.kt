@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -15,7 +17,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -377,6 +382,7 @@ private fun VeiculoFormDialog(
 
     var expandedModelo by remember { mutableStateOf(false) }
     var expandedCor by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     val placaValida = PlacaValidator.isValida(placa)
     val modeloValido = modelo.isNotBlank()
@@ -399,6 +405,13 @@ private fun VeiculoFormDialog(
                     supportingText = if (placa.isNotBlank() && !placaValida) {
                         { Text(PlacaValidator.MENSAGEM_FORMATO_INVALIDO) }
                     } else null,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Characters,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.clearFocus() }
+                    ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )

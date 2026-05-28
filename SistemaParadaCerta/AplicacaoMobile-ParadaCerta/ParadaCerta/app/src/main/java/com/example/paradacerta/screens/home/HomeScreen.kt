@@ -43,6 +43,7 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.ceil
 
 @Composable
@@ -623,8 +624,9 @@ private fun ReservedSessionPanel(
     modifier: Modifier = Modifier
 ) {
     val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-    val horaReservaFormatada = SimpleDateFormat("HH:mm", Locale("pt", "BR"))
-        .format(Date(sessao.horaEntrada))
+    val horaReservaFormatada = SimpleDateFormat("HH:mm", Locale("pt", "BR")).apply {
+        timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
+    }.format(Date(sessao.horaEntrada))
 
     Column(modifier = modifier) {
         // Banner de dívida pendente
@@ -838,8 +840,9 @@ private fun ActiveSessionPanel(
     modifier: Modifier = Modifier
 ) {
     val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-    val horaEntradaFormatada = SimpleDateFormat("HH:mm", Locale("pt", "BR"))
-        .format(Date(sessao.horaEntrada))
+    val horaEntradaFormatada = SimpleDateFormat("HH:mm", Locale("pt", "BR")).apply {
+        timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
+    }.format(Date(sessao.horaEntrada))
 
     Column(modifier = modifier) {
         Text(

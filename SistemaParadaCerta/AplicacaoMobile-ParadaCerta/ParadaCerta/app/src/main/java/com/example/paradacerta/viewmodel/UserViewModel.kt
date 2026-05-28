@@ -12,6 +12,7 @@ import com.example.paradacerta.models.Veiculo
 import com.example.paradacerta.network.ParadaCertaClient
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.TimeZone
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,7 +53,8 @@ class UserViewModel : ViewModel() {
      * Registra a entrada no backend e atualiza sessaoAtiva com o sessaoId real.
      */
     fun iniciarSessaoComBackend(sessao: SessaoAtiva, placa: String) {
-        _sessaoAtiva.value = sessao
+        val horaEntradaDispositivoMs = System.currentTimeMillis()
+        _sessaoAtiva.value = sessao.copy(horaEntrada = horaEntradaDispositivoMs)
         val cpf = _userData.value?.cpf ?: return
         viewModelScope.launch {
             runCatching {
@@ -60,7 +62,8 @@ class UserViewModel : ViewModel() {
                     EntradaAppRequest(
                         cpfUsuario = cpf,
                         estacionamentoId = sessao.estacionamentoId,
-                        placa = placa
+                        placa = placa,
+                        horaEntradaDispositivoMs = horaEntradaDispositivoMs
                     )
                 )
                 if (response.isSuccessful) {
@@ -71,6 +74,7 @@ class UserViewModel : ViewModel() {
                             ?: sessao.pixKey
                         _sessaoAtiva.value = sessao.copy(
                             sessaoId = r.sessaoId,
+                            horaEntrada = parseHoraEntrada(r.horaEntrada) ?: horaEntradaDispositivoMs,
                             pixKey = pixKeyAtualizada
                         )
                     }
@@ -176,7 +180,9 @@ class UserViewModel : ViewModel() {
         if (valor.isNullOrBlank()) return null
         return runCatching {
             val base = valor.take(19)
-            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).parse(base)?.time
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+                timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
+            }.parse(base)?.time
         }.getOrNull()
     }
 }

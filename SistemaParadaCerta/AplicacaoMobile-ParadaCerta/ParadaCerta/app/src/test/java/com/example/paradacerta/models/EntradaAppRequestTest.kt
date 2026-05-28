@@ -11,13 +11,14 @@ class EntradaAppRequestTest {
         val request = EntradaAppRequest(
             cpfUsuario = "12345678909",
             estacionamentoId = 10,
-            placa = "ABC1D23"
+            placa = "ABC1D23",
+            horaEntradaDispositivoMs = 1_771_957_700_000L
         )
 
         val json = Gson().toJson(request)
 
         assertEquals(
-            """{"cpfUsuario":"12345678909","estacionamentoId":10,"placa":"ABC1D23"}""",
+            """{"cpfUsuario":"12345678909","estacionamentoId":10,"placa":"ABC1D23","horaEntradaDispositivoMs":1771957700000}""",
             json
         )
     }

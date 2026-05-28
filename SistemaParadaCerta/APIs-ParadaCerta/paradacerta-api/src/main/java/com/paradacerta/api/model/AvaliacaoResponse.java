@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AvaliacaoResponse {
     private Integer id;
+    private Integer estacionamentoId;
+    private Long clienteId;
+    private String clienteNome;
     private Integer nota;
     private String comentario;
     private LocalDateTime dataAvaliacao;

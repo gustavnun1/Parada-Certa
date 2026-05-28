@@ -2,7 +2,12 @@ package com.paradacerta.api.service;
 
 import com.paradacerta.api.exception.RequisicaoInvalidaException;
 import com.paradacerta.api.exception.UsuarioNaoEncontradoException;
-import com.paradacerta.api.model.*;
+import com.paradacerta.api.model.ApiResponse;
+import com.paradacerta.api.model.Avaliacao;
+import com.paradacerta.api.model.AvaliacaoRequest;
+import com.paradacerta.api.model.AvaliacaoResponse;
+import com.paradacerta.api.model.Cliente;
+import com.paradacerta.api.model.Estacionamento;
 import com.paradacerta.api.repository.AvaliacaoRepository;
 import com.paradacerta.api.repository.ClienteRepository;
 import com.paradacerta.api.repository.EstacionamentoRepository;
@@ -13,22 +18,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AvaliacaoService {
-
-    private final AvaliacaoRepository     avaliacaoRepository;
-    private final EstacionamentoRepository estacionamentoRepository;
-    private final ClienteRepository        clienteRepository;
-    private final FiltroConteudoService    filtroConteudoService;  // camada 1: local, sempre ativa
-    private final ModeracaoService         moderacaoService;       // camada 2: OpenAI API, opcional
-
+    private static final ZoneId ZONE_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
     private static final String MSG_CONTEUDO_INADEQUADO =
-        "Seu comentário contém conteúdo inadequado (linguagem ofensiva, violência ou " +
-        "conteúdo sensível) e não pôde ser enviado. Por favor, revise e tente novamente.";
+            "Seu comentário contém conteúdo inadequado (linguagem ofensiva, violência ou " +
+            "conteúdo sensível) e não pôde ser enviado. Por favor, revise e tente novamente.";
+
+    private final AvaliacaoRepository avaliacaoRepository;
+    private final EstacionamentoRepository estacionamentoRepository;
+    private final ClienteRepository clienteRepository;
+    private final FiltroConteudoService filtroConteudoService;
+    private final ModeracaoService moderacaoService;
 
     @Transactional
     public ApiResponse avaliar(AvaliacaoRequest req) {
@@ -38,34 +43,18 @@ public class AvaliacaoService {
         Cliente cliente = clienteRepository.findByCpf(req.getClienteCpf())
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado"));
 
-        // ── Moderação do comentário ───────────────────────────────────────────
-        String comentario = req.getComentario();
-        String comentarioFinal = null;
+        String comentarioFinal = validarComentario(req.getComentario());
 
-        if (comentario != null && !comentario.isBlank()) {
-            // Camada 1: filtro local (palavrões em português) — sempre roda
-            if (!filtroConteudoService.isConteudoApropriado(comentario)) {
-                throw new RequisicaoInvalidaException(MSG_CONTEUDO_INADEQUADO);
-            }
-
-            // Camada 2: OpenAI Moderation API — roda se a chave estiver configurada
-            if (!moderacaoService.isConteudoApropriado(comentario)) {
-                throw new RequisicaoInvalidaException(MSG_CONTEUDO_INADEQUADO);
-            }
-
-            comentarioFinal = comentario.trim();
-        }
-
-        // ── Salvar avaliação ──────────────────────────────────────────────────
-        Avaliacao avaliacao = new Avaliacao();
+        Avaliacao avaliacao = avaliacaoRepository
+                .findByEstacionamentoIdAndClienteId(req.getEstacionamentoId(), cliente.getId())
+                .orElseGet(Avaliacao::new);
         avaliacao.setEstacionamentoId(req.getEstacionamentoId());
         avaliacao.setClienteId(cliente.getId());
         avaliacao.setNota(req.getNota());
         avaliacao.setComentario(comentarioFinal);
-        avaliacao.setDataAvaliacao(LocalDateTime.now());
+        avaliacao.setDataAvaliacao(LocalDateTime.now(ZONE_SAO_PAULO));
         avaliacaoRepository.save(avaliacao);
 
-        // Recalcula média do estacionamento
         Double media = avaliacaoRepository.calcularMedia(req.getEstacionamentoId());
         if (media != null) {
             estacionamento.setAvaliacaoMedia(
@@ -79,15 +68,42 @@ public class AvaliacaoService {
 
     @Transactional(readOnly = true)
     public List<AvaliacaoResponse> listar(Integer estacionamentoId) {
+        estacionamentoRepository.findById(estacionamentoId)
+                .orElseThrow(() -> new RequisicaoInvalidaException("Estacionamento não encontrado"));
+
         return avaliacaoRepository
                 .findByEstacionamentoIdOrderByDataAvaliacaoDesc(estacionamentoId)
                 .stream()
-                .map(a -> new AvaliacaoResponse(
-                        a.getId(),
-                        a.getNota(),
-                        a.getComentario(),
-                        a.getDataAvaliacao()
-                ))
-                .collect(Collectors.toList());
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private String validarComentario(String comentario) {
+        if (comentario == null || comentario.isBlank()) {
+            return null;
+        }
+
+        if (!filtroConteudoService.isConteudoApropriado(comentario)
+                || !moderacaoService.isConteudoApropriado(comentario)) {
+            throw new RequisicaoInvalidaException(MSG_CONTEUDO_INADEQUADO);
+        }
+
+        return comentario.trim();
+    }
+
+    private AvaliacaoResponse toResponse(Avaliacao avaliacao) {
+        String clienteNome = clienteRepository.findById(avaliacao.getClienteId())
+                .map(Cliente::getNome)
+                .orElse("Cliente");
+
+        return new AvaliacaoResponse(
+                avaliacao.getId(),
+                avaliacao.getEstacionamentoId(),
+                avaliacao.getClienteId(),
+                clienteNome,
+                avaliacao.getNota(),
+                avaliacao.getComentario(),
+                avaliacao.getDataAvaliacao()
+        );
     }
 }

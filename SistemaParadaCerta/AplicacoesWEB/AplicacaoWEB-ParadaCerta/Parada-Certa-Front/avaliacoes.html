@@ -197,9 +197,6 @@
     const sessao = pcRequireSession();
     const ADMIN_ID = sessao.id;
 
-    const API_ESTACIONAMENTOS = "http://localhost:8080/api/estacionamentos?adminId=" + encodeURIComponent(ADMIN_ID);
-    const API_AVALIACOES = "http://localhost:8080/api/avaliacao/estacionamento";
-
     let estacionamentos = [];
     let avaliacoes = [];
 
@@ -277,13 +274,7 @@
 
     async function carregarEstacionamentos() {
       try {
-        const resposta = await fetch(API_ESTACIONAMENTOS);
-
-        if (!resposta.ok) {
-          throw new Error("Erro ao carregar estacionamentos");
-        }
-
-        estacionamentos = await resposta.json();
+        estacionamentos = await pcFetch("/api/estacionamentos?adminId=" + encodeURIComponent(ADMIN_ID));
 
         document.getElementById("alertaErro").classList.add("hidden");
 
@@ -325,17 +316,11 @@
           const respostas = await Promise.all(
             estacionamentos.map(async (estacionamento) => {
               try {
-                const resposta = await fetch(`${API_AVALIACOES}/${estacionamento.id}`);
-
-                if (!resposta.ok) {
-                  return [];
-                }
-
-                const dados = await resposta.json();
+                const dados = await pcFetch("/api/avaliacao/estacionamento/" + encodeURIComponent(estacionamento.id));
 
                 return dados.map((avaliacao) => ({
                   ...avaliacao,
-                  estacionamentoId: estacionamento.id,
+                  estacionamentoId: avaliacao.estacionamentoId ?? estacionamento.id,
                   estacionamentoNome: estacionamento.nome
                 }));
 
@@ -348,18 +333,12 @@
           avaliacoes = respostas.flat();
 
         } else {
-          const resposta = await fetch(`${API_AVALIACOES}/${selecionado}`);
-
-          if (!resposta.ok) {
-            throw new Error("Erro ao carregar avaliações");
-          }
-
-          const dados = await resposta.json();
+          const dados = await pcFetch("/api/avaliacao/estacionamento/" + encodeURIComponent(selecionado));
           const estacionamento = estacionamentos.find((e) => String(e.id) === String(selecionado));
 
           avaliacoes = dados.map((avaliacao) => ({
             ...avaliacao,
-            estacionamentoId: selecionado,
+            estacionamentoId: avaliacao.estacionamentoId ?? Number(selecionado),
             estacionamentoNome: estacionamento?.nome || `Estacionamento ${selecionado}`
           }));
         }

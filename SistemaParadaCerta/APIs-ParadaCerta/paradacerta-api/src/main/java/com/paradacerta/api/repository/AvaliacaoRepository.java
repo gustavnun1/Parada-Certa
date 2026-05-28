@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Integer> {
@@ -15,4 +16,6 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Integer> {
     Double calcularMedia(@Param("id") Integer estacionamentoId);
 
     List<Avaliacao> findByEstacionamentoIdOrderByDataAvaliacaoDesc(Integer estacionamentoId);
+
+    Optional<Avaliacao> findByEstacionamentoIdAndClienteId(Integer estacionamentoId, Long clienteId);
 }

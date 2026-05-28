@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class KioskAdmService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private static final ZoneId ZONE_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
     private final OperadorEstacionamentoRepository operadorRepository;
     private final EstacionamentoRepository estacionamentoRepository;
@@ -81,7 +83,7 @@ public class KioskAdmService {
         }
 
         String token = UUID.randomUUID().toString();
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora = LocalDateTime.now(ZONE_SAO_PAULO);
         LocalDateTime expiracao = agora.plusMinutes(30);
 
         SessaoEstacionamento sessao = new SessaoEstacionamento();

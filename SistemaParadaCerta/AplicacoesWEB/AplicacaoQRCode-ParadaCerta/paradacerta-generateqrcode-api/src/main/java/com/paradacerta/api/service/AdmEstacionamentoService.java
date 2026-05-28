@@ -29,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class AdmEstacionamentoService {
     private final JdbcTemplate jdbcTemplate;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private static final ZoneId ZONE_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
     private static final String MSG_CEP_INVALIDO = "CEP invalido ou nao encontrado. Verifique o CEP informado e tente novamente.";
     private static final String MSG_SOMENTE_SP = "No momento, o Parada Certa aceita apenas estacionamentos localizados na cidade de Sao Paulo.";
 
@@ -98,7 +100,7 @@ public class AdmEstacionamentoService {
         qrCodeRepository.invalidarTokensDisponiveis(request.getEstacionamentoId());
 
         String token = UUID.randomUUID().toString();
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora = LocalDateTime.now(ZONE_SAO_PAULO);
         LocalDateTime expiracao = agora.plusMinutes(30);
         BigDecimal valorMinimo = est.getPrecoHora() != null ? est.getPrecoHora() : BigDecimal.ZERO;
 

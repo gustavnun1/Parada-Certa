@@ -1,34 +1,42 @@
 package com.paradacerta.api.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-// DTO recebido pelo app Android com todos os dados de cadastro
+// DTO recebido pelo app Android com todos os dados de cadastro.
 @Data
 public class CadastroRequest {
 
-    // --- Dados Pessoais ---
     @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, max = 80, message = "O nome deve possuir entre 3 e 80 caracteres.")
+    @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$", message = "Nome inválido.")
     private String nome;
 
     @NotBlank(message = "E-mail é obrigatório")
-    @Email(message = "E-mail inválido")
+    @Email(message = "Email inválido.")
+    @Size(max = 120, message = "O email deve possuir no máximo 120 caracteres.")
     private String email;
 
     @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
+    @Size(min = 8, max = 100, message = "A senha deve possuir entre 8 e 100 caracteres.")
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$",
+            message = "A senha deve conter letras maiúsculas, minúsculas, números e caracteres especiais."
+    )
     private String senha;
 
     @NotBlank(message = "CPF é obrigatório")
-    @Size(min = 11, max = 11, message = "CPF deve ter 11 dígitos")
     private String cpf;
 
     @NotBlank(message = "Data de nascimento é obrigatória")
-    private String dataNascimento; // formato: dd/MM/yyyy
+    private String dataNascimento;
 
+    @NotBlank(message = "Telefone é obrigatório")
     private String numeroCelular;
 
-    // --- Dados do Veículo ---
     @NotBlank(message = "Placa é obrigatória")
     private String placa;
 
@@ -38,7 +46,6 @@ public class CadastroRequest {
     @NotBlank(message = "Cor do veículo é obrigatória")
     private String corVeiculo;
 
-    // --- Endereço ---
     @NotBlank(message = "CEP é obrigatório")
     private String cep;
 
