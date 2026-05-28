@@ -105,6 +105,7 @@ private fun isPasswordStrong(password: String): Boolean {
 @Composable
 fun RegisterScreen(
     onFinishRegister: () -> Unit = {},
+    onBackToLogin: () -> Unit = {},
     viewModel: RegisterViewModel = viewModel()
 ) {
     var step by remember { mutableStateOf(1) }
@@ -238,13 +239,15 @@ fun RegisterScreen(
             TopAppBar(
                 title = { Text("Cadastro - Etapa $step de 4") },
                 navigationIcon = {
-                    if (step > 1) {
-                        IconButton(onClick = {
+                    IconButton(onClick = {
+                        if (step > 1) {
                             step--
                             showError = false
-                        }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null)
+                        } else {
+                            onBackToLogin()
                         }
+                    }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

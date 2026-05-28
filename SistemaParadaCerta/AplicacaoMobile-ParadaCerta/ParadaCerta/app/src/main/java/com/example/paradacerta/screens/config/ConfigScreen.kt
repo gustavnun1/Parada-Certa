@@ -38,10 +38,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.paradacerta.models.Cliente
 import com.example.paradacerta.models.Endereco
@@ -80,11 +82,11 @@ fun ConfigScreen(
     var nome by remember { mutableStateOf(cliente.nome) }
     var email by remember { mutableStateOf(cliente.email) }
     var senha by remember { mutableStateOf("") }
-    var numeroCelular by remember { mutableStateOf(formatTelefone(cliente.numeroCelular)) }
+    var numeroCelular by remember { mutableStateOf(TextFieldValue(formatTelefone(cliente.numeroCelular))) }
 
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     var dataNascimento by remember {
-        mutableStateOf(cliente.dataNascimento?.let { dateFormat.format(it) } ?: "")
+        mutableStateOf(TextFieldValue(cliente.dataNascimento?.let { dateFormat.format(it) } ?: ""))
     }
 
     var cep by remember { mutableStateOf(UserFieldValidator.somenteDigitos(endereco?.cep ?: "")) }
@@ -211,9 +213,9 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = dataNascimento,
-                    onValueChange = {
-                        dataNascimento = formatData(it)
-                        dataError = UserFieldValidator.validarDataNascimento(dataNascimento)
+                    onValueChange = { newValue ->
+                        dataNascimento = formatMaskedTextFieldValue(newValue, 8, ::formatData)
+                        dataError = UserFieldValidator.validarDataNascimento(dataNascimento.text)
                     },
                     label = { Text("Data de Nascimento") },
                     placeholder = { Text("DD/MM/AAAA") },
@@ -232,9 +234,9 @@ fun ConfigScreen(
             item {
                 OutlinedTextField(
                     value = numeroCelular,
-                    onValueChange = {
-                        numeroCelular = formatTelefone(it)
-                        telefoneError = UserFieldValidator.validarTelefone(numeroCelular)
+                    onValueChange = { newValue ->
+                        numeroCelular = formatMaskedTextFieldValue(newValue, 11, ::formatTelefone)
+                        telefoneError = UserFieldValidator.validarTelefone(numeroCelular.text)
                     },
                     label = { Text("Celular") },
                     keyboardOptions = KeyboardOptions(
@@ -393,8 +395,8 @@ fun ConfigScreen(
                         nomeError = UserFieldValidator.validarNome(nome)
                         emailError = UserFieldValidator.validarEmail(email)
                         senhaError = UserFieldValidator.validarSenha(senha, obrigatoria = false)
-                        dataError = UserFieldValidator.validarDataNascimento(dataNascimento)
-                        telefoneError = UserFieldValidator.validarTelefone(numeroCelular)
+                        dataError = UserFieldValidator.validarDataNascimento(dataNascimento.text)
+                        telefoneError = UserFieldValidator.validarTelefone(numeroCelular.text)
                         cepError = UserFieldValidator.validarCep(cep)
                         numeroError = UserFieldValidator.validarNumeroEndereco(numero)
                         enderecoError = if (
@@ -419,8 +421,8 @@ fun ConfigScreen(
                                 nome.trim(),
                                 email.trim(),
                                 senha,
-                                dataNascimento,
-                                numeroCelular,
+                                dataNascimento.text,
+                                numeroCelular.text,
                                 cep,
                                 logradouro,
                                 numero,
@@ -532,4 +534,31 @@ private fun formatTelefone(valor: String): String {
         digits.length <= 7 -> "(${digits.substring(0, 2)}) ${digits.substring(2)}"
         else -> "(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}"
     }
+}
+
+private fun formatMaskedTextFieldValue(
+    newValue: TextFieldValue,
+    maxDigits: Int,
+    formatter: (String) -> String
+): TextFieldValue {
+    val digits = UserFieldValidator.somenteDigitos(newValue.text).take(maxDigits)
+    val formatted = formatter(digits)
+    val digitsBeforeCursor = newValue.text
+        .take(newValue.selection.start)
+        .count { it.isDigit() }
+        .coerceAtMost(digits.length)
+
+    val cursor = findCursorAfterDigits(formatted, digitsBeforeCursor)
+    return TextFieldValue(text = formatted, selection = TextRange(cursor))
+}
+
+private fun findCursorAfterDigits(formatted: String, digitsBeforeCursor: Int): Int {
+    if (digitsBeforeCursor <= 0) return 0
+
+    var digitsCount = 0
+    for (index in formatted.indices) {
+        if (formatted[index].isDigit()) digitsCount++
+        if (digitsCount >= digitsBeforeCursor) return index + 1
+    }
+    return formatted.length
 }

@@ -141,6 +141,9 @@ fun AppNavGraph(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
+                },
+                onBackToLogin = {
+                    navController.popBackStack()
                 }
             )
         }
