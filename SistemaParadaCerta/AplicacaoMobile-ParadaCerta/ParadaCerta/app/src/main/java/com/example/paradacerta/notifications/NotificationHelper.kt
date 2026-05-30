@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.paradacerta.MainActivity
@@ -15,6 +16,8 @@ object NotificationHelper {
     const val CHANNEL_RESERVAS = "channel_reservas"
 
     fun createChannels(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         NotificationChannel(

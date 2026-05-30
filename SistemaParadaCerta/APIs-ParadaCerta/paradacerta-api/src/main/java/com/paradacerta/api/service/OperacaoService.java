@@ -663,6 +663,7 @@ public class OperacaoService {
                     s.getPlaca(),
                     modelo,
                     s.getHoraEntrada(),
+                    s.getInicioReservaPrevisto(),
                     s.getHoraSaida(),
                     s.getHoraPagamento(),
                     s.getValorPago(),

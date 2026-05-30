@@ -285,6 +285,7 @@
               <th class="px-6 py-4 text-left font-semibold">Entrada</th>
               <th class="px-6 py-4 text-left font-semibold">Saída prevista</th>
               <th class="px-6 py-4 text-left font-semibold">Status</th>
+              <th class="px-6 py-4 text-left font-semibold">Pagamento</th>
               <th class="px-6 py-4 text-left font-semibold">Valor</th>
               <th class="px-6 py-4 text-left font-semibold">Ações</th>
             </tr>
@@ -570,6 +571,26 @@
       return status || "—";
     }
 
+    function inicioOperacao(s) {
+      return s && s.reservado && s.inicioReservaPrevisto ? s.inicioReservaPrevisto : s.horaEntrada;
+    }
+
+    function reservaPaga(s) {
+      if (s && s.reservado && s.status !== "CANCELADA") return true;
+      const valor = Number(s && s.valorPago != null ? s.valorPago : 0);
+      return !!(s && (s.horaPagamento || valor > 0));
+    }
+
+    function classePagamento(s) {
+      return reservaPaga(s)
+        ? "bg-green-100 text-green-700 border border-green-200"
+        : "bg-yellow-100 text-yellow-700 border border-yellow-200";
+    }
+
+    function nomePagamento(s) {
+      return reservaPaga(s) ? "Pago" : "Pendente";
+    }
+
     function ehAcessoTotem(s) {
       return s && (s.clienteId === null || s.clienteId === undefined);
     }
@@ -657,10 +678,13 @@
             <td class="px-6 py-4">
               <span class="inline-flex whitespace-nowrap px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold">${tipoOperacao(s)}</span>
             </td>
-            <td class="px-6 py-4 text-slate-700">${pcFormatarDataHora(s.horaEntrada)}</td>
+            <td class="px-6 py-4 text-slate-700">${pcFormatarDataHora(inicioOperacao(s))}</td>
             <td class="px-6 py-4 text-slate-700">${s.horaSaida ? pcFormatarDataHora(s.horaSaida) : (s.status === "ATIVA" ? "Em aberto" : "-")}</td>
             <td class="px-6 py-4">
               <span class="px-3 py-1 rounded-full text-xs font-semibold ${classeStatus(s.status)}">${nomeStatus(s.status)}</span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold ${classePagamento(s)}">${nomePagamento(s)}</span>
             </td>
             <td class="px-6 py-4 font-semibold text-green-600">${formatarMoeda(s.valorPago)}</td>
             <td class="px-6 py-4">
@@ -791,9 +815,9 @@
         "Cliente: " + nomeClienteOperacao(s) + "\n" +
         "CPF: " + (ehAcessoTotem(s) ? "Não informado" : (s.clienteCpf || "-")) + "\n" +
         "Veículo: " + veiculoOperacao(s) + " (" + placaOperacao(s) + ")\n" +
-        "Entrada: " + pcFormatarDataHora(s.horaEntrada) + "\n" +
+        "Entrada: " + pcFormatarDataHora(inicioOperacao(s)) + "\n" +
         "Saída: " + (s.horaSaida ? pcFormatarDataHora(s.horaSaida) : "-") + "\n" +
-        "Pagamento: " + (s.horaPagamento ? pcFormatarDataHora(s.horaPagamento) : "-") + "\n" +
+        "Pagamento: " + nomePagamento(s) + (s.horaPagamento ? " (" + pcFormatarDataHora(s.horaPagamento) + ")" : "") + "\n" +
         "Valor pago: " + formatarMoeda(s.valorPago) + "\n" +
         "Reservado: " + (s.reservado ? "Sim" : "Não") + "\n" +
         "Status: " + nomeStatus(s.status) + "\n" +

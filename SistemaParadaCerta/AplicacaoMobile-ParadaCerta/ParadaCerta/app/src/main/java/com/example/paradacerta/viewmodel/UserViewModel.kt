@@ -128,12 +128,14 @@ class UserViewModel : ViewModel() {
                             placa = r.placa ?: "",
                             precoHora = r.precoHora,
                             horaEntrada = r.horaEntrada,
+                            inicioReservaPrevisto = r.inicioReservaPrevisto,
                             sessaoId = r.sessaoId,
                             pixKey = r.pixKey ?: "",
                             reservado = r.reservado ?: false
                         )
                         if (r.reservado == true) {
-                            val extraMin = (System.currentTimeMillis() - r.horaEntrada - 3_600_000L) / 60_000L
+                            val baseReserva = r.inicioReservaPrevisto ?: r.horaEntrada
+                            val extraMin = (System.currentTimeMillis() - baseReserva - 3_600_000L) / 60_000L
                             if (extraMin > 15) {
                                 val extraHoras = kotlin.math.ceil(extraMin / 60.0)
                                 _devidaReservaExtra.value = DevidaReservaExtra(

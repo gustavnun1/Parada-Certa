@@ -132,6 +132,7 @@ CREATE TABLE [dbo].[SessaoEstacionamento] (
     [clienteId]        [bigint]        NOT NULL,
     [estacionamentoId] [int]           NOT NULL,
     [horaEntrada]      [datetime2]     NOT NULL,
+    [inicioReservaPrevisto] [datetime2] NULL,
     [horaSaida]        [datetime2]     NULL,
     [horaPagamento]    [datetime2]     NULL,
     [valorPago]        [decimal](10,2) NULL,

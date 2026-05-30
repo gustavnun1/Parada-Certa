@@ -195,7 +195,8 @@ fun HomeScreen(
                     val sessao = sessaoAtiva
                     if (sessao != null) {
                         ReservationNotificationScheduler.cancel(context)
-                        val extraMin = (System.currentTimeMillis() - sessao.horaEntrada - 3_600_000L) / 60_000L
+                        val baseReserva = sessao.inicioReservaPrevisto ?: sessao.horaEntrada
+                        val extraMin = (System.currentTimeMillis() - baseReserva - 3_600_000L) / 60_000L
                         if (extraMin > 15) {
                             val extraValor = ceil(extraMin / 60.0) * sessao.precoHora
                             userViewModel.setDevidaReservaExtra(
@@ -228,7 +229,8 @@ fun HomeScreen(
         val divida = devidaReservaExtra!!
         val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
         val extraMin = sessaoAtiva?.let {
-            ((System.currentTimeMillis() - it.horaEntrada - 3_600_000L) / 60_000L).coerceAtLeast(0L)
+            val baseReserva = it.inicioReservaPrevisto ?: it.horaEntrada
+            ((System.currentTimeMillis() - baseReserva - 3_600_000L) / 60_000L).coerceAtLeast(0L)
         } ?: 0L
         val horas = extraMin / 60
         val mins = extraMin % 60
@@ -626,7 +628,7 @@ private fun ReservedSessionPanel(
     val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
     val horaReservaFormatada = SimpleDateFormat("HH:mm", Locale("pt", "BR")).apply {
         timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
-    }.format(Date(sessao.horaEntrada))
+    }.format(Date(sessao.inicioReservaPrevisto ?: sessao.horaEntrada))
 
     Column(modifier = modifier) {
         // Banner de dívida pendente

@@ -13,6 +13,7 @@ public class ReservaResponse {
     private String estacionamentoNome;
     private String pixKey;
     private long horaEntrada;       // Unix timestamp em ms
+    private long inicioReservaPrevisto; // Unix timestamp em ms
     private BigDecimal precoHora;
     private String placa;
     private String modeloVeiculo;

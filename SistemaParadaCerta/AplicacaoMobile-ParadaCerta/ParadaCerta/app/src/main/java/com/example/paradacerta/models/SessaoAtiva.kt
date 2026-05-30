@@ -7,6 +7,7 @@ data class SessaoAtiva(
     val placa: String,
     val precoHora: Double,
     val horaEntrada: Long = System.currentTimeMillis(),
+    val inicioReservaPrevisto: Long? = null,
     val sessaoId: String = "",
     val pixKey: String = "",
     val reservado: Boolean = false,

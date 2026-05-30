@@ -33,7 +33,6 @@ import com.example.paradacerta.components.StatusFuncionamentoBadge
 import com.example.paradacerta.models.AvaliacaoItem
 import com.example.paradacerta.models.EstacionamentoFotoItem
 import com.example.paradacerta.models.EstacionamentoStatus
-import com.example.paradacerta.models.SessaoAtiva
 import com.example.paradacerta.models.Veiculo
 import com.example.paradacerta.models.rememberEstacionamentoStatus
 import com.example.paradacerta.network.ParadaCertaClient
@@ -42,8 +41,9 @@ import com.example.paradacerta.ui.theme.VerdePrincipal
 import com.example.paradacerta.viewmodel.AvaliacaoListViewModel
 import com.example.paradacerta.viewmodel.EstacionamentoFotosViewModel
 import com.example.paradacerta.viewmodel.ParkingDetailsViewModel
-import com.example.paradacerta.viewmodel.ReservaViewModel
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,15 +53,13 @@ fun ParkingDetailsScreen(
     cpf: String = "",
     veiculos: List<Veiculo> = emptyList(),
     onBackClick: () -> Unit,
-    onReservaFeita: (SessaoAtiva) -> Unit = {},
+    onReservaPagamento: (Int, String, Double, String, String, String, String) -> Unit = { _, _, _, _, _, _, _ -> },
     modifier: Modifier = Modifier,
     viewModel: ParkingDetailsViewModel = viewModel(),
-    reservaViewModel: ReservaViewModel = viewModel(),
     avaliacaoListViewModel: AvaliacaoListViewModel = viewModel(),
     fotosViewModel: EstacionamentoFotosViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val reservaState by reservaViewModel.reservaState.collectAsState()
     val avaliacaoListState by avaliacaoListViewModel.state.collectAsState()
     val fotosState by fotosViewModel.state.collectAsState()
     val context = LocalContext.current
@@ -72,42 +70,9 @@ fun ParkingDetailsScreen(
     var horarioSelecionado by remember { mutableStateOf<String?>(null) }
     var veiculoSelecionado by remember(veiculos) { mutableStateOf(veiculos.firstOrNull()) }
     var veiculoInvalidoDialog by remember { mutableStateOf(false) }
+    var erroReservaLocal by remember { mutableStateOf<String?>(null) }
 
     val estacionamento = state.estacionamento
-
-    // Reage ao sucesso da reserva
-    LaunchedEffect(reservaState.isSuccess) {
-        if (reservaState.isSuccess && estacionamento != null) {
-            val r = reservaState.resposta ?: return@LaunchedEffect
-            // Confia primeiro no veículo selecionado pelo usuário; usa o retorno
-            // do backend apenas como complemento quando o local estiver vazio.
-            val placaFinal = veiculoSelecionado?.placa?.takeIf { it.isNotBlank() }
-                ?: r.placa?.takeIf { it.isNotBlank() }
-                ?: ""
-            val modeloFinal = veiculoSelecionado?.nome?.takeIf { it.isNotBlank() }
-                ?: r.modeloVeiculo?.takeIf { it.isNotBlank() }
-                ?: ""
-            if (placaFinal.isBlank()) {
-                veiculoInvalidoDialog = true
-                reservaViewModel.resetReservaState()
-                return@LaunchedEffect
-            }
-            val sessao = SessaoAtiva(
-                estacionamentoId = estacionamento.id,
-                estacionamentoNome = estacionamento.nome,
-                modeloVeiculo = modeloFinal,
-                placa = placaFinal,
-                precoHora = estacionamento.precoHora,
-                horaEntrada = r.horaEntrada,
-                sessaoId = r.sessaoId,
-                pixKey = r.pixKey ?: "",
-                reservado = true,
-                horarioReserva = horarioSelecionado
-            )
-            onReservaFeita(sessao)
-            reservaViewModel.resetReservaState()
-        }
-    }
 
     if (veiculoInvalidoDialog) {
         AlertDialog(
@@ -144,8 +109,8 @@ fun ParkingDetailsScreen(
         ModalBottomSheet(
             onDismissRequest = {
                 horarioSelecionado = null
+                erroReservaLocal = null
                 showReservaDialog = false
-                reservaViewModel.resetReservaState()
             },
             sheetState = sheetState,
             containerColor = MaterialTheme.colorScheme.surface,
@@ -187,7 +152,10 @@ fun ParkingDetailsScreen(
                     }
                     if (horarios.isEmpty()) {
                         Text(
-                            text = "Horários não informados para este estacionamento.",
+                            text = if (p.horarioAbertura == null || p.horarioFechamento == null)
+                                "Horários não informados para este estacionamento."
+                            else
+                                "Nenhum horário disponível para reserva hoje.",
                             style = MaterialTheme.typography.bodySmall,
                             color = CinzaMedio
                         )
@@ -199,7 +167,10 @@ fun ParkingDetailsScreen(
                             horarios.forEach { horario ->
                                 FilterChip(
                                     selected = horarioSelecionado == horario,
-                                    onClick = { horarioSelecionado = horario },
+                                    onClick = {
+                                        horarioSelecionado = horario
+                                        erroReservaLocal = null
+                                    },
                                     label = { Text(horario) }
                                 )
                             }
@@ -389,7 +360,7 @@ fun ParkingDetailsScreen(
                 }
 
                 // Mensagem de erro
-                reservaState.errorMessage?.let { erro ->
+                erroReservaLocal?.let { erro ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
@@ -423,6 +394,7 @@ fun ParkingDetailsScreen(
                     OutlinedButton(
                         onClick = {
                             horarioSelecionado = null
+                            erroReservaLocal = null
                             showReservaDialog = false
                         },
                         modifier = Modifier.weight(1f)
@@ -434,29 +406,37 @@ fun ParkingDetailsScreen(
                     Button(
                         onClick = {
                             val vPlaca = veiculoSelecionado?.placa.orEmpty()
+                            val horario = horarioSelecionado
                             if (vPlaca.isBlank()) {
                                 showReservaDialog = false
                                 veiculoInvalidoDialog = true
                                 return@Button
                             }
-                            reservaViewModel.reservar(cpf, p.id, vPlaca)
+                            if (horario.isNullOrBlank()) {
+                                erroReservaLocal = "Selecione um horario valido para a reserva."
+                                return@Button
+                            }
+                            val inicioReserva = montarInicioReservaPrevistoIso(horario)
+                            if (inicioReserva == null) {
+                                erroReservaLocal = "Horario selecionado esta no passado."
+                                return@Button
+                            }
+                            showReservaDialog = false
+                            onReservaPagamento(
+                                p.id,
+                                p.nome,
+                                p.precoHora,
+                                p.pixKey.orEmpty(),
+                                vPlaca,
+                                inicioReserva,
+                                horario
+                            )
                         },
                         modifier = Modifier.weight(1f),
-                        enabled = !reservaState.isLoading
-                            && placaSelecionadaValida
-                            && (horarios.isEmpty() || horarioSelecionado != null)
+                        enabled = placaSelecionadaValida
+                            && horarioSelecionado != null
                     ) {
-                        if (reservaState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Processando...")
-                        } else {
-                            Text("Confirmar reserva")
-                        }
+                        Text("Pagar e reservar")
                     }
                 }
             }
@@ -1193,11 +1173,32 @@ private fun gerarHorarios(abertura: String?, fechamento: String?): List<String> 
         val slots = mutableListOf<String>()
         var min = inicioMin
         while (min <= fimMin) {
-            slots.add(String.format("%02d:%02d", min / 60, min % 60))
+            val horario = String.format("%02d:%02d", min / 60, min % 60)
+            if (montarInicioReservaPrevistoMillis(horario) != null) {
+                slots.add(horario)
+            }
             min += 60
         }
         slots
     } catch (e: Exception) {
         emptyList()
     }
+}
+
+private fun montarInicioReservaPrevistoIso(horario: String): String? {
+    val millis = montarInicioReservaPrevistoMillis(horario) ?: return null
+    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(java.util.Date(millis))
+}
+
+private fun montarInicioReservaPrevistoMillis(horario: String): Long? {
+    val partes = horario.split(":").takeIf { it.size >= 2 } ?: return null
+    val hora = partes[0].toIntOrNull() ?: return null
+    val minuto = partes[1].toIntOrNull() ?: return null
+    val cal = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, hora)
+        set(Calendar.MINUTE, minuto)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    return cal.timeInMillis.takeIf { it > System.currentTimeMillis() }
 }

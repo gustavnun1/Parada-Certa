@@ -1,8 +1,9 @@
 package com.example.paradacerta.models
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import java.time.LocalTime
 import kotlinx.coroutines.delay
@@ -86,13 +87,17 @@ fun rememberEstacionamentoStatus(
     val chave = remember(horarioAbertura, horarioFechamento) {
         (horarioAbertura ?: "") + "|" + (horarioFechamento ?: "")
     }
-    return produceState(
-        initialValue = EstacionamentoStatus.calcular(horarioAbertura, horarioFechamento),
-        key1 = chave
-    ) {
+    val status = remember(chave) {
+        mutableStateOf(EstacionamentoStatus.calcular(horarioAbertura, horarioFechamento))
+    }
+
+    LaunchedEffect(chave) {
+        status.value = EstacionamentoStatus.calcular(horarioAbertura, horarioFechamento)
         while (true) {
-            value = EstacionamentoStatus.calcular(horarioAbertura, horarioFechamento)
             delay(30_000L)
+            status.value = EstacionamentoStatus.calcular(horarioAbertura, horarioFechamento)
         }
     }
+
+    return status
 }

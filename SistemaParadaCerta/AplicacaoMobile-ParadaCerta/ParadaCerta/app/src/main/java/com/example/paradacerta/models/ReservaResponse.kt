@@ -6,6 +6,7 @@ data class ReservaResponse(
     val estacionamentoNome: String,
     val pixKey: String?,
     val horaEntrada: Long,
+    val inicioReservaPrevisto: Long?,
     val precoHora: Double,
     val placa: String?,
     val modeloVeiculo: String?

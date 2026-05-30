@@ -244,6 +244,9 @@ public class SessaoService {
         }
 
         long horaEntradaMs = toEpochMillisSaoPaulo(sessao.getHoraEntrada());
+        Long inicioReservaPrevistoMs = sessao.getInicioReservaPrevisto() != null
+                ? toEpochMillisSaoPaulo(sessao.getInicioReservaPrevisto())
+                : null;
 
         return Optional.of(new SessaoAtivaResponse(
                 String.valueOf(sessao.getId()),
@@ -251,6 +254,7 @@ public class SessaoService {
                 estacionamento.getNome(),
                 estacionamento.getPixKey(),
                 horaEntradaMs,
+                inicioReservaPrevistoMs,
                 estacionamento.getPrecoHora(),
                 placaSessao,
                 modeloVeiculo,

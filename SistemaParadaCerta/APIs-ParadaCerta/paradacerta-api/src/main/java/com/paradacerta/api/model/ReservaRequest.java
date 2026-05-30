@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class ReservaRequest {
 
@@ -15,4 +17,7 @@ public class ReservaRequest {
 
     @NotBlank(message = "Placa do veículo é obrigatória")
     private String placa;
+
+    @NotNull(message = "Horario inicial da reserva e obrigatorio")
+    private LocalDateTime inicioReservaPrevisto;
 }

@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 
 @Service
@@ -44,6 +45,8 @@ public class ReservaService {
         if (!Boolean.TRUE.equals(est.getPermiteReserva())) {
             throw new RequisicaoInvalidaException("Este estacionamento não oferece reservas de vagas");
         }
+
+        validarInicioReserva(req.getInicioReservaPrevisto(), est);
 
         VagasEstacionamento vagas = vagasRepository.findByEstacionamentoId(est.getId())
                 .orElseThrow(() -> new RequisicaoInvalidaException("Dados de vagas não encontrados para este estacionamento"));
@@ -77,6 +80,7 @@ public class ReservaService {
         sessao.setClienteId(clienteId);
         sessao.setEstacionamentoId(est.getId());
         sessao.setHoraEntrada(agora);
+        sessao.setInicioReservaPrevisto(req.getInicioReservaPrevisto());
         sessao.setStatus(SessaoStatus.ATIVA);
         sessao.setQrCode(qrCode);
         sessao.setReservado(true);
@@ -95,6 +99,7 @@ public class ReservaService {
         }
 
         long horaEntradaMs = toEpochMillisSaoPaulo(agora);
+        long inicioReservaPrevistoMs = toEpochMillisSaoPaulo(req.getInicioReservaPrevisto());
 
         return new ReservaResponse(
                 String.valueOf(sessao.getId()),
@@ -102,6 +107,7 @@ public class ReservaService {
                 est.getNome(),
                 est.getPixKey(),
                 horaEntradaMs,
+                inicioReservaPrevistoMs,
                 est.getPrecoHora(),
                 placa,
                 modeloVeiculo
@@ -159,7 +165,7 @@ public class ReservaService {
         }
 
         // Verifica se há tempo excedente além da 1 hora coberta
-        long extraMinutos = calcularExtraMinutos(sessao.getHoraEntrada());
+        long extraMinutos = calcularExtraMinutos(inicioReservaParaCalculo(sessao));
         if (extraMinutos > 15) {
             Estacionamento est = estacionamentoRepository.findById(sessao.getEstacionamentoId())
                     .orElseThrow(() -> new UsuarioNaoEncontradoException("Estacionamento não encontrado"));
@@ -195,7 +201,7 @@ public class ReservaService {
             throw new ConflictException("Reserva já encerrada ou cancelada");
         }
 
-        long extraMinutos = calcularExtraMinutos(sessao.getHoraEntrada());
+        long extraMinutos = calcularExtraMinutos(inicioReservaParaCalculo(sessao));
 
         if (extraMinutos <= 15) {
             return new CalculoExtraResponse(false, 0L, BigDecimal.ZERO);
@@ -211,12 +217,43 @@ public class ReservaService {
     // ── Helpers de cálculo de tempo extra ────────────────────────────────────
 
     /**
-     * Retorna os minutos excedentes além de 1 hora desde horaEntrada.
+     * Retorna os minutos excedentes além de 1 hora desde o início previsto.
      * Valor negativo indica que ainda está dentro do período coberto.
      */
     private long calcularExtraMinutos(LocalDateTime horaEntrada) {
         long totalMinutos = Duration.between(horaEntrada, nowSaoPaulo()).toMinutes();
         return totalMinutos - 60; // desconta a 1 hora coberta pela reserva
+    }
+
+    private LocalDateTime inicioReservaParaCalculo(SessaoEstacionamento sessao) {
+        return sessao.getInicioReservaPrevisto() != null
+                ? sessao.getInicioReservaPrevisto()
+                : sessao.getHoraEntrada();
+    }
+
+    private void validarInicioReserva(LocalDateTime inicioReservaPrevisto, Estacionamento est) {
+        if (inicioReservaPrevisto == null) {
+            throw new RequisicaoInvalidaException("Horário inicial da reserva é obrigatório");
+        }
+
+        if (inicioReservaPrevisto.isBefore(nowSaoPaulo())) {
+            throw new RequisicaoInvalidaException("Horário da reserva não pode estar no passado");
+        }
+
+        LocalTime abertura = est.getHorarioAbertura();
+        LocalTime fechamento = est.getHorarioFechamento();
+        if (abertura == null || fechamento == null) {
+            throw new RequisicaoInvalidaException("Horário de funcionamento não cadastrado para este estacionamento");
+        }
+
+        LocalTime horario = inicioReservaPrevisto.toLocalTime();
+        boolean dentroFuncionamento = !abertura.isAfter(fechamento)
+                ? !horario.isBefore(abertura) && horario.isBefore(fechamento)
+                : !horario.isBefore(abertura) || horario.isBefore(fechamento);
+
+        if (!dentroFuncionamento) {
+            throw new RequisicaoInvalidaException("Horário da reserva fora do funcionamento do estacionamento");
+        }
     }
 
     private LocalDateTime nowSaoPaulo() {

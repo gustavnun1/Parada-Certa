@@ -76,6 +76,24 @@ sealed class Screen(val route: String) {
             return "payment/$safeId/$valor/$safeNome/$safePixKey"
         }
     }
+    object PaymentReserva : Screen("payment_reserva/{estacionamentoId}/{valor}/{nome}/{pixKey}/{placa}/{inicioReservaPrevisto}/{horarioLabel}") {
+        fun createRoute(
+            estacionamentoId: Int,
+            valor: Double,
+            nome: String,
+            pixKey: String,
+            placa: String,
+            inicioReservaPrevisto: String,
+            horarioLabel: String
+        ): String {
+            val safeNome = java.net.URLEncoder.encode(nome, "UTF-8")
+            val safePixKey = java.net.URLEncoder.encode(pixKey.ifBlank { "-" }, "UTF-8")
+            val safePlaca = java.net.URLEncoder.encode(placa, "UTF-8")
+            val safeInicio = java.net.URLEncoder.encode(inicioReservaPrevisto, "UTF-8")
+            val safeHorario = java.net.URLEncoder.encode(horarioLabel, "UTF-8")
+            return "payment_reserva/$estacionamentoId/$valor/$safeNome/$safePixKey/$safePlaca/$safeInicio/$safeHorario"
+        }
+    }
     object ParkingDetails : Screen("parking_details/{parkingId}") {
         fun createRoute(parkingId: Int) = "parking_details/$parkingId"
     }
@@ -304,6 +322,61 @@ fun AppNavGraph(
         }
 
         // Tela de Configuração com Save e Delete
+        composable(
+            route = Screen.PaymentReserva.route,
+            arguments = listOf(
+                navArgument("estacionamentoId") { type = NavType.IntType },
+                navArgument("valor") { type = NavType.StringType },
+                navArgument("nome") { type = NavType.StringType },
+                navArgument("pixKey") { type = NavType.StringType },
+                navArgument("placa") { type = NavType.StringType },
+                navArgument("inicioReservaPrevisto") { type = NavType.StringType },
+                navArgument("horarioLabel") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val estacionamentoId = backStackEntry.arguments?.getInt("estacionamentoId") ?: 0
+            val valor = backStackEntry.arguments?.getString("valor")?.toDoubleOrNull() ?: 0.0
+            val nome = java.net.URLDecoder.decode(backStackEntry.arguments?.getString("nome") ?: "", "UTF-8")
+            val pixKey = java.net.URLDecoder.decode(
+                backStackEntry.arguments?.getString("pixKey") ?: "-", "UTF-8"
+            ).let { if (it == "-") "" else it }
+            val placa = java.net.URLDecoder.decode(backStackEntry.arguments?.getString("placa") ?: "", "UTF-8")
+            val inicioReservaPrevisto = java.net.URLDecoder.decode(
+                backStackEntry.arguments?.getString("inicioReservaPrevisto") ?: "", "UTF-8"
+            )
+            val horarioLabel = java.net.URLDecoder.decode(
+                backStackEntry.arguments?.getString("horarioLabel") ?: "", "UTF-8"
+            )
+
+            PaymentScreen(
+                sessaoId = "",
+                valor = valor,
+                nome = nome,
+                pixKey = pixKey,
+                userViewModel = userViewModel,
+                modoReserva = true,
+                reservaEstacionamentoId = estacionamentoId,
+                reservaPlaca = placa,
+                reservaInicioPrevisto = inicioReservaPrevisto,
+                reservaHorarioLabel = horarioLabel,
+                onBack = { navController.popBackStack() },
+                onSuccess = { _ -> },
+                onReservaCriada = { sessao ->
+                    if (NotificationPreferencesManager.isReservasEnabled(context)) {
+                        val agendado = ReservationNotificationScheduler.schedule(context, sessao)
+                        if (!agendado && sessao.horarioReserva != null) {
+                            showAlarmPermissionDialog = true
+                        }
+                    }
+                    userViewModel.iniciarSessao(sessao)
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
         composable(Screen.Config.route) {
             val saveViewModel: SaveViewModel = viewModel()
             val deleteViewModel: DeleteViewModel = viewModel()
@@ -402,18 +475,18 @@ fun AppNavGraph(
                 parkingId = parkingId,
                 cpf = userData?.cpf ?: "",
                 veiculos = veiculosData,
-                onReservaFeita = { sessao ->
-                    if (NotificationPreferencesManager.isReservasEnabled(context)) {
-                        val agendado = ReservationNotificationScheduler.schedule(context, sessao)
-                        if (!agendado && sessao.horarioReserva != null) {
-                            showAlarmPermissionDialog = true
-                        }
-                    }
-                    userViewModel.iniciarSessao(sessao)
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(0) { inclusive = true }
-                        launchSingleTop = true
-                    }
+                onReservaPagamento = { estacionamentoId, nome, valor, pixKey, placa, inicioReservaPrevisto, horarioLabel ->
+                    navController.navigate(
+                        Screen.PaymentReserva.createRoute(
+                            estacionamentoId = estacionamentoId,
+                            valor = valor,
+                            nome = nome,
+                            pixKey = pixKey,
+                            placa = placa,
+                            inicioReservaPrevisto = inicioReservaPrevisto,
+                            horarioLabel = horarioLabel
+                        )
+                    )
                 },
                 onBackClick = { navController.popBackStack() }
             )

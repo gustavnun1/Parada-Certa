@@ -30,9 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.models.FormaPagamento
 import com.example.paradacerta.models.FormaPagamentoRequest
+import com.example.paradacerta.models.SessaoAtiva
 import com.example.paradacerta.network.ParadaCertaClient
 import com.example.paradacerta.viewmodel.CobrancaEstadiaViewModel
 import com.example.paradacerta.viewmodel.PaymentMethodsViewModel
+import com.example.paradacerta.viewmodel.ReservaViewModel
 import com.example.paradacerta.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -78,8 +80,15 @@ fun PaymentScreen(
     userViewModel: UserViewModel,
     paymentMethodsViewModel: PaymentMethodsViewModel = viewModel(),
     cobrancaViewModel: CobrancaEstadiaViewModel = viewModel(),
+    reservaViewModel: ReservaViewModel = viewModel(),
+    modoReserva: Boolean = false,
+    reservaEstacionamentoId: Int = 0,
+    reservaPlaca: String = "",
+    reservaInicioPrevisto: String = "",
+    reservaHorarioLabel: String = "",
     onBack: () -> Unit,
-    onSuccess: (estacionamentoId: Int) -> Unit
+    onSuccess: (estacionamentoId: Int) -> Unit,
+    onReservaCriada: (SessaoAtiva) -> Unit = {}
 ) {
     val context = LocalContext.current
     val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
@@ -90,10 +99,11 @@ fun PaymentScreen(
     val cpf = userData?.cpf ?: ""
     val savedMethodsState by paymentMethodsViewModel.state.collectAsState()
     val cobrancaState by cobrancaViewModel.state.collectAsState()
+    val reservaState by reservaViewModel.reservaState.collectAsState()
 
     // Busca o detalhamento (preço/hora, tempo permanência, tempo cobrado)
     // apenas para sessões NÃO-reservadas; reservas mostram somente o total.
-    val ehReserva = sessaoAtiva?.reservado == true
+    val ehReserva = modoReserva || sessaoAtiva?.reservado == true
 
     LaunchedEffect(Unit) {
         paymentMethodsViewModel.carregar(cpf)
@@ -128,12 +138,40 @@ fun PaymentScreen(
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showSalvarCartaoDialog by remember { mutableStateOf(false) }
     var estIdPosPagamento by remember { mutableStateOf(0) }
+    var sessaoReservaCriada by remember { mutableStateOf<SessaoAtiva?>(null) }
+    var salvarCartaoAposReserva by remember { mutableStateOf(false) }
 
     val botaoHabilitado = when {
         metodoPagamento == "PIX" -> pixKey.isNotBlank()
         selectedSavedCard != null -> true
         showNewCardForm -> novoCartaoPronto
         else -> false
+    }
+
+    LaunchedEffect(reservaState.isSuccess) {
+        if (modoReserva && reservaState.isSuccess) {
+            val r = reservaState.resposta ?: return@LaunchedEffect
+            val sessao = SessaoAtiva(
+                estacionamentoId = r.estacionamentoId,
+                estacionamentoNome = r.estacionamentoNome,
+                modeloVeiculo = r.modeloVeiculo ?: "",
+                placa = r.placa ?: reservaPlaca,
+                precoHora = r.precoHora,
+                horaEntrada = r.horaEntrada,
+                inicioReservaPrevisto = r.inicioReservaPrevisto,
+                sessaoId = r.sessaoId,
+                pixKey = r.pixKey ?: pixKey,
+                reservado = true,
+                horarioReserva = reservaHorarioLabel
+            )
+            sessaoReservaCriada = sessao
+            reservaViewModel.resetReservaState()
+            if (salvarCartaoAposReserva) {
+                showSalvarCartaoDialog = true
+            } else {
+                onReservaCriada(sessao)
+            }
+        }
     }
 
     if (showConfirmDialog) {
@@ -149,6 +187,22 @@ fun PaymentScreen(
                     estIdPosPagamento = estId
                     val pagouComCartaoNovo =
                         metodoPagamento == "CARTAO" && showNewCardForm && novoCartaoPronto
+                    if (modoReserva) {
+                        val jaSalvoReserva = pagouComCartaoNovo && cartaoJaSalvo(
+                            cards = savedMethodsState.cards,
+                            final4 = digitosCartao.takeLast(4),
+                            validade = validade.text,
+                            bandeira = selectedBandeira
+                        )
+                        salvarCartaoAposReserva = pagouComCartaoNovo && cpf.isNotBlank() && !jaSalvoReserva
+                        reservaViewModel.reservar(
+                            cpf = cpf,
+                            estacionamentoId = reservaEstacionamentoId,
+                            placa = reservaPlaca,
+                            inicioReservaPrevisto = reservaInicioPrevisto
+                        )
+                        return@Button
+                    }
 
                     scope.launch {
                         runCatching {
@@ -187,7 +241,7 @@ fun PaymentScreen(
         AlertDialog(
             onDismissRequest = {
                 showSalvarCartaoDialog = false
-                onSuccess(estIdPosPagamento)
+                sessaoReservaCriada?.takeIf { modoReserva }?.let(onReservaCriada) ?: onSuccess(estIdPosPagamento)
             },
             icon = { Icon(imageVector = Icons.Default.CreditCard, contentDescription = null) },
             title = { Text("Salvar cartão?") },
@@ -211,13 +265,13 @@ fun PaymentScreen(
                         )
                     )
                     showSalvarCartaoDialog = false
-                    onSuccess(estIdPosPagamento)
+                    sessaoReservaCriada?.takeIf { modoReserva }?.let(onReservaCriada) ?: onSuccess(estIdPosPagamento)
                 }) { Text("Salvar") }
             },
             dismissButton = {
                 TextButton(onClick = {
                     showSalvarCartaoDialog = false
-                    onSuccess(estIdPosPagamento)
+                    sessaoReservaCriada?.takeIf { modoReserva }?.let(onReservaCriada) ?: onSuccess(estIdPosPagamento)
                 }) { Text("Agora não") }
             }
         )
@@ -655,19 +709,38 @@ fun PaymentScreen(
                 }
             }
 
+            reservaState.errorMessage?.let { erro ->
+                Text(
+                    text = erro,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(Modifier.height(8.dp))
 
             Button(
                 onClick = { showConfirmDialog = true },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                enabled = botaoHabilitado
+                enabled = botaoHabilitado && !reservaState.isLoading
             ) {
-                Text(
-                    text = "Confirmar pagamento",
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
+                if (reservaState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Criando reserva...")
+                } else {
+                    Text(
+                        text = "Confirmar pagamento",
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
 
             Text(

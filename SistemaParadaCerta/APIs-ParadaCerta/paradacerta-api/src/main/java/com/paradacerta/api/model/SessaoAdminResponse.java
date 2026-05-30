@@ -23,6 +23,7 @@ public class SessaoAdminResponse {
     private String placa;
     private String modeloVeiculo;
     private LocalDateTime horaEntrada;
+    private LocalDateTime inicioReservaPrevisto;
     private LocalDateTime horaSaida;
     private LocalDateTime horaPagamento;
     private BigDecimal valorPago;

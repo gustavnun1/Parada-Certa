@@ -31,13 +31,18 @@ class ReservaViewModel : ViewModel() {
     private val _cancelState = MutableStateFlow(CancelReservaState())
     val cancelState: StateFlow<CancelReservaState> = _cancelState.asStateFlow()
 
-    fun reservar(cpf: String, estacionamentoId: Int, placa: String) {
-        if (cpf.isBlank() || estacionamentoId <= 0 || placa.isBlank()) return
+    fun reservar(cpf: String, estacionamentoId: Int, placa: String, inicioReservaPrevisto: String) {
+        if (cpf.isBlank() || estacionamentoId <= 0 || placa.isBlank() || inicioReservaPrevisto.isBlank()) return
         viewModelScope.launch {
             _reservaState.value = ReservaState(isLoading = true)
             try {
                 val response = ParadaCertaClient.service.criarReserva(
-                    ReservaRequest(cpf = cpf, estacionamentoId = estacionamentoId, placa = placa)
+                    ReservaRequest(
+                        cpf = cpf,
+                        estacionamentoId = estacionamentoId,
+                        placa = placa,
+                        inicioReservaPrevisto = inicioReservaPrevisto
+                    )
                 )
                 if (response.isSuccessful && response.body() != null) {
                     _reservaState.value = ReservaState(isSuccess = true, resposta = response.body())

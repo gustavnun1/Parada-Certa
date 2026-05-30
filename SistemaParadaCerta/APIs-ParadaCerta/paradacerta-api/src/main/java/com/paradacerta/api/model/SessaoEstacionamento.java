@@ -26,6 +26,9 @@ public class SessaoEstacionamento {
     @Column(name = "horaEntrada", nullable = false)
     private LocalDateTime horaEntrada;
 
+    @Column(name = "inicioReservaPrevisto")
+    private LocalDateTime inicioReservaPrevisto;
+
     @Column(name = "horaSaida")
     private LocalDateTime horaSaida;
 

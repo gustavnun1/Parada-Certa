@@ -29,8 +29,9 @@ object ReservationNotificationScheduler {
     }
 
     fun schedule(context: Context, sessao: SessaoAtiva): Boolean {
-        val horario = sessao.horarioReserva ?: return false
-        val reservationTime = parseReservationTime(horario) ?: return false
+        val reservationTime = sessao.inicioReservaPrevisto
+            ?: sessao.horarioReserva?.let { parseReservationTime(it) }
+            ?: return false
         if (!canScheduleExact(context)) return false
         val nome = sessao.estacionamentoNome
 
