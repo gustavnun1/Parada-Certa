@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Endpoints exclusivos do painel web administrativo.
- * Login por e-mail + senha (BCrypt). Sem token de sessão (TCC).
+ * Login por e-mail/CPF + senha (BCrypt). Sem token de sessao (TCC).
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -22,7 +22,7 @@ public class AdminWebController {
 
     private final AdminService adminService;
 
-    /** POST /api/admin/login — autentica admin/operador por email + senha */
+    /** POST /api/admin/login - autentica admin/operador por email ou CPF + senha */
     @PostMapping("/login")
     public ResponseEntity<AdminLoginResponse> login(@Valid @RequestBody AdminLoginRequest req) {
         return ResponseEntity.ok(adminService.login(req));

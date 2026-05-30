@@ -41,7 +41,7 @@
         Acesso administrativo
       </p>
       <p class="text-sm text-slate-700 leading-relaxed">
-        Informe o e-mail e a senha cadastrados na página de cadastro do administrador.
+        Informe o e-mail ou CPF e a senha cadastrados na pagina de cadastro do administrador.
       </p>
     </div>
 
@@ -51,13 +51,15 @@
     <form class="space-y-5" onsubmit="loginAdmin(event)">
       <div>
         <label class="block mb-2 text-sm font-medium text-slate-700">
-          E-mail do administrador
+          E-mail ou CPF do administrador
         </label>
 
         <input
-          type="email"
+          type="text"
           id="email"
-          placeholder="Digite seu e-mail"
+          inputmode="email"
+          autocomplete="username"
+          placeholder="Digite seu e-mail ou CPF"
           class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 outline-none focus:border-green-500 placeholder-slate-400"
         />
       </div>
@@ -257,7 +259,7 @@
       const senha = document.getElementById("senha").value;
 
       if (!email || !senha) {
-        mostrarErro("Preencha o e-mail e a senha.");
+        mostrarErro("Preencha o e-mail/CPF e a senha.");
         return;
       }
 

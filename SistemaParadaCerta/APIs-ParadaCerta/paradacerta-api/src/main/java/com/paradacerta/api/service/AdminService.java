@@ -20,12 +20,13 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Serviço responsável pelo painel web administrativo:
  *  - Cadastro inicial (estabelecimento + responsável) em uma transação.
- *  - Login do operador/admin por e-mail + senha (BCrypt).
+ *  - Login do operador/admin por e-mail ou CPF + senha (BCrypt).
  *  - CRUD de operadores adicionais por estacionamento.
  */
 @Service
@@ -42,12 +43,12 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public AdminLoginResponse login(AdminLoginRequest req) {
-        String email = req.getEmail() == null ? "" : req.getEmail().trim();
-        if (email.isEmpty() || req.getSenha() == null || req.getSenha().isEmpty()) {
-            throw new RequisicaoInvalidaException("Informe e-mail e senha");
+        String login = req.getEmail() == null ? "" : req.getEmail().trim();
+        if (login.isEmpty() || req.getSenha() == null || req.getSenha().isEmpty()) {
+            throw new RequisicaoInvalidaException("Informe e-mail/CPF e senha");
         }
 
-        AdmEstacionamento adm = admRepository.findByEmailIgnoreCase(email)
+        AdmEstacionamento adm = buscarAdminPorLogin(login)
                 .orElseThrow(() -> new CredenciaisInvalidasException("Credenciais incorretas"));
 
         if (Boolean.FALSE.equals(adm.getAtivo())) {
@@ -70,6 +71,14 @@ public class AdminService {
                 est.getId(),
                 est.getNome()
         );
+    }
+
+    private Optional<AdmEstacionamento> buscarAdminPorLogin(String login) {
+        String cpf = DocumentoValidator.somenteDigitos(login);
+        if (!login.contains("@") && cpf != null && cpf.length() == 11) {
+            return admRepository.findByCpf(cpf);
+        }
+        return admRepository.findByEmailIgnoreCase(login);
     }
 
     // ── Cadastro inicial (estabelecimento + responsável) ─────────────────────

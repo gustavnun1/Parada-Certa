@@ -34,7 +34,7 @@ public class AdmEstacionamento {
     @Column(name = "ativo", nullable = false)
     private Boolean ativo = true;
 
-    /** Coluna adicionada via 02-ALTER. Login web é por email. */
+    /** Coluna adicionada via 02-ALTER. Login web tambem aceita CPF. */
     @Column(name = "email", length = 200)
     private String email;
 
