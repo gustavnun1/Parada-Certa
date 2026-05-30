@@ -19,6 +19,33 @@ public interface SessaoRepository extends JpaRepository<SessaoEstacionamento, Lo
     boolean existsByClienteIdAndEstacionamentoIdAndReservadoTrueAndStatus(Long clienteId, Integer estacionamentoId, SessaoStatus status);
     Optional<SessaoEstacionamento> findByQrCode(String qrCode);
 
+    // ── Sessão "viva" do motorista ─────────────────────────────────────────────
+    // Cobre AGUARDANDO_CONFIRMACAO (reserva paga mas não confirmada),
+    // EM_USO (reserva confirmada em curso) e ATIVA (entrada comum em curso).
+    // Usado para a trava global "um motorista, uma sessão por vez".
+
+    @Query("""
+        SELECT s FROM SessaoEstacionamento s
+        WHERE s.clienteId = :clienteId
+          AND s.status IN (
+              com.paradacerta.api.model.SessaoStatus.AGUARDANDO_CONFIRMACAO,
+              com.paradacerta.api.model.SessaoStatus.EM_USO,
+              com.paradacerta.api.model.SessaoStatus.ATIVA
+          )
+    """)
+    Optional<SessaoEstacionamento> findSessaoVivaDoCliente(@Param("clienteId") Long clienteId);
+
+    @Query("""
+        SELECT COUNT(s) > 0 FROM SessaoEstacionamento s
+        WHERE s.clienteId = :clienteId
+          AND s.status IN (
+              com.paradacerta.api.model.SessaoStatus.AGUARDANDO_CONFIRMACAO,
+              com.paradacerta.api.model.SessaoStatus.EM_USO,
+              com.paradacerta.api.model.SessaoStatus.ATIVA
+          )
+    """)
+    boolean existsSessaoVivaDoCliente(@Param("clienteId") Long clienteId);
+
     // ── Queries operacionais (admin web) ───────────────────────────────────────
 
     List<SessaoEstacionamento> findByEstacionamentoIdOrderByHoraEntradaDesc(Integer estacionamentoId);
@@ -113,14 +140,35 @@ public interface SessaoRepository extends JpaRepository<SessaoEstacionamento, Lo
     """)
     List<SessaoEstacionamento> findPagamentosPagosTodos(@Param("estId") Integer estacionamentoId);
 
-    /** Sessões ATIVAS reservadas (com valorPago já cobrado antecipado) — para "receita prevista". */
+    /**
+     * Sessões reservadas em aberto (com valorPago já cobrado antecipado) — para
+     * "receita prevista" no painel admin. Cobre AGUARDANDO_CONFIRMACAO, EM_USO
+     * e ATIVA (compat legado), excluindo reservas já encerradas/canceladas.
+     */
     @Query("""
         SELECT s FROM SessaoEstacionamento s
         WHERE s.estacionamentoId = :estId
-          AND s.status = com.paradacerta.api.model.SessaoStatus.ATIVA
           AND s.reservado = true
+          AND s.status IN (
+              com.paradacerta.api.model.SessaoStatus.AGUARDANDO_CONFIRMACAO,
+              com.paradacerta.api.model.SessaoStatus.EM_USO,
+              com.paradacerta.api.model.SessaoStatus.ATIVA
+          )
     """)
     List<SessaoEstacionamento> findReservasAtivas(@Param("estId") Integer estacionamentoId);
+
+    /**
+     * Reservas aguardando confirmação (pagas, motorista ainda não chegou).
+     * Usada pelo painel admin para listar QRs de confirmação a imprimir.
+     */
+    @Query("""
+        SELECT s FROM SessaoEstacionamento s
+        WHERE s.estacionamentoId = :estId
+          AND s.reservado = true
+          AND s.status = com.paradacerta.api.model.SessaoStatus.AGUARDANDO_CONFIRMACAO
+        ORDER BY s.inicioReservaPrevisto, s.horaEntrada
+    """)
+    List<SessaoEstacionamento> findReservasAguardandoConfirmacao(@Param("estId") Integer estacionamentoId);
 
     // ── Dashboard analítico ───────────────────────────────────────────────────
 

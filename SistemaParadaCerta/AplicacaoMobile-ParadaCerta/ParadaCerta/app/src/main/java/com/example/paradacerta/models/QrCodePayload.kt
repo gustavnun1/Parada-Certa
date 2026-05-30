@@ -11,9 +11,12 @@ package com.example.paradacerta.models
  *
  * QR de pagamento:
  *   {"tipo":"PAGAMENTO","sessaoId":"abc123","valor":25.50,"nome":"Centro Park","pixKey":"11999999999"}
+ *
+ * QR de confirmação de reserva (gerado pelo admin web, escaneado pelo motorista):
+ *   {"v":1,"app":"paradacerta","tipo":"CONFIRMACAO_RESERVA","sessaoId":"42","qrCode":"<uuid>"}
  */
 data class QrCodePayload(
-    val tipo: String? = null,   // "ENTRADA" | "PAGAMENTO"
+    val tipo: String? = null,   // "ENTRADA" | "PAGAMENTO" | "CONFIRMACAO_RESERVA"
     val type: String? = null,
     val id: Int? = null,
     val estacionamentoId: Int? = null,
@@ -22,5 +25,6 @@ data class QrCodePayload(
     val precoHora: Double? = null,
     val sessaoId: String? = null,
     val valor: Double? = null,
-    val pixKey: String? = null
+    val pixKey: String? = null,
+    val qrCode: String? = null  // UUID da reserva — usado no fluxo CONFIRMACAO_RESERVA
 )

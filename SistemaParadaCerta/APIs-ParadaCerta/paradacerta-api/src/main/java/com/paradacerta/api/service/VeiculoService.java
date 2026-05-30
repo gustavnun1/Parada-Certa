@@ -97,13 +97,16 @@ public class VeiculoService {
             throw new RequisicaoInvalidaException("É necessário manter pelo menos um veículo cadastrado");
         }
 
-        if (sessaoRepository.existsByClienteIdAndStatus(cliente.getId(), SessaoStatus.ATIVA)) {
-            SessaoEstacionamento sessaoAtiva = sessaoRepository
-                    .findByClienteIdAndStatus(cliente.getId(), SessaoStatus.ATIVA)
-                    .orElse(null);
-            if (sessaoAtiva != null && placaUpper.equals(sessaoAtiva.getPlaca())) {
-                throw new ConflictException("Este veículo está em uso numa sessão ativa. Encerre a sessão antes de remover o veículo");
-            }
+        // Bloqueia exclusão se o veículo está vinculado a qualquer sessão viva
+        // (AGUARDANDO_CONFIRMACAO, EM_USO ou ATIVA).
+        SessaoEstacionamento sessaoViva = sessaoRepository
+                .findSessaoVivaDoCliente(cliente.getId())
+                .orElse(null);
+        if (sessaoViva != null && placaUpper.equals(sessaoViva.getPlaca())) {
+            throw new ConflictException(
+                "Este veículo está em uso numa sessão ou reserva ativa. "
+              + "Encerre a sessão antes de remover o veículo."
+            );
         }
 
         veiculoRepository.deleteById(placaUpper);

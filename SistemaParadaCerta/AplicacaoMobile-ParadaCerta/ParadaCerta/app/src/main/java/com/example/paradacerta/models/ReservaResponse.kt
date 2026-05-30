@@ -9,5 +9,6 @@ data class ReservaResponse(
     val inicioReservaPrevisto: Long?,
     val precoHora: Double,
     val placa: String?,
-    val modeloVeiculo: String?
+    val modeloVeiculo: String?,
+    val status: String? = null
 )

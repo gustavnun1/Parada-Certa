@@ -34,6 +34,10 @@ import com.example.paradacerta.models.AvaliacaoItem
 import com.example.paradacerta.models.AvaliacaoRequest
 import com.example.paradacerta.models.ConfirmarRecuperacaoRequest
 import com.example.paradacerta.models.LoginRequest
+import com.example.paradacerta.models.ConfirmarReservaRequest
+import com.example.paradacerta.models.ConfirmacaoReservaResponse
+import com.example.paradacerta.models.FinalizarUsoRequest
+import com.example.paradacerta.models.FinalizacaoUsoResponse
 import com.example.paradacerta.models.ReservaRequest
 import com.example.paradacerta.models.SolicitarRecuperacaoRequest
 import com.example.paradacerta.models.ReservaResponse
@@ -154,6 +158,24 @@ interface ParadaCertaService {
 
     @POST("api/reserva/{sessaoId}/finalizar")
     suspend fun finalizarReserva(@Path("sessaoId") sessaoId: String): Response<ApiResponse>
+
+    /** Motorista confirma presencialmente a reserva escaneando o QR do estacionamento. */
+    @POST("api/reserva/confirmar")
+    suspend fun confirmarReserva(@Body request: ConfirmarReservaRequest): Response<ConfirmacaoReservaResponse>
+
+    /** Preview do cálculo de finalização (sem efetivar). */
+    @GET("api/reserva/{sessaoId}/finalizacao")
+    suspend fun calcularFinalizacaoUso(
+        @Path("sessaoId") sessaoId: String,
+        @Query("cpf") cpf: String
+    ): Response<FinalizacaoUsoResponse>
+
+    /** Efetiva a finalização do uso da vaga (com cobrança de excedente, se houver). */
+    @POST("api/reserva/{sessaoId}/finalizar-uso")
+    suspend fun finalizarUso(
+        @Path("sessaoId") sessaoId: String,
+        @Body request: FinalizarUsoRequest
+    ): Response<FinalizacaoUsoResponse>
 
     // ── Configuração ─────────────────────────────────────────────────────────
 

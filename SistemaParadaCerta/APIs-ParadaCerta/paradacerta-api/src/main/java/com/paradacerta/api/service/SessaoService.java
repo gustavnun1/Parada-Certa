@@ -129,11 +129,11 @@ public class SessaoService {
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado"));
         Long clienteId = cliente.getId();
 
-        // Idempotente: se já há sessão ativa, retorna ela
-        if (sessaoRepository.existsByClienteIdAndStatus(clienteId, SessaoStatus.ATIVA)) {
-            SessaoEstacionamento sessaoExistente = sessaoRepository
-                    .findByClienteIdAndStatus(clienteId, SessaoStatus.ATIVA)
-                    .orElseThrow();
+        // Idempotente para entrada comum (ATIVA já desse cliente): retorna a mesma.
+        Optional<SessaoEstacionamento> sessaoAtivaComum = sessaoRepository
+                .findByClienteIdAndStatus(clienteId, SessaoStatus.ATIVA);
+        if (sessaoAtivaComum.isPresent()) {
+            SessaoEstacionamento sessaoExistente = sessaoAtivaComum.get();
             String pixKeyExistente = estacionamentoRepository
                     .findById(sessaoExistente.getEstacionamentoId())
                     .map(Estacionamento::getPixKey)
@@ -142,6 +142,13 @@ public class SessaoService {
                     String.valueOf(sessaoExistente.getId()),
                     sessaoExistente.getHoraEntrada(),
                     pixKeyExistente);
+        }
+
+        // Bloqueia se houver reserva AGUARDANDO_CONFIRMACAO ou EM_USO
+        if (sessaoRepository.existsSessaoVivaDoCliente(clienteId)) {
+            throw new ConflictException(
+                "Você já possui uma reserva em andamento. Finalize ou cancele antes de iniciar uma nova entrada."
+            );
         }
 
         // Verifica se o estacionamento existe, está ativo e tem vagas
@@ -194,10 +201,10 @@ public class SessaoService {
             throw new ConflictException("QR Code ja vinculado a outro motorista");
         }
 
-        Optional<SessaoEstacionamento> ativaDoCliente =
-                sessaoRepository.findByClienteIdAndStatus(clienteId, SessaoStatus.ATIVA);
-        if (ativaDoCliente.isPresent() && !ativaDoCliente.get().getId().equals(sessao.getId())) {
-            throw new ConflictException("Usuario ja possui uma sessao ativa");
+        Optional<SessaoEstacionamento> vivaDoCliente =
+                sessaoRepository.findSessaoVivaDoCliente(clienteId);
+        if (vivaDoCliente.isPresent() && !vivaDoCliente.get().getId().equals(sessao.getId())) {
+            throw new ConflictException("Usuario ja possui uma sessao ou reserva em andamento");
         }
 
         sessao.setClienteId(clienteId);
@@ -220,10 +227,9 @@ public class SessaoService {
         Cliente cliente = clienteRepository.findByCpf(cpf).orElse(null);
         if (cliente == null) return Optional.empty();
 
-        Long clienteId = cliente.getId();
-
+        // Retorna sessão "viva": AGUARDANDO_CONFIRMACAO, EM_USO ou ATIVA.
         Optional<SessaoEstacionamento> sessaoOpt =
-                sessaoRepository.findByClienteIdAndStatus(clienteId, SessaoStatus.ATIVA);
+                sessaoRepository.findSessaoVivaDoCliente(cliente.getId());
 
         if (sessaoOpt.isEmpty()) {
             return Optional.empty();
@@ -247,6 +253,9 @@ public class SessaoService {
         Long inicioReservaPrevistoMs = sessao.getInicioReservaPrevisto() != null
                 ? toEpochMillisSaoPaulo(sessao.getInicioReservaPrevisto())
                 : null;
+        Long dataHoraConfirmacaoMs = sessao.getDataHoraConfirmacao() != null
+                ? toEpochMillisSaoPaulo(sessao.getDataHoraConfirmacao())
+                : null;
 
         return Optional.of(new SessaoAtivaResponse(
                 String.valueOf(sessao.getId()),
@@ -255,10 +264,13 @@ public class SessaoService {
                 estacionamento.getPixKey(),
                 horaEntradaMs,
                 inicioReservaPrevistoMs,
+                dataHoraConfirmacaoMs,
                 estacionamento.getPrecoHora(),
                 placaSessao,
                 modeloVeiculo,
-                Boolean.TRUE.equals(sessao.getReservado())
+                Boolean.TRUE.equals(sessao.getReservado()),
+                sessao.getStatus(),
+                sessao.getValorPago()
         ));
     }
 

@@ -121,6 +121,7 @@ class UserViewModel : ViewModel() {
                 val response = ParadaCertaClient.service.buscarSessaoAtiva(cpf)
                 if (response.isSuccessful) {
                     response.body()?.let { r ->
+                        val status = com.example.paradacerta.models.SessaoStatus.fromString(r.status)
                         _sessaoAtiva.value = SessaoAtiva(
                             estacionamentoId = r.estacionamentoId,
                             estacionamentoNome = r.estacionamentoNome,
@@ -129,13 +130,26 @@ class UserViewModel : ViewModel() {
                             precoHora = r.precoHora,
                             horaEntrada = r.horaEntrada,
                             inicioReservaPrevisto = r.inicioReservaPrevisto,
+                            dataHoraConfirmacao = r.dataHoraConfirmacao,
                             sessaoId = r.sessaoId,
                             pixKey = r.pixKey ?: "",
-                            reservado = r.reservado ?: false
+                            reservado = r.reservado ?: false,
+                            status = status,
+                            valorPagoAntecipado = r.valorPagoAntecipado ?: 0.0
                         )
-                        if (r.reservado == true) {
-                            val baseReserva = r.inicioReservaPrevisto ?: r.horaEntrada
-                            val extraMin = (System.currentTimeMillis() - baseReserva - 3_600_000L) / 60_000L
+                        // Só calculamos dívida de excedente quando a reserva já está EM_USO
+                        // (motorista chegou e confirmou). Em AGUARDANDO_CONFIRMACAO o
+                        // cronômetro do uso ainda não começou.
+                        val reservaEmUso = r.reservado == true && (
+                            status == com.example.paradacerta.models.SessaoStatus.EM_USO ||
+                            (status == com.example.paradacerta.models.SessaoStatus.ATIVA
+                                && r.dataHoraConfirmacao != null)
+                        )
+                        if (reservaEmUso) {
+                            val baseUso = r.dataHoraConfirmacao
+                                ?: r.inicioReservaPrevisto
+                                ?: r.horaEntrada
+                            val extraMin = (System.currentTimeMillis() - baseUso - 3_600_000L) / 60_000L
                             if (extraMin > 15) {
                                 val extraHoras = kotlin.math.ceil(extraMin / 60.0)
                                 _devidaReservaExtra.value = DevidaReservaExtra(

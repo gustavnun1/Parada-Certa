@@ -60,7 +60,12 @@ import java.util.Date
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Map : Screen("map")
-    object Scanner : Screen("scanner")
+    object Scanner : Screen("scanner?modo={modo}") {
+        /** Modos suportados: "padrao" (default) | "confirmar_reserva" */
+        const val MODO_PADRAO = "padrao"
+        const val MODO_CONFIRMAR_RESERVA = "confirmar_reserva"
+        fun createRoute(modo: String = MODO_PADRAO) = "scanner?modo=$modo"
+    }
     object Profile : Screen("profile")
     object Register : Screen(route = "register")
     object Login : Screen(route = "login")
@@ -199,10 +204,18 @@ fun AppNavGraph(
             HomeScreen(
                 userViewModel = userViewModel,
                 onScannerClick = {
-                    navController.navigate(Screen.Scanner.route) {
+                    navController.navigate(Screen.Scanner.createRoute(Screen.Scanner.MODO_PADRAO)) {
                         popUpTo(Screen.Home.route) { saveState = true }
                         launchSingleTop = true
                         restoreState = true
+                    }
+                },
+                onConfirmarReservaClick = {
+                    navController.navigate(
+                        Screen.Scanner.createRoute(Screen.Scanner.MODO_CONFIRMAR_RESERVA)
+                    ) {
+                        popUpTo(Screen.Home.route) { saveState = true }
+                        launchSingleTop = true
                     }
                 },
                 onMapClick = {
@@ -252,7 +265,16 @@ fun AppNavGraph(
         }
 
         // Aba de scanner (substituiu Favoritos)
-        composable(Screen.Scanner.route) {
+        composable(
+            route = Screen.Scanner.route,
+            arguments = listOf(
+                navArgument("modo") {
+                    type = NavType.StringType
+                    defaultValue = Screen.Scanner.MODO_PADRAO
+                }
+            )
+        ) { backStackEntry ->
+            val modo = backStackEntry.arguments?.getString("modo") ?: Screen.Scanner.MODO_PADRAO
             val devidaReservaExtra by userViewModel.devidaReservaExtra.collectAsState()
             val divida = devidaReservaExtra
             if (divida != null) {
@@ -272,6 +294,7 @@ fun AppNavGraph(
             } else {
                 QrScannerScreen(
                     userViewModel = userViewModel,
+                    modo = modo,
                     onEntrada = {
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Home.route) { inclusive = false }
@@ -282,6 +305,12 @@ fun AppNavGraph(
                         navController.navigate(
                             Screen.Payment.createRoute(sessaoId, valor, nome, pixKey)
                         )
+                    },
+                    onConfirmacaoOk = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
                     }
                 )
             }
@@ -364,7 +393,7 @@ fun AppNavGraph(
                 onReservaCriada = { sessao ->
                     if (NotificationPreferencesManager.isReservasEnabled(context)) {
                         val agendado = ReservationNotificationScheduler.schedule(context, sessao)
-                        if (!agendado && sessao.horarioReserva != null) {
+                        if (!agendado || ReservationNotificationScheduler.shouldRequestExactAlarmPermission(context)) {
                             showAlarmPermissionDialog = true
                         }
                     }
@@ -435,6 +464,7 @@ fun AppNavGraph(
                 onDeleteAccount = {
                     userData?.cpf?.let { cpf -> deleteViewModel.deleteAccount(cpf) }
                 },
+                onBack = { navController.popBackStack() },
                 saveState = saveState,
                 deleteState = deleteState,
                 addressState = addressStateSave,

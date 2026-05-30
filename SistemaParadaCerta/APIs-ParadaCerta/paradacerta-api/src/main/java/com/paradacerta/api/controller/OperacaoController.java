@@ -6,6 +6,7 @@ import com.paradacerta.api.model.DashboardAnaliticoResponse;
 import com.paradacerta.api.model.MapaCalorOperacaoResponse;
 import com.paradacerta.api.model.OperacaoResumoResponse;
 import com.paradacerta.api.model.RelatorioRegionalResponse;
+import com.paradacerta.api.model.ReservaAguardandoResponse;
 import com.paradacerta.api.model.SessaoAdminResponse;
 import com.paradacerta.api.service.OperacaoService;
 import jakarta.validation.Valid;
@@ -114,5 +115,19 @@ public class OperacaoController {
     @DeleteMapping("/{sessaoId}")
     public ResponseEntity<ApiResponse> cancelarReserva(@PathVariable Long sessaoId) {
         return ResponseEntity.ok(operacaoService.cancelarReserva(sessaoId));
+    }
+
+    /**
+     * GET /api/operacao/{estacionamentoId}/reservas-aguardando
+     * Lista reservas pagas que ainda não foram confirmadas presencialmente pelo
+     * motorista. Cada item traz o conteúdo do QR Code que o admin web deve
+     * exibir/imprimir para o motorista escanear.
+     */
+    @GetMapping("/{estacionamentoId}/reservas-aguardando")
+    public ResponseEntity<List<ReservaAguardandoResponse>> reservasAguardandoConfirmacao(
+            @PathVariable Integer estacionamentoId) {
+        return ResponseEntity.ok(
+                operacaoService.listarReservasAguardandoConfirmacao(estacionamentoId)
+        );
     }
 }

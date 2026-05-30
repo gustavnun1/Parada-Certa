@@ -8,6 +8,54 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Padrão de impressão do ticket de confirmação — espelha o kiosk para
+       manter consistência visual em qualquer impressora térmica/A4. */
+    .print-only {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 80mm;
+      padding: 10mm;
+      background: #fff;
+      color: #000;
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    .print-only .p-brand {
+      font-size: 14pt;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      text-align: center;
+      margin-bottom: 3mm;
+    }
+    .print-only .p-sub {
+      font-size: 8pt;
+      text-align: center;
+      color: #555;
+      margin-bottom: 5mm;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+    .print-only .p-qr { display: flex; justify-content: center; margin: 5mm 0; }
+    .print-only .p-qr canvas { display: none !important; }
+    .print-only .p-qr img { display: block; margin: 0 auto; width: 50mm; height: 50mm; }
+    .print-only .p-info { text-align: center; font-size: 10pt; margin-top: 4mm; }
+    .print-only .p-info .ticket {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 11pt; font-weight: 700; margin-top: 2mm;
+    }
+    .print-only .p-info .p-meta { font-size: 9pt; color: #333; margin-top: 2mm; }
+    .print-only .p-info .valid { font-size: 8pt; color: #555; margin-top: 4mm; }
+
+    @media print {
+      body { background: #fff !important; }
+      /* Esconde todo o painel da página — só o ticket é impresso. */
+      body > *:not(.print-only) { display: none !important; }
+      .print-only { position: static; left: 0; top: 0; width: auto; }
+    }
+  </style>
 </head>
 
 <body class="bg-slate-100 text-slate-900 min-h-screen">
@@ -220,6 +268,40 @@
 
     </section>
 
+    <!-- MODAL: PRÉ-VISUALIZAÇÃO DO QR DE CONFIRMAÇÃO -->
+    <div id="modalQrConfirmacao" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+        <div class="text-center">
+          <h4 class="text-2xl font-bold text-slate-900">QR Code de confirmação</h4>
+          <p class="text-sm text-slate-500 mt-1">Mostre ou imprima para o motorista</p>
+          <div id="qrConfirmacaoArea" class="my-6 flex justify-center"></div>
+          <p class="text-sm text-slate-700">Motorista: <span id="qrMotorista" class="font-semibold"></span></p>
+          <p class="text-sm text-slate-700">Veículo: <span id="qrVeiculo" class="font-semibold"></span></p>
+          <p class="text-sm text-slate-700">Reserva: <span id="qrReservaId" class="font-mono"></span></p>
+          <p class="text-xs text-slate-500 mt-4">
+            Peça ao motorista para abrir o app, tocar em "Confirmar reserva" e apontar a câmera para este QR.
+          </p>
+        </div>
+        <div class="mt-6 flex flex-col sm:flex-row gap-3">
+          <button onclick="imprimirQrConfirmacao()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl transition">Imprimir</button>
+          <button onclick="fecharModalQr()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-xl transition">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÁREA OCULTA DE IMPRESSÃO (padrão kiosk) -->
+    <div class="print-only" id="print-area-confirmacao" aria-hidden="true">
+      <div class="p-brand">Parada Certa</div>
+      <div class="p-sub">Confirmação de reserva</div>
+      <div class="p-qr" id="print-qr-confirmacao"></div>
+      <div class="p-info">
+        <div id="print-local">—</div>
+        <div class="ticket" id="print-ticket">#—</div>
+        <div class="p-meta" id="print-meta">—</div>
+        <div class="valid">Escaneie este QR no aplicativo Parada Certa, em "Confirmar reserva"</div>
+      </div>
+    </div>
+
     <!-- FILTROS -->
     <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
       <div class="grid md:grid-cols-3 gap-4">
@@ -242,7 +324,9 @@
             class="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-green-500"
           >
             <option value="todos">Todos</option>
-            <option value="ATIVA">Ativas</option>
+            <option value="AGUARDANDO_CONFIRMACAO">Aguardando confirmação</option>
+            <option value="EM_USO">Em uso (reserva confirmada)</option>
+            <option value="ATIVA">Ativas (entrada comum)</option>
             <option value="ENCERRADA">Encerradas</option>
             <option value="CANCELADA">Canceladas</option>
           </select>
@@ -304,6 +388,8 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <!-- Biblioteca client-side para gerar QR Code de confirmação de reserva -->
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
   <script src="pc-config.js"></script>
   <script src="pc-api.js"></script>
 
@@ -559,6 +645,8 @@
 
     function classeStatus(status) {
       if (status === "ATIVA") return "bg-blue-100 text-blue-700 border border-blue-200";
+      if (status === "AGUARDANDO_CONFIRMACAO") return "bg-yellow-100 text-yellow-800 border border-yellow-200";
+      if (status === "EM_USO") return "bg-indigo-100 text-indigo-700 border border-indigo-200";
       if (status === "ENCERRADA") return "bg-green-100 text-green-700 border border-green-200";
       if (status === "CANCELADA") return "bg-red-100 text-red-700 border border-red-200";
       return "bg-slate-100 text-slate-700 border border-slate-200";
@@ -566,6 +654,8 @@
 
     function nomeStatus(status) {
       if (status === "ATIVA") return "Ativa";
+      if (status === "AGUARDANDO_CONFIRMACAO") return "Aguardando confirmação";
+      if (status === "EM_USO") return "Em uso";
       if (status === "ENCERRADA") return "Encerrada";
       if (status === "CANCELADA") return "Cancelada";
       return status || "—";
@@ -663,8 +753,22 @@
           const tr = document.createElement("tr");
           tr.className = "hover:bg-slate-50 transition";
 
-          const podeFinalizar = s.status === "ATIVA";
-          const podeCancelar  = s.status === "ATIVA";
+          // Permissões por status (alinhadas ao backend):
+          //  - ATIVA: pode finalizar e cancelar (fluxo legado / entrada comum)
+          //  - AGUARDANDO_CONFIRMACAO: admin pode cancelar (motorista ainda não chegou)
+          //                            e gerar/imprimir o QR Code para o motorista escanear
+          //  - EM_USO: admin pode finalizar; cancelamento BLOQUEADO
+          //            (reserva já confirmada presencialmente)
+          //  - ENCERRADA / CANCELADA: nada
+          const podeFinalizar = s.status === "ATIVA" || s.status === "EM_USO";
+          const podeCancelar  = s.status === "ATIVA" || s.status === "AGUARDANDO_CONFIRMACAO";
+          const podeGerarQrConfirmacao = s.reservado && s.status === "AGUARDANDO_CONFIRMACAO" && !!s.qrCode;
+
+          let saidaTexto = "-";
+          if (s.horaSaida) saidaTexto = pcFormatarDataHora(s.horaSaida);
+          else if (s.status === "ATIVA") saidaTexto = "Em aberto";
+          else if (s.status === "EM_USO") saidaTexto = "Em uso";
+          else if (s.status === "AGUARDANDO_CONFIRMACAO") saidaTexto = "Aguardando motorista";
 
           tr.innerHTML = `
             <td class="px-6 py-4">
@@ -679,7 +783,7 @@
               <span class="inline-flex whitespace-nowrap px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold">${tipoOperacao(s)}</span>
             </td>
             <td class="px-6 py-4 text-slate-700">${pcFormatarDataHora(inicioOperacao(s))}</td>
-            <td class="px-6 py-4 text-slate-700">${s.horaSaida ? pcFormatarDataHora(s.horaSaida) : (s.status === "ATIVA" ? "Em aberto" : "-")}</td>
+            <td class="px-6 py-4 text-slate-700">${saidaTexto}</td>
             <td class="px-6 py-4">
               <span class="px-3 py-1 rounded-full text-xs font-semibold ${classeStatus(s.status)}">${nomeStatus(s.status)}</span>
             </td>
@@ -689,12 +793,18 @@
             <td class="px-6 py-4 font-semibold text-green-600">${formatarMoeda(s.valorPago)}</td>
             <td class="px-6 py-4">
               <div class="flex flex-wrap gap-2">
+                ${ podeGerarQrConfirmacao ? `<button data-sid="${s.id}" class="btn-gerar-qr bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs">Gerar QR Code de confirmação</button>` : "" }
                 ${ podeFinalizar ? `<button onclick="finalizarSessao(${s.id})" class="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-xl transition text-xs">Finalizar</button>` : "" }
                 ${ podeCancelar  ? `<button onclick="cancelarSessao(${s.id})" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl transition text-xs">Cancelar</button>` : "" }
                 <button onclick='verDetalhes(${s.id})' class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded-xl transition text-xs">Detalhes</button>
               </div>
             </td>
           `;
+          // Vincula o botão "Gerar QR" via addEventListener para evitar problemas de escaping
+          const btnGerar = tr.querySelector(".btn-gerar-qr");
+          if (btnGerar) {
+            btnGerar.addEventListener("click", () => abrirModalQrConfirmacao(s.id));
+          }
           tabela.appendChild(tr);
         });
       }
@@ -826,6 +936,112 @@
     }
 
     const sair = pcSair;
+
+    // ─── QR Code de confirmação de reserva (integrado à tabela) ──────────────
+    //
+    // Para reservas com status AGUARDANDO_CONFIRMACAO, a tabela mostra um
+    // botão "Gerar QR Code de confirmação" que abre o modal abaixo. O QR é
+    // gerado client-side a partir do token (`qrCode`) que o backend já
+    // retorna em SessaoAdminResponse — nenhuma chamada extra é feita, e
+    // nenhuma vaga é decrementada (a reserva já reservou a vaga ao ser
+    // criada). A confirmação só se efetiva quando o motorista escaneia o
+    // QR no app e chama POST /api/reserva/confirmar.
+
+    function escaparHtml(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * Monta o payload JSON que o mobile espera ler em modo "confirmar reserva".
+     * Mesmo formato gerado pelo backend em /reservas-aguardando, mas montado
+     * local para evitar uma chamada de API extra (os dados já vieram em
+     * SessaoAdminResponse).
+     */
+    function montarPayloadConfirmacao(sessao) {
+      return JSON.stringify({
+        v: 1,
+        app: "paradacerta",
+        tipo: "CONFIRMACAO_RESERVA",
+        sessaoId: String(sessao.id),
+        qrCode: sessao.qrCode
+      });
+    }
+
+    function abrirModalQrConfirmacao(sessaoId) {
+      const s = sessoes.find(x => x.id === sessaoId);
+      if (!s) {
+        alert("Reserva não encontrada na lista atual. Atualize a tabela.");
+        return;
+      }
+      if (s.status !== "AGUARDANDO_CONFIRMACAO" || !s.qrCode) {
+        alert("Esta reserva não está mais aguardando confirmação.");
+        return;
+      }
+
+      // Cabeçalho do modal (tela)
+      document.getElementById("qrMotorista").textContent = nomeClienteOperacao(s);
+      document.getElementById("qrVeiculo").textContent =
+        veiculoOperacao(s) + " · " + placaOperacao(s);
+      document.getElementById("qrReservaId").textContent = "#" + s.id;
+
+      const payload = montarPayloadConfirmacao(s);
+
+      // Render do QR Code na pré-visualização
+      const area = document.getElementById("qrConfirmacaoArea");
+      area.innerHTML = "";
+      new QRCode(area, {
+        text: payload,
+        width: 240,
+        height: 240,
+        colorDark: "#0E1116",
+        colorLight: "#FFFFFF",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      // Render do QR Code na área oculta de impressão (padrão kiosk)
+      const printHost = document.getElementById("print-qr-confirmacao");
+      printHost.innerHTML = "";
+      new QRCode(printHost, {
+        text: payload,
+        width: 260,
+        height: 260,
+        colorDark: "#000",
+        colorLight: "#FFF",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      const ticketId = String(s.qrCode).slice(0, 8).toUpperCase();
+      const nomeEstacionamento = (typeof sessao !== "undefined" && sessao && sessao.estacionamentoNome)
+        ? sessao.estacionamentoNome
+        : "Estacionamento";
+      document.getElementById("print-local").textContent =
+        nomeEstacionamento + " — Confirmação de reserva";
+      document.getElementById("print-ticket").textContent = "#" + ticketId;
+      document.getElementById("print-meta").textContent =
+        nomeClienteOperacao(s) + " · " + placaOperacao(s) +
+        " · " + pcFormatarDataHora(inicioOperacao(s));
+
+      document.getElementById("modalQrConfirmacao").classList.remove("hidden");
+    }
+
+    function fecharModalQr() {
+      document.getElementById("modalQrConfirmacao").classList.add("hidden");
+    }
+
+    function imprimirQrConfirmacao() {
+      // Fecha o modal antes para que o @media print pegue só o .print-only
+      fecharModalQr();
+      // Pequeno delay garante que o reflow termine antes do print dialog
+      setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+    }
+
+    // Atualização periódica da tabela para refletir mudanças de status
+    // (motorista que confirmou no app → linha vira EM_USO automaticamente)
+    setInterval(() => { carregarSessoes(); }, 30000);
 
     carregarPlanoOperacao();
     carregarResumo();

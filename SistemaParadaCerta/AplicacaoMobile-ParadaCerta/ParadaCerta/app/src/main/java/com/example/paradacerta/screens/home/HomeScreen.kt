@@ -50,6 +50,7 @@ import kotlin.math.ceil
 fun HomeScreen(
     userViewModel: UserViewModel = viewModel(),
     onScannerClick: () -> Unit = {},
+    onConfirmarReservaClick: () -> Unit = {},
     onMapClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onPagarEstacionamento: (sessaoId: String, valor: Double, nome: String, pixKey: String) -> Unit = { _, _, _, _ -> },
@@ -193,24 +194,27 @@ fun HomeScreen(
                 Button(onClick = {
                     showFinalizarReservaDialog = false
                     val sessao = sessaoAtiva
-                    if (sessao != null) {
+                    val cpf = cliente?.cpf
+                    if (sessao != null && !cpf.isNullOrBlank()) {
                         ReservationNotificationScheduler.cancel(context)
-                        val baseReserva = sessao.inicioReservaPrevisto ?: sessao.horaEntrada
-                        val extraMin = (System.currentTimeMillis() - baseReserva - 3_600_000L) / 60_000L
-                        if (extraMin > 15) {
-                            val extraValor = ceil(extraMin / 60.0) * sessao.precoHora
-                            userViewModel.setDevidaReservaExtra(
-                                DevidaReservaExtra(
-                                    sessaoId = sessao.sessaoId,
-                                    valor = extraValor,
-                                    nomeEstacionamento = sessao.estacionamentoNome,
-                                    pixKey = sessao.pixKey
+                        // Backend é a fonte da verdade do cálculo. Pedimos o preview e
+                        // decidimos: cobrança extra → fluxo Pix, sem extra → encerra direto.
+                        reservaViewModel.calcularFinalizacao(sessao.sessaoId, cpf) { calc ->
+                            if (calc.exigeCobrancaAdicional) {
+                                userViewModel.setDevidaReservaExtra(
+                                    DevidaReservaExtra(
+                                        sessaoId = sessao.sessaoId,
+                                        valor = calc.valorRestante,
+                                        nomeEstacionamento = sessao.estacionamentoNome,
+                                        pixKey = sessao.pixKey
+                                    )
                                 )
-                            )
-                            showCobraExtraDialog = true
-                        } else {
-                            reservaViewModel.finalizarReserva(sessao.sessaoId)
-                            userViewModel.encerrarSessao()
+                                showCobraExtraDialog = true
+                            } else {
+                                reservaViewModel.finalizarUso(sessao.sessaoId, cpf) {
+                                    userViewModel.encerrarSessao()
+                                }
+                            }
                         }
                     }
                 }) {
@@ -391,6 +395,7 @@ fun HomeScreen(
                         },
                         cancelState = cancelState,
                         devidaReservaExtra = devidaReservaExtra,
+                        onConfirmarReservaClick = onConfirmarReservaClick,
                         onFinalizarReservaClick = {
                             val divida = devidaReservaExtra
                             if (divida != null) {
@@ -621,10 +626,13 @@ private fun ReservedSessionPanel(
     modeloVeiculo: String,
     cancelState: CancelReservaState,
     devidaReservaExtra: DevidaReservaExtra?,
+    onConfirmarReservaClick: () -> Unit,
     onFinalizarReservaClick: () -> Unit,
     onCancelarReservaClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val aguardandoConfirmacao = sessao.aguardandoConfirmacao
+    val emUso = sessao.emUso
     val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
     val horaReservaFormatada = SimpleDateFormat("HH:mm", Locale("pt", "BR")).apply {
         timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
@@ -771,7 +779,14 @@ private fun ReservedSessionPanel(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "Dirija-se ao estacionamento e escaneie o QR Code de saída para confirmar sua entrada",
+            text = when {
+                aguardandoConfirmacao ->
+                    "Ao chegar no estacionamento, escaneie o QR Code de confirmação fornecido na entrada para liberar sua vaga"
+                emUso ->
+                    "Sua reserva está ativa. Use o botão abaixo para finalizar e liberar a vaga ao sair"
+                else ->
+                    "Dirija-se ao estacionamento para iniciar o uso da vaga reservada"
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -791,43 +806,70 @@ private fun ReservedSessionPanel(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Button(
-            onClick = onFinalizarReservaClick,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !cancelState.isLoading,
-            colors = if (devidaReservaExtra != null)
-                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            else
-                ButtonDefaults.buttonColors()
-        ) {
-            Icon(
-                imageVector = if (devidaReservaExtra != null)
-                    Icons.Default.Warning else Icons.Default.CheckCircle,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(if (devidaReservaExtra != null) "Pagar cobrança extra" else "Finalizar uso da vaga")
-        }
+        when {
+            aguardandoConfirmacao -> {
+                // Botão primário: Confirmar reserva (vai para scanner em modo confirmação)
+                Button(
+                    onClick = onConfirmarReservaClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !cancelState.isLoading
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.QrCodeScanner,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Confirmar reserva")
+                }
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedButton(
-            onClick = onCancelarReservaClick,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !cancelState.isLoading,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-        ) {
-            if (cancelState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    color = MaterialTheme.colorScheme.error,
-                    strokeWidth = 2.dp
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Cancelando...")
-            } else {
-                Text("Cancelar reserva (reembolso de 15%)")
+                // Cancelamento só é permitido enquanto aguardando confirmação
+                OutlinedButton(
+                    onClick = onCancelarReservaClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !cancelState.isLoading,
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    if (cancelState.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.error,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Cancelando...")
+                    } else {
+                        Text("Cancelar reserva (reembolso de 15%)")
+                    }
+                }
+            }
+
+            emUso -> {
+                // Apenas o botão de finalizar uso. Cancelamento bloqueado.
+                Button(
+                    onClick = onFinalizarReservaClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !cancelState.isLoading,
+                    colors = if (devidaReservaExtra != null)
+                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    else
+                        ButtonDefaults.buttonColors()
+                ) {
+                    Icon(
+                        imageVector = if (devidaReservaExtra != null)
+                            Icons.Default.Warning else Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (devidaReservaExtra != null) "Pagar cobrança extra" else "Finalizar uso da vaga")
+                }
+            }
+
+            else -> {
+                // Estado intermediário: nada a fazer
             }
         }
     }

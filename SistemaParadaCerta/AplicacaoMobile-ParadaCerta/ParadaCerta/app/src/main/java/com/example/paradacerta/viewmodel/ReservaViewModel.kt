@@ -2,6 +2,10 @@ package com.example.paradacerta.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.paradacerta.models.ConfirmacaoReservaResponse
+import com.example.paradacerta.models.ConfirmarReservaRequest
+import com.example.paradacerta.models.FinalizacaoUsoResponse
+import com.example.paradacerta.models.FinalizarUsoRequest
 import com.example.paradacerta.models.ReservaRequest
 import com.example.paradacerta.models.ReservaResponse
 import com.example.paradacerta.network.ParadaCertaClient
@@ -23,6 +27,20 @@ data class CancelReservaState(
     val errorMessage: String? = null
 )
 
+data class ConfirmarReservaState(
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
+    val resposta: ConfirmacaoReservaResponse? = null,
+    val errorMessage: String? = null
+)
+
+data class FinalizarUsoState(
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
+    val resposta: FinalizacaoUsoResponse? = null,
+    val errorMessage: String? = null
+)
+
 class ReservaViewModel : ViewModel() {
 
     private val _reservaState = MutableStateFlow(ReservaState())
@@ -30,6 +48,12 @@ class ReservaViewModel : ViewModel() {
 
     private val _cancelState = MutableStateFlow(CancelReservaState())
     val cancelState: StateFlow<CancelReservaState> = _cancelState.asStateFlow()
+
+    private val _confirmarState = MutableStateFlow(ConfirmarReservaState())
+    val confirmarState: StateFlow<ConfirmarReservaState> = _confirmarState.asStateFlow()
+
+    private val _finalizarUsoState = MutableStateFlow(FinalizarUsoState())
+    val finalizarUsoState: StateFlow<FinalizarUsoState> = _finalizarUsoState.asStateFlow()
 
     fun reservar(cpf: String, estacionamentoId: Int, placa: String, inicioReservaPrevisto: String) {
         if (cpf.isBlank() || estacionamentoId <= 0 || placa.isBlank() || inicioReservaPrevisto.isBlank()) return
@@ -47,14 +71,7 @@ class ReservaViewModel : ViewModel() {
                 if (response.isSuccessful && response.body() != null) {
                     _reservaState.value = ReservaState(isSuccess = true, resposta = response.body())
                 } else {
-                    val mensagem = try {
-                        val body = response.errorBody()?.string()
-                        org.json.JSONObject(body ?: "").optString("mensagem", null)
-                            ?: "Erro ao criar reserva (${response.code()})"
-                    } catch (e: Exception) {
-                        "Erro ao criar reserva (${response.code()})"
-                    }
-                    _reservaState.value = ReservaState(errorMessage = mensagem)
+                    _reservaState.value = ReservaState(errorMessage = extrairMensagem(response, "Erro ao criar reserva"))
                 }
             } catch (e: java.net.UnknownHostException) {
                 _reservaState.value = ReservaState(errorMessage = "Sem conexão com o servidor")
@@ -75,14 +92,9 @@ class ReservaViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     _cancelState.value = CancelReservaState(isSuccess = true)
                 } else {
-                    val mensagem = try {
-                        val body = response.errorBody()?.string()
-                        org.json.JSONObject(body ?: "").optString("mensagem", null)
-                            ?: "Erro ao cancelar reserva (${response.code()})"
-                    } catch (e: Exception) {
-                        "Erro ao cancelar reserva (${response.code()})"
-                    }
-                    _cancelState.value = CancelReservaState(errorMessage = mensagem)
+                    _cancelState.value = CancelReservaState(
+                        errorMessage = extrairMensagem(response, "Erro ao cancelar reserva")
+                    )
                 }
             } catch (e: java.net.UnknownHostException) {
                 _cancelState.value = CancelReservaState(errorMessage = "Sem conexão com o servidor")
@@ -94,6 +106,7 @@ class ReservaViewModel : ViewModel() {
         }
     }
 
+    /** Mantido por compat com builds antigos. Para o fluxo novo, use [finalizarUso]. */
     fun finalizarReserva(sessaoId: String) {
         if (sessaoId.isBlank()) return
         viewModelScope.launch {
@@ -103,6 +116,103 @@ class ReservaViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Confirma a reserva via QR Code escaneado no estacionamento.
+     * On success, o backend marca dataHoraConfirmacao e muda status para EM_USO.
+     * O caller deve então chamar [UserViewModel.restaurarSessaoAtiva] para refletir o novo estado.
+     */
+    fun confirmarReserva(qrCode: String, cpf: String, onSuccess: (ConfirmacaoReservaResponse) -> Unit = {}) {
+        if (qrCode.isBlank() || cpf.isBlank()) return
+        viewModelScope.launch {
+            _confirmarState.value = ConfirmarReservaState(isLoading = true)
+            try {
+                val response = ParadaCertaClient.service.confirmarReserva(
+                    ConfirmarReservaRequest(qrCode = qrCode, cpf = cpf)
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    _confirmarState.value = ConfirmarReservaState(isSuccess = true, resposta = body)
+                    onSuccess(body)
+                } else {
+                    _confirmarState.value = ConfirmarReservaState(
+                        errorMessage = extrairMensagem(response, "Erro ao confirmar reserva")
+                    )
+                }
+            } catch (e: java.net.UnknownHostException) {
+                _confirmarState.value = ConfirmarReservaState(errorMessage = "Sem conexão com o servidor")
+            } catch (e: java.net.SocketTimeoutException) {
+                _confirmarState.value = ConfirmarReservaState(errorMessage = "Tempo de resposta esgotado")
+            } catch (e: Exception) {
+                _confirmarState.value = ConfirmarReservaState(errorMessage = "Erro: ${e.message ?: "Motivo desconhecido"}")
+            }
+        }
+    }
+
+    /**
+     * Calcula o preview da finalização (sem efetivar). Usado para mostrar
+     * o resumo de valor antes de confirmar.
+     */
+    fun calcularFinalizacao(sessaoId: String, cpf: String, onResult: (FinalizacaoUsoResponse) -> Unit) {
+        if (sessaoId.isBlank() || cpf.isBlank()) return
+        viewModelScope.launch {
+            runCatching {
+                val response = ParadaCertaClient.service.calcularFinalizacaoUso(sessaoId, cpf)
+                if (response.isSuccessful && response.body() != null) {
+                    onResult(response.body()!!)
+                }
+            }
+        }
+    }
+
+    /**
+     * Efetiva a finalização do uso. Quando há cobrança adicional, o caller
+     * deve ter cobrado via Pix antes e passar o valor em `valorPagoAdicional`.
+     */
+    fun finalizarUso(
+        sessaoId: String,
+        cpf: String,
+        valorPagoAdicional: Double? = null,
+        onSuccess: (FinalizacaoUsoResponse) -> Unit = {}
+    ) {
+        if (sessaoId.isBlank() || cpf.isBlank()) return
+        viewModelScope.launch {
+            _finalizarUsoState.value = FinalizarUsoState(isLoading = true)
+            try {
+                val response = ParadaCertaClient.service.finalizarUso(
+                    sessaoId,
+                    FinalizarUsoRequest(cpf = cpf, valorPagoAdicional = valorPagoAdicional)
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    _finalizarUsoState.value = FinalizarUsoState(isSuccess = true, resposta = body)
+                    onSuccess(body)
+                } else {
+                    _finalizarUsoState.value = FinalizarUsoState(
+                        errorMessage = extrairMensagem(response, "Erro ao finalizar uso da vaga")
+                    )
+                }
+            } catch (e: java.net.UnknownHostException) {
+                _finalizarUsoState.value = FinalizarUsoState(errorMessage = "Sem conexão com o servidor")
+            } catch (e: java.net.SocketTimeoutException) {
+                _finalizarUsoState.value = FinalizarUsoState(errorMessage = "Tempo de resposta esgotado")
+            } catch (e: Exception) {
+                _finalizarUsoState.value = FinalizarUsoState(errorMessage = "Erro: ${e.message ?: "Motivo desconhecido"}")
+            }
+        }
+    }
+
+    private fun <T> extrairMensagem(response: retrofit2.Response<T>, fallback: String): String {
+        return try {
+            val body = response.errorBody()?.string()
+            org.json.JSONObject(body ?: "").optString("mensagem", null)
+                ?: "$fallback (${response.code()})"
+        } catch (e: Exception) {
+            "$fallback (${response.code()})"
+        }
+    }
+
     fun resetReservaState() { _reservaState.value = ReservaState() }
     fun resetCancelState() { _cancelState.value = CancelReservaState() }
+    fun resetConfirmarState() { _confirmarState.value = ConfirmarReservaState() }
+    fun resetFinalizarUsoState() { _finalizarUsoState.value = FinalizarUsoState() }
 }

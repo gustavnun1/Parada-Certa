@@ -7,8 +7,11 @@ data class SessaoAtivaResponse(
     val pixKey: String?,
     val horaEntrada: Long,
     val inicioReservaPrevisto: Long? = null,
+    val dataHoraConfirmacao: Long? = null,
     val precoHora: Double,
     val placa: String?,
     val modeloVeiculo: String?,
-    val reservado: Boolean? = null
+    val reservado: Boolean? = null,
+    val status: String? = null,
+    val valorPagoAntecipado: Double? = null
 )

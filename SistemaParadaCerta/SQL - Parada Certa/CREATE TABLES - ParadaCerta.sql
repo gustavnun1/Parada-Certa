@@ -181,25 +181,30 @@
   -- Coluna [placa] consolidada do ALTER 03 (consumida pelos painéis Operação/Financeiro
   -- e populada na entrada via app a partir do request).
   CREATE TABLE [dbo].[SessaoEstacionamento] (
-      [id]               [bigint]        IDENTITY(1,1) NOT NULL,
-      [clienteId]        [bigint]        NULL, -- NULL para entradas anonimas geradas pelo kiosk
-      [estacionamentoId] [int]           NOT NULL,
-      [horaEntrada]      [datetime2]     NOT NULL,
-      [inicioReservaPrevisto] [datetime2] NULL,
-      [horaSaida]        [datetime2]     NULL,
-      [horaPagamento]    [datetime2]     NULL,
-      [valorPago]        [decimal](10,2) NULL, -- valor pago/faturado; no kiosk inicia com precoHora minimo
-      [status]           [nvarchar](10)  NOT NULL,
-      [qrCode]           [varchar](64)   NULL,
-      [reservado]        [bit]           NOT NULL DEFAULT 0,
-      [placa]            [varchar](7)    NULL,
+      [id]                   [bigint]        IDENTITY(1,1) NOT NULL,
+      [clienteId]            [bigint]        NULL, -- NULL para entradas anonimas geradas pelo kiosk
+      [estacionamentoId]     [int]           NOT NULL,
+      [horaEntrada]          [datetime2]     NOT NULL,
+      [inicioReservaPrevisto][datetime2]     NULL,
+      [dataHoraConfirmacao]  [datetime2]     NULL, -- quando o motorista confirmou a reserva via QR
+      [horaSaida]            [datetime2]     NULL,
+      [horaPagamento]        [datetime2]     NULL,
+      [valorPago]            [decimal](10,2) NULL, -- valor pago/faturado; no kiosk inicia com precoHora minimo
+      [valorFinalCalculado]  [decimal](10,2) NULL, -- total recalculado no finalizar uso
+      [valorRestanteCobrado] [decimal](10,2) NULL, -- diferenca cobrada no finalizar
+      [status]               [nvarchar](30)  NOT NULL,
+      [qrCode]               [varchar](64)   NULL,
+      [reservado]            [bit]           NOT NULL DEFAULT 0,
+      [placa]                [varchar](7)    NULL,
 
       CONSTRAINT PK_SessaoEstacionamento  PRIMARY KEY CLUSTERED ([id] ASC),
       CONSTRAINT FK_Sessao_Cliente        FOREIGN KEY ([clienteId])
           REFERENCES [dbo].[Cliente] ([id]),
       CONSTRAINT FK_Sessao_Estacionamento FOREIGN KEY ([estacionamentoId])
           REFERENCES [dbo].[Estacionamento] ([id]),
-      CONSTRAINT CK_Sessao_Status         CHECK ([status] IN ('ATIVA','ENCERRADA','CANCELADA')),
+      CONSTRAINT CK_Sessao_Status         CHECK ([status] IN (
+          'ATIVA','ENCERRADA','CANCELADA','AGUARDANDO_CONFIRMACAO','EM_USO'
+      )),
       CONSTRAINT CK_Sessao_ValorPago      CHECK ([valorPago] IS NULL OR [valorPago] >= 0)
   );
   GO

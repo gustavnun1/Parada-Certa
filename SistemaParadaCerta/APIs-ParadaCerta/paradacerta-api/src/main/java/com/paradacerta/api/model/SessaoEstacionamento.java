@@ -29,6 +29,9 @@ public class SessaoEstacionamento {
     @Column(name = "inicioReservaPrevisto")
     private LocalDateTime inicioReservaPrevisto;
 
+    @Column(name = "dataHoraConfirmacao")
+    private LocalDateTime dataHoraConfirmacao;
+
     @Column(name = "horaSaida")
     private LocalDateTime horaSaida;
 
@@ -38,8 +41,14 @@ public class SessaoEstacionamento {
     @Column(name = "valorPago", precision = 10, scale = 2)
     private BigDecimal valorPago;
 
+    @Column(name = "valorFinalCalculado", precision = 10, scale = 2)
+    private BigDecimal valorFinalCalculado;
+
+    @Column(name = "valorRestanteCobrado", precision = 10, scale = 2)
+    private BigDecimal valorRestanteCobrado;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 10)
+    @Column(name = "status", nullable = false, length = 30)
     private SessaoStatus status;
 
     @Column(name = "qrCode", length = 64)

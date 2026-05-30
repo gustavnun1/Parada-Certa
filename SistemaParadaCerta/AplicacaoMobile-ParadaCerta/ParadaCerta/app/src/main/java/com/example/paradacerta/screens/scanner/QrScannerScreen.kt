@@ -56,17 +56,38 @@ import java.util.concurrent.Executors
 fun QrScannerScreen(
     userViewModel: UserViewModel = viewModel(),
     mapViewModel: MapViewModel = viewModel(),
+    modo: String = "padrao",
     onEntrada: () -> Unit,
-    onPagamento: (sessaoId: String, valor: Double, nome: String, pixKey: String) -> Unit
+    onPagamento: (sessaoId: String, valor: Double, nome: String, pixKey: String) -> Unit,
+    onConfirmacaoOk: () -> Unit = {}
 ) {
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
     val veiculos by userViewModel.veiculosData.collectAsState()
     val mapState by mapViewModel.mapState.collectAsState()
     val sessaoAtiva by userViewModel.sessaoAtiva.collectAsState()
+    val cliente by userViewModel.userData.collectAsState()
     val devidaReservaExtra by userViewModel.devidaReservaExtra.collectAsState()
     val reservaViewModel: ReservaViewModel = viewModel()
+    val confirmarState by reservaViewModel.confirmarState.collectAsState()
     val scope = rememberCoroutineScope()
     var loadingEntradaDemo by remember { androidx.compose.runtime.mutableStateOf(false) }
+    val ehModoConfirmacao = modo == "confirmar_reserva"
+
+    // Mostra erro de confirmação e libera scanner para nova tentativa
+    LaunchedEffect(confirmarState.errorMessage) {
+        if (confirmarState.errorMessage != null) {
+            // erro será exibido via diálogo abaixo; scanner libera ao fechar
+        }
+    }
+
+    // Após confirmação bem-sucedida, recarrega sessão (status=EM_USO) e volta
+    LaunchedEffect(confirmarState.isSuccess) {
+        if (confirmarState.isSuccess) {
+            cliente?.cpf?.let { userViewModel.restaurarSessaoAtiva(it) }
+            reservaViewModel.resetConfirmarState()
+            onConfirmacaoOk()
+        }
+    }
 
     // Dados pendentes para quando o picker de veículo está sendo mostrado
     var pendingEntradaPayload by remember { mutableStateOf<QrCodePayload?>(null) }
@@ -262,6 +283,27 @@ fun QrScannerScreen(
         )
     }
 
+    // Diálogo: erro ao confirmar reserva (QR errado / outro dono / já confirmada)
+    confirmarState.errorMessage?.let { erro ->
+        AlertDialog(
+            onDismissRequest = {
+                reservaViewModel.resetConfirmarState()
+                jaProcessou.set(false)
+            },
+            icon = { Icon(Icons.Default.WarningAmber, contentDescription = null) },
+            title = { Text("Não foi possível confirmar") },
+            text = { Text(erro) },
+            confirmButton = {
+                Button(onClick = {
+                    reservaViewModel.resetConfirmarState()
+                    jaProcessou.set(false)
+                }) {
+                    Text("Tentar novamente")
+                }
+            }
+        )
+    }
+
     // Diálogo: nenhum veículo válido cadastrado/selecionado
     if (veiculoInvalidoDialog) {
         AlertDialog(
@@ -438,10 +480,34 @@ fun QrScannerScreen(
                 cameraPermission.status.isGranted -> {
                     CameraPreviewWithScanner(
                         jaProcessou = jaProcessou,
+                        modoConfirmacao = ehModoConfirmacao,
                         onDemoEntrada = { simularEntradaAleatoria() },
                         isLoadingDemo = loadingEntradaDemo || mapState.isLoading,
                         onQrDetected = { payload ->
-                            when ((payload.tipo ?: payload.type ?: "").uppercase()) {
+                            val tipo = (payload.tipo ?: payload.type ?: "").uppercase()
+
+                            // No modo "confirmar reserva", só aceita QR do tipo CONFIRMACAO_RESERVA
+                            if (ehModoConfirmacao) {
+                                if (tipo == "CONFIRMACAO_RESERVA" && !payload.qrCode.isNullOrBlank()) {
+                                    val cpfUsuario = cliente?.cpf
+                                    if (cpfUsuario.isNullOrBlank()) {
+                                        veiculoInvalidoDialog = true
+                                        jaProcessou.set(false)
+                                    } else {
+                                        reservaViewModel.confirmarReserva(
+                                            qrCode = payload.qrCode,
+                                            cpf = cpfUsuario
+                                        )
+                                        // Estado de carregamento/erro/sucesso é exibido via dialogs abaixo
+                                    }
+                                } else {
+                                    // QR inválido para este modo
+                                    jaProcessou.set(false)
+                                }
+                                return@CameraPreviewWithScanner
+                            }
+
+                            when (tipo) {
                                 "ENTRADA" -> {
                                     when {
                                         sessaoAtiva != null -> sessaoAtivaDialog = true
@@ -458,17 +524,14 @@ fun QrScannerScreen(
                                         }
                                     }
                                 }
+                                "CONFIRMACAO_RESERVA" -> {
+                                    // Modo padrão lendo QR de confirmação: orienta usar o botão certo
+                                    sessaoAtivaDialog = true
+                                }
                                 "PAGAMENTO" -> {
                                     val sessao = sessaoAtiva
                                     val qrSessaoId = payload.sessaoId ?: ""
-                                    if (sessao?.reservado == true && qrSessaoId == sessao.sessaoId) {
-                                        // QR bate com a reserva ativa: confirmar entrada gratuita
-                                        reservaExitDialog = Triple(
-                                            sessao.estacionamentoId,
-                                            sessao.estacionamentoNome,
-                                            sessao.precoHora
-                                        )
-                                    } else if (sessao?.reservado == true && qrSessaoId != sessao.sessaoId) {
+                                    if (sessao?.reservado == true && qrSessaoId != sessao.sessaoId) {
                                         // QR de outro estacionamento: bloqueia
                                         sessaoAtivaDialog = true
                                     } else {
@@ -502,6 +565,7 @@ fun QrScannerScreen(
 @Composable
 private fun CameraPreviewWithScanner(
     jaProcessou: java.util.concurrent.atomic.AtomicBoolean,
+    modoConfirmacao: Boolean = false,
     onDemoEntrada: () -> Unit,
     isLoadingDemo: Boolean,
     onQrDetected: (QrCodePayload) -> Unit
@@ -632,18 +696,26 @@ private fun CameraPreviewWithScanner(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Aponte para o QR Code",
+                text = if (modoConfirmacao) "Confirmar reserva" else "Aponte para o QR Code",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Escaneie o QR de entrada para registrar sua chegada,\nou o QR de pagamento para encerrar",
+                text = if (modoConfirmacao)
+                    "Escaneie o QR Code de confirmação fornecido pelo estacionamento\npara liberar o uso da sua vaga reservada"
+                else
+                    "Escaneie o QR de entrada para registrar sua chegada,\nou o QR de pagamento para encerrar",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.White.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center
             )
+
+            if (modoConfirmacao) {
+                // Sem botão de demo no modo confirmação
+                return@Column
+            }
 
             HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
 

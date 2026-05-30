@@ -29,6 +29,12 @@ public class ReservaService {
     private final VeiculoRepository             veiculoRepository;
 
     // ── Criar reserva ─────────────────────────────────────────────────────────
+    //
+    // A reserva é criada com status AGUARDANDO_CONFIRMACAO. O motorista pagou a
+    // 1ª hora antecipada e tem direito a cancelar (com reembolso de 15%) até
+    // confirmar presencialmente o QR Code de confirmação fornecido pelo
+    // estacionamento. Quando o motorista escaneia o QR, a sessão vira EM_USO e
+    // só pode ser encerrada via finalizarUso.
 
     @Transactional
     public ReservaResponse criarReserva(ReservaRequest req) {
@@ -38,7 +44,6 @@ public class ReservaService {
 
         Long clienteId = cliente.getId();
 
-        // Verifica se o estacionamento existe e permite reservas
         Estacionamento est = estacionamentoRepository.findById(req.getEstacionamentoId())
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Estacionamento não encontrado"));
 
@@ -59,18 +64,15 @@ public class ReservaService {
             throw new ConflictException("Estacionamento sem vagas disponíveis no momento");
         }
 
-        // Regra 1: não pode ter reserva ativa no mesmo estacionamento
-        if (sessaoRepository.existsByClienteIdAndEstacionamentoIdAndReservadoTrueAndStatus(
-                clienteId, est.getId(), SessaoStatus.ATIVA)) {
-            throw new ConflictException("Você já possui uma reserva ativa neste estacionamento");
+        // Trava global: motorista não pode ter NENHUMA sessão "viva" em paralelo
+        // (cobre AGUARDANDO_CONFIRMACAO, EM_USO e ATIVA).
+        if (sessaoRepository.existsSessaoVivaDoCliente(clienteId)) {
+            throw new ConflictException(
+                "Você já possui uma reserva em andamento ou está usando uma vaga. "
+              + "Finalize ou cancele a sessão atual antes de iniciar uma nova reserva."
+            );
         }
 
-        // Regra 2: não pode ter qualquer sessão/reserva ativa em paralelo (períodos sobrepostos)
-        if (sessaoRepository.existsByClienteIdAndStatus(clienteId, SessaoStatus.ATIVA)) {
-            throw new ConflictException("Você já possui uma sessão ou reserva ativa em outro estacionamento. Encerre-a antes de realizar uma nova reserva");
-        }
-
-        // Cria a sessão de reserva
         LocalDateTime agora = nowSaoPaulo();
         String qrCode = java.util.UUID.randomUUID().toString();
 
@@ -81,16 +83,15 @@ public class ReservaService {
         sessao.setEstacionamentoId(est.getId());
         sessao.setHoraEntrada(agora);
         sessao.setInicioReservaPrevisto(req.getInicioReservaPrevisto());
-        sessao.setStatus(SessaoStatus.ATIVA);
+        sessao.setStatus(SessaoStatus.AGUARDANDO_CONFIRMACAO);
         sessao.setQrCode(qrCode);
         sessao.setReservado(true);
-        sessao.setValorPago(est.getPrecoHora());
+        sessao.setValorPago(est.getPrecoHora()); // valor pago antecipado (1ª hora)
         sessao.setHoraPagamento(agora);
         sessao.setPlaca(placa);
 
         sessaoRepository.save(sessao);
 
-        // Monta a resposta
         String modeloVeiculo = null;
         if (placa != null) {
             modeloVeiculo = veiculoRepository.findById(placa)
@@ -115,6 +116,10 @@ public class ReservaService {
     }
 
     // ── Cancelar reserva (cancelamento pelo motorista via app) ───────────────
+    //
+    // Só é permitido enquanto a reserva está AGUARDANDO_CONFIRMACAO. Depois
+    // que o motorista confirma presencialmente (status = EM_USO), não há mais
+    // direito de cancelamento — somente finalizar uso.
 
     @Transactional
     public ApiResponse cancelarReserva(Long sessaoId) {
@@ -126,7 +131,15 @@ public class ReservaService {
             throw new RequisicaoInvalidaException("Esta sessão não é uma reserva");
         }
 
-        if (sessao.getStatus() != SessaoStatus.ATIVA) {
+        if (sessao.getStatus() == SessaoStatus.EM_USO) {
+            throw new ConflictException(
+                "Reserva já confirmada no estacionamento. Use 'Finalizar uso da vaga' para encerrar."
+            );
+        }
+
+        // Permitido em AGUARDANDO_CONFIRMACAO e ATIVA (compat legado pré-migração)
+        if (sessao.getStatus() != SessaoStatus.AGUARDANDO_CONFIRMACAO
+                && sessao.getStatus() != SessaoStatus.ATIVA) {
             throw new ConflictException("Reserva já encerrada ou cancelada");
         }
 
@@ -135,11 +148,7 @@ public class ReservaService {
 
         sessao.setStatus(SessaoStatus.CANCELADA);
         sessao.setHoraSaida(nowSaoPaulo());
-        // Reserva cancelada não gera receita no painel admin: o valorPago é
-        // zerado para que os totais financeiros (dashboard, financeiro, ticket
-        // médio, gráficos) não contabilizem cancelamentos. A multa contratual
-        // (85% retido junto à plataforma/operação financeira externa) é
-        // tratada fora do dashboard do estacionamento.
+        // Reserva cancelada não gera receita no painel admin
         sessao.setValorPago(BigDecimal.ZERO);
         sessaoRepository.save(sessao);
 
@@ -148,11 +157,151 @@ public class ReservaService {
         );
     }
 
-    // ── Finalizar reserva (usuário chegou ao estacionamento) ─────────────────
+    // ── Confirmar reserva por QR Code (motorista escaneia no kiosk/admin) ────
+    //
+    // Valida que o QR pertence a uma reserva AGUARDANDO_CONFIRMACAO do próprio
+    // motorista. Marca dataHoraConfirmacao = agora e muda status para EM_USO.
+    // A partir daí, cancelamento pelo motorista é bloqueado e o cronômetro
+    // de uso começa a contar.
 
     @Transactional
-    public ApiResponse finalizarReserva(Long sessaoId) {
+    public ConfirmacaoReservaResponse confirmarReservaPorQrCode(String qrCode, String cpf) {
 
+        if (qrCode == null || qrCode.isBlank()) {
+            throw new RequisicaoInvalidaException("QR Code de confirmação não informado");
+        }
+
+        Cliente cliente = clienteRepository.findByCpf(cpf)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado"));
+
+        SessaoEstacionamento sessao = sessaoRepository.findByQrCode(qrCode)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException(
+                        "QR Code não corresponde a nenhuma reserva"));
+
+        if (!Boolean.TRUE.equals(sessao.getReservado())) {
+            throw new RequisicaoInvalidaException(
+                "QR Code inválido para confirmação de reserva"
+            );
+        }
+
+        if (sessao.getClienteId() == null || !sessao.getClienteId().equals(cliente.getId())) {
+            throw new ConflictException("Esta reserva pertence a outro motorista");
+        }
+
+        if (sessao.getStatus() == SessaoStatus.EM_USO) {
+            throw new ConflictException("Reserva já confirmada");
+        }
+
+        if (sessao.getStatus() != SessaoStatus.AGUARDANDO_CONFIRMACAO) {
+            throw new ConflictException("Reserva não está aguardando confirmação");
+        }
+
+        LocalDateTime agora = nowSaoPaulo();
+        sessao.setStatus(SessaoStatus.EM_USO);
+        sessao.setDataHoraConfirmacao(agora);
+        sessaoRepository.save(sessao);
+
+        Estacionamento est = estacionamentoRepository.findById(sessao.getEstacionamentoId())
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Estacionamento não encontrado"));
+
+        return new ConfirmacaoReservaResponse(
+                String.valueOf(sessao.getId()),
+                est.getId(),
+                est.getNome(),
+                est.getPixKey(),
+                toEpochMillisSaoPaulo(agora),
+                est.getPrecoHora()
+        );
+    }
+
+    // ── Finalizar uso da vaga (motorista sai do estacionamento) ──────────────
+    //
+    // Calcula o tempo total de uso desde dataHoraConfirmacao até agora aplicando
+    // as regras: mínimo 1h, arredondamento por blocos de 30min acima de 1h. Se o
+    // valor recalculado for maior que valorPago (antecipado), retorna a
+    // diferença para o mobile cobrar via Pix antes de efetivar o encerramento.
+    // Se for menor ou igual, encerra direto sem cobrança adicional.
+
+    @Transactional(readOnly = true)
+    public FinalizacaoUsoResponse calcularFinalizacaoUso(Long sessaoId, String cpf) {
+        SessaoEstacionamento sessao = carregarReservaEmUso(sessaoId, cpf);
+        Estacionamento est = estacionamentoRepository.findById(sessao.getEstacionamentoId())
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Estacionamento não encontrado"));
+
+        return montarFinalizacao(sessao, est, nowSaoPaulo());
+    }
+
+    @Transactional
+    public FinalizacaoUsoResponse finalizarUso(Long sessaoId, String cpf, BigDecimal valorPagoAdicional) {
+
+        SessaoEstacionamento sessao = carregarReservaEmUso(sessaoId, cpf);
+        Estacionamento est = estacionamentoRepository.findById(sessao.getEstacionamentoId())
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Estacionamento não encontrado"));
+
+        LocalDateTime agora = nowSaoPaulo();
+        FinalizacaoUsoResponse calculo = montarFinalizacao(sessao, est, agora);
+
+        // Se há saldo a pagar, exige que o mobile envie o valor (após confirmar Pix)
+        if (calculo.isExigeCobrancaAdicional()) {
+            BigDecimal restante = calculo.getValorRestante();
+            BigDecimal pago = valorPagoAdicional != null ? valorPagoAdicional : BigDecimal.ZERO;
+            if (pago.compareTo(restante) < 0) {
+                throw new RequisicaoInvalidaException(
+                    String.format(
+                        "Cobrança adicional de R$ %.2f pendente. Realize o pagamento antes de finalizar.",
+                        restante
+                    )
+                );
+            }
+        }
+
+        BigDecimal valorAntecipado = sessao.getValorPago() != null ? sessao.getValorPago() : BigDecimal.ZERO;
+        BigDecimal restanteCobrado = calculo.isExigeCobrancaAdicional()
+                ? calculo.getValorRestante()
+                : BigDecimal.ZERO;
+        BigDecimal valorTotalPago = valorAntecipado.add(restanteCobrado);
+
+        sessao.setStatus(SessaoStatus.ENCERRADA);
+        sessao.setHoraSaida(agora);
+        sessao.setHoraPagamento(agora);
+        sessao.setValorFinalCalculado(calculo.getValorFinalCalculado());
+        sessao.setValorRestanteCobrado(restanteCobrado);
+        sessao.setValorPago(valorTotalPago);
+        sessaoRepository.save(sessao);
+
+        return calculo;
+    }
+
+    private FinalizacaoUsoResponse montarFinalizacao(
+            SessaoEstacionamento sessao, Estacionamento est, LocalDateTime fim) {
+
+        LocalDateTime inicio = inicioDeUsoParaCalculo(sessao);
+        long minutosUso = Math.max(0L, Duration.between(inicio, fim).toMinutes());
+        long minutosCobrados = arredondarMinutosCobrados(minutosUso);
+        BigDecimal valorFinal = calcularValorPorMinutos(est.getPrecoHora(), minutosCobrados);
+
+        BigDecimal valorAntecipado = sessao.getValorPago() != null ? sessao.getValorPago() : BigDecimal.ZERO;
+        BigDecimal restante = valorFinal.subtract(valorAntecipado).max(BigDecimal.ZERO)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        boolean exigeCobranca = restante.compareTo(BigDecimal.ZERO) > 0;
+
+        return new FinalizacaoUsoResponse(
+                String.valueOf(sessao.getId()),
+                est.getId(),
+                est.getNome(),
+                est.getPixKey(),
+                minutosUso,
+                minutosCobrados,
+                est.getPrecoHora(),
+                valorAntecipado,
+                valorFinal,
+                restante,
+                exigeCobranca
+        );
+    }
+
+    private SessaoEstacionamento carregarReservaEmUso(Long sessaoId, String cpf) {
         SessaoEstacionamento sessao = sessaoRepository.findById(sessaoId)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Reserva não encontrada"));
 
@@ -160,32 +309,74 @@ public class ReservaService {
             throw new RequisicaoInvalidaException("Esta sessão não é uma reserva");
         }
 
-        if (sessao.getStatus() != SessaoStatus.ATIVA) {
-            throw new ConflictException("Reserva já encerrada ou cancelada");
-        }
-
-        // Verifica se há tempo excedente além da 1 hora coberta
-        long extraMinutos = calcularExtraMinutos(inicioReservaParaCalculo(sessao));
-        if (extraMinutos > 15) {
-            Estacionamento est = estacionamentoRepository.findById(sessao.getEstacionamentoId())
-                    .orElseThrow(() -> new UsuarioNaoEncontradoException("Estacionamento não encontrado"));
-            BigDecimal valorExtra = calcularValorExtra(extraMinutos, est.getPrecoHora());
-            throw new RequisicaoInvalidaException(
-                    String.format(
-                            "Cobrança adicional de R$ %.2f pelo tempo excedente (%d min além da 1ª hora). " +
-                            "Realize o pagamento via POST /api/sessao/encerrar/%d?valorPago=%.2f",
-                            valorExtra, extraMinutos, sessaoId, valorExtra)
+        if (sessao.getStatus() == SessaoStatus.AGUARDANDO_CONFIRMACAO) {
+            throw new ConflictException(
+                "Reserva ainda não foi confirmada no estacionamento. Escaneie o QR de confirmação primeiro."
             );
         }
 
-        sessao.setStatus(SessaoStatus.ENCERRADA);
-        sessao.setHoraSaida(nowSaoPaulo());
-        sessaoRepository.save(sessao);
+        // Aceita EM_USO (fluxo novo) e ATIVA (reservas legado pré-migração)
+        if (sessao.getStatus() != SessaoStatus.EM_USO
+                && sessao.getStatus() != SessaoStatus.ATIVA) {
+            throw new ConflictException("Reserva já encerrada ou cancelada");
+        }
 
-        return ApiResponse.ok("Reserva finalizada. Boa permanência!");
+        if (cpf != null && !cpf.isBlank()) {
+            Cliente cliente = clienteRepository.findByCpf(cpf)
+                    .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado"));
+            if (sessao.getClienteId() == null || !sessao.getClienteId().equals(cliente.getId())) {
+                throw new ConflictException("Esta reserva pertence a outro motorista");
+            }
+        }
+
+        return sessao;
     }
 
-    // ── Calcular cobrança extra (consulta sem modificar a sessão) ────────────
+    /**
+     * Para o fluxo novo (EM_USO), conta a partir de dataHoraConfirmacao.
+     * Para reservas legado (ATIVA) que vieram da versão anterior sem o campo,
+     * usa inicioReservaPrevisto ou horaEntrada como fallback.
+     */
+    private LocalDateTime inicioDeUsoParaCalculo(SessaoEstacionamento sessao) {
+        if (sessao.getDataHoraConfirmacao() != null) {
+            return sessao.getDataHoraConfirmacao();
+        }
+        if (sessao.getInicioReservaPrevisto() != null) {
+            return sessao.getInicioReservaPrevisto();
+        }
+        return sessao.getHoraEntrada();
+    }
+
+    // ── Compatibilidade: endpoints antigos ───────────────────────────────────
+
+    /**
+     * Compat: o app antigo chamava /api/reserva/{id}/finalizar para a operação
+     * que hoje virou "confirmar no estacionamento". Mantemos o método como um
+     * alias de finalizarUso sem cobrança adicional. Builds antigos do mobile
+     * só conseguirão finalizar sem extra (que era o comportamento anterior).
+     */
+    @Transactional
+    public ApiResponse finalizarReserva(Long sessaoId) {
+        SessaoEstacionamento sessao = sessaoRepository.findById(sessaoId)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Reserva não encontrada"));
+
+        // Se já está EM_USO, finaliza sem cobrança adicional
+        if (sessao.getStatus() == SessaoStatus.EM_USO) {
+            finalizarUso(sessaoId, null, BigDecimal.ZERO);
+            return ApiResponse.ok("Reserva finalizada. Boa permanência!");
+        }
+
+        // Compat legado pré-migração: encerra direto
+        if (sessao.getStatus() == SessaoStatus.ATIVA
+                && Boolean.TRUE.equals(sessao.getReservado())) {
+            sessao.setStatus(SessaoStatus.ENCERRADA);
+            sessao.setHoraSaida(nowSaoPaulo());
+            sessaoRepository.save(sessao);
+            return ApiResponse.ok("Reserva finalizada. Boa permanência!");
+        }
+
+        throw new ConflictException("Reserva não está em uso");
+    }
 
     @Transactional(readOnly = true)
     public CalculoExtraResponse calcularExtra(Long sessaoId) {
@@ -197,11 +388,12 @@ public class ReservaService {
             throw new RequisicaoInvalidaException("Esta sessão não é uma reserva");
         }
 
-        if (sessao.getStatus() != SessaoStatus.ATIVA) {
+        if (!sessao.getStatus().isAtivoOuAguardando()) {
             throw new ConflictException("Reserva já encerrada ou cancelada");
         }
 
-        long extraMinutos = calcularExtraMinutos(inicioReservaParaCalculo(sessao));
+        LocalDateTime inicio = inicioDeUsoParaCalculo(sessao);
+        long extraMinutos = Duration.between(inicio, nowSaoPaulo()).toMinutes() - 60;
 
         if (extraMinutos <= 15) {
             return new CalculoExtraResponse(false, 0L, BigDecimal.ZERO);
@@ -214,21 +406,19 @@ public class ReservaService {
         return new CalculoExtraResponse(true, extraMinutos, valorExtra);
     }
 
-    // ── Helpers de cálculo de tempo extra ────────────────────────────────────
+    // ── Helpers de cálculo de tempo / valor ──────────────────────────────────
 
-    /**
-     * Retorna os minutos excedentes além de 1 hora desde o início previsto.
-     * Valor negativo indica que ainda está dentro do período coberto.
-     */
-    private long calcularExtraMinutos(LocalDateTime horaEntrada) {
-        long totalMinutos = Duration.between(horaEntrada, nowSaoPaulo()).toMinutes();
-        return totalMinutos - 60; // desconta a 1 hora coberta pela reserva
+    private long arredondarMinutosCobrados(long minutos) {
+        if (minutos <= 60) return 60;
+        long blocos = (minutos + 29) / 30; // ceil(minutos / 30)
+        return blocos * 30;
     }
 
-    private LocalDateTime inicioReservaParaCalculo(SessaoEstacionamento sessao) {
-        return sessao.getInicioReservaPrevisto() != null
-                ? sessao.getInicioReservaPrevisto()
-                : sessao.getHoraEntrada();
+    private BigDecimal calcularValorPorMinutos(BigDecimal precoHora, long minutosCobrados) {
+        if (precoHora == null) return BigDecimal.ZERO;
+        return precoHora
+                .multiply(BigDecimal.valueOf(minutosCobrados))
+                .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
     }
 
     private void validarInicioReserva(LocalDateTime inicioReservaPrevisto, Estacionamento est) {
@@ -264,10 +454,6 @@ public class ReservaService {
         return dataHora.atZone(ZONE_SAO_PAULO).toInstant().toEpochMilli();
     }
 
-    /**
-     * Calcula o valor extra a cobrar: horas excedentes arredondadas para cima × precoHora.
-     * Exemplo: 75 min extra → ceil(75/60) = 2 h → 2 × precoHora.
-     */
     private BigDecimal calcularValorExtra(long extraMinutos, BigDecimal precoHora) {
         long horasExtras = (long) Math.ceil(extraMinutos / 60.0);
         return precoHora.multiply(BigDecimal.valueOf(horasExtras))

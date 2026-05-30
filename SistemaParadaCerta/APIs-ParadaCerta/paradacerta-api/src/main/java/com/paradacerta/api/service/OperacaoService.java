@@ -105,7 +105,12 @@ public class OperacaoService {
         LocalDateTime inicioHoje = hoje.atStartOfDay();
         LocalDateTime fimHoje    = hoje.atTime(LocalTime.MAX);
 
-        long ativas       = sessaoRepository.countByEstacionamentoIdAndStatus(estacionamentoId, SessaoStatus.ATIVA);
+        // "Ativas" no painel = sessões em curso fisicamente no estacionamento.
+        // Inclui entrada comum (ATIVA) e reserva confirmada presencialmente (EM_USO).
+        // AGUARDANDO_CONFIRMACAO entra em "reservasAtivasCount" abaixo.
+        long ativas       =
+                sessaoRepository.countByEstacionamentoIdAndStatus(estacionamentoId, SessaoStatus.ATIVA)
+              + sessaoRepository.countByEstacionamentoIdAndStatus(estacionamentoId, SessaoStatus.EM_USO);
         long encerradas   = sessaoRepository.countByEstacionamentoStatusAndPagamentoPeriodo(
                 estacionamentoId, SessaoStatus.ENCERRADA, inicioHoje, fimHoje);
         long canceladas   = countCanceladasHoje(estacionamentoId, inicioHoje, fimHoje);
@@ -273,6 +278,70 @@ public class OperacaoService {
 
     private LocalDateTime nowSaoPaulo() {
         return LocalDateTime.now(ZONE_SAO_PAULO);
+    }
+
+    // ── Reservas aguardando confirmação (painel admin) ───────────────────────
+
+    /**
+     * Lista reservas em AGUARDANDO_CONFIRMACAO de um estacionamento, montando o
+     * payload do QR de confirmação que o admin web deve exibir/imprimir. O
+     * mobile escaneia esse QR e chama POST /api/reserva/confirmar.
+     */
+    @Transactional(readOnly = true)
+    public List<ReservaAguardandoResponse> listarReservasAguardandoConfirmacao(Integer estacionamentoId) {
+        List<SessaoEstacionamento> sessoes =
+                sessaoRepository.findReservasAguardandoConfirmacao(estacionamentoId);
+
+        return sessoes.stream().map(sessao -> {
+            String motoristaNome = null;
+            String cpfMascarado = null;
+            if (sessao.getClienteId() != null) {
+                Cliente cliente = clienteRepository.findById(sessao.getClienteId()).orElse(null);
+                if (cliente != null) {
+                    motoristaNome = cliente.getNome();
+                    cpfMascarado = mascararCpf(cliente.getCpf());
+                }
+            }
+
+            String modeloVeiculo = null;
+            if (sessao.getPlaca() != null) {
+                modeloVeiculo = veiculoRepository.findById(sessao.getPlaca())
+                        .map(Veiculo::getNome)
+                        .orElse(null);
+            }
+
+            // Payload estruturado que o mobile escaneia em modo "confirmação de reserva".
+            String qr = sessao.getQrCode();
+            String payload = String.format(
+                    "{\"v\":1,\"app\":\"paradacerta\",\"tipo\":\"CONFIRMACAO_RESERVA\",\"sessaoId\":\"%s\",\"qrCode\":\"%s\"}",
+                    sessao.getId(), qr
+            );
+
+            Long inicioMs = sessao.getInicioReservaPrevisto() != null
+                    ? sessao.getInicioReservaPrevisto().atZone(ZONE_SAO_PAULO).toInstant().toEpochMilli()
+                    : null;
+            Long criadaMs = sessao.getHoraEntrada() != null
+                    ? sessao.getHoraEntrada().atZone(ZONE_SAO_PAULO).toInstant().toEpochMilli()
+                    : null;
+
+            return new ReservaAguardandoResponse(
+                    String.valueOf(sessao.getId()),
+                    qr,
+                    payload,
+                    motoristaNome,
+                    cpfMascarado,
+                    sessao.getPlaca(),
+                    modeloVeiculo,
+                    inicioMs,
+                    criadaMs,
+                    sessao.getValorPago()
+            );
+        }).collect(Collectors.toList());
+    }
+
+    private String mascararCpf(String cpf) {
+        if (cpf == null || cpf.length() < 11) return cpf;
+        return cpf.substring(0, 3) + ".***.***-" + cpf.substring(cpf.length() - 2);
     }
 
     // ── Relatório regional (PREMIUM) ─────────────────────────────────────────
@@ -486,8 +555,11 @@ public class OperacaoService {
         SessaoEstacionamento sessao = sessaoRepository.findById(sessaoId)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Sessão não encontrada"));
 
-        if (sessao.getStatus() != SessaoStatus.ATIVA) {
-            throw new ConflictException("Sessão já encerrada ou cancelada");
+        // Admin pode encerrar entrada comum (ATIVA) ou reserva confirmada (EM_USO).
+        // Reservas AGUARDANDO_CONFIRMACAO devem usar /cancelar.
+        if (sessao.getStatus() != SessaoStatus.ATIVA
+                && sessao.getStatus() != SessaoStatus.EM_USO) {
+            throw new ConflictException("Sessão já encerrada, cancelada ou aguardando confirmação");
         }
 
         LocalDateTime agora = nowSaoPaulo();
@@ -515,7 +587,19 @@ public class OperacaoService {
         if (!Boolean.TRUE.equals(sessao.getReservado())) {
             throw new RequisicaoInvalidaException("Esta sessão não é uma reserva");
         }
-        if (sessao.getStatus() != SessaoStatus.ATIVA) {
+        // Reserva já confirmada pelo motorista (EM_USO) não pode ser cancelada
+        // pelo admin — o motorista está fisicamente usando a vaga. O admin
+        // precisa aguardar o encerramento normal ou usar /encerrar.
+        if (sessao.getStatus() == SessaoStatus.EM_USO) {
+            throw new ConflictException(
+                "Esta reserva já foi confirmada pelo motorista e está em uso. "
+              + "Não é possível cancelá-la — aguarde a finalização do uso."
+            );
+        }
+        // Cancelamento permitido em AGUARDANDO_CONFIRMACAO (fluxo novo) e
+        // ATIVA (compat legado pré-migração).
+        if (sessao.getStatus() != SessaoStatus.AGUARDANDO_CONFIRMACAO
+                && sessao.getStatus() != SessaoStatus.ATIVA) {
             // Idempotência: se já foi cancelada antes, NÃO redispara e-mail.
             throw new ConflictException("Reserva já encerrada ou cancelada");
         }
@@ -558,7 +642,15 @@ public class OperacaoService {
         if (!BCrypt.checkpw(req.getSenhaAdmin(), admin.getSenhaHash())) {
             throw new AcessoNegadoException("Senha do administrador inválida");
         }
-        if (sessao.getStatus() != SessaoStatus.ATIVA) {
+        // Reserva EM_USO está em poder do motorista — admin não cancela mais.
+        if (sessao.getStatus() == SessaoStatus.EM_USO) {
+            throw new ConflictException(
+                "Esta reserva já foi confirmada pelo motorista e está em uso. "
+              + "Não é possível cancelar — aguarde a finalização."
+            );
+        }
+        if (sessao.getStatus() != SessaoStatus.ATIVA
+                && sessao.getStatus() != SessaoStatus.AGUARDANDO_CONFIRMACAO) {
             throw new ConflictException("Sessão já encerrada ou cancelada");
         }
 

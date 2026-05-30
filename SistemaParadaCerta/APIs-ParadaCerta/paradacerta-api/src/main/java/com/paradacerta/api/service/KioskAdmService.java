@@ -121,7 +121,11 @@ public class KioskAdmService {
     public KioskAdmDTO.StatusResponse buscarStatus(Integer estacionamentoId) {
         Estacionamento estacionamento = buscarEstacionamento(estacionamentoId);
         VagasEstacionamento vagas = buscarVagas(estacionamento.getId());
-        long sessoesAtivas = sessaoRepository.countByEstacionamentoIdAndStatus(estacionamento.getId(), SessaoStatus.ATIVA);
+        // "Sessões ativas" no painel kiosk = entradas comuns (ATIVA) + reservas em uso (EM_USO).
+        // AGUARDANDO_CONFIRMACAO não conta — motorista ainda não chegou fisicamente.
+        long sessoesAtivas =
+                sessaoRepository.countByEstacionamentoIdAndStatus(estacionamento.getId(), SessaoStatus.ATIVA)
+              + sessaoRepository.countByEstacionamentoIdAndStatus(estacionamento.getId(), SessaoStatus.EM_USO);
 
         return KioskAdmDTO.StatusResponse.builder()
                 .vagasDisponiveis(vagas.getQtdVagasDisponiveis())
