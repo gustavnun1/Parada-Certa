@@ -29,6 +29,9 @@ public class Estacionamento {
     @Column(length = 200)
     private String nomeFantasia;
 
+    @Column(name = "adminResponsavelId")
+    private Integer adminResponsavelId;
+
     @Transient
     private Integer qtdVagasTotais;
 

@@ -10,6 +10,9 @@ import java.time.LocalTime;
 @Data
 public class EstacionamentoRequest {
 
+    @NotNull(message = "Administrador responsavel e obrigatorio")
+    private Integer adminId;
+
     @NotBlank(message = "Nome é obrigatório")
     @Size(max = 100)
     private String nome;

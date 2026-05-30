@@ -60,6 +60,11 @@ fun LoginScreen(
     }
 
     val isEmailMode = identifier.text.any { it.isLetter() || it == '@' }
+    val loginKeyboardType = when {
+        identifier.text.isBlank() -> KeyboardType.Email
+        isEmailMode -> KeyboardType.Email
+        else -> KeyboardType.Number
+    }
 
     Scaffold(
         topBar = {
@@ -128,7 +133,7 @@ fun LoginScreen(
                     )
                 },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
+                    keyboardType = loginKeyboardType,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(

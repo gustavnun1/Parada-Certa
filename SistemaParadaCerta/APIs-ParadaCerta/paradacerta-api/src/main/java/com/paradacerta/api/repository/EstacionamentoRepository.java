@@ -22,9 +22,12 @@ public interface EstacionamentoRepository extends JpaRepository<Estacionamento, 
     @Query("""
         SELECT e FROM Estacionamento e
         WHERE e.ativo = true
-          AND e.id IN (
-              SELECT a.estacionamentoId FROM AdmEstacionamento a
-              WHERE a.id = :admId AND a.ativo = true
+          AND (
+            e.adminResponsavelId = :admId
+            OR e.id IN (
+               SELECT a.estacionamentoId FROM AdmEstacionamento a
+               WHERE a.id = :admId AND a.ativo = true
+            )
           )
         ORDER BY e.nome
     """)
@@ -39,7 +42,8 @@ public interface EstacionamentoRepository extends JpaRepository<Estacionamento, 
                latitude, longitude, endereco, precoHora, horarioAbertura,
                horarioFechamento, fotoPrincipal, descricao, ativo, pixKey,
                permiteReserva, cep, logradouro, numero, complemento, bairro,
-               cidade, uf, plano, planoInicio, planoFim, planoCobranca
+               cidade, uf, plano, planoInicio, planoFim, planoCobranca,
+               adminResponsavelId
         FROM (
             SELECT *,
                 (6371 * ACOS(

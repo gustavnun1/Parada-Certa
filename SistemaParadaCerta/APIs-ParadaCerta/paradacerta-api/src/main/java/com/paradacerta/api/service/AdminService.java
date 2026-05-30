@@ -188,6 +188,8 @@ public class AdminService {
         adm.setSenhaHash(BCrypt.hashpw(resp.getSenha(), BCrypt.gensalt(10)));
         adm.setAtivo(true);
         adm = admRepository.save(adm);
+        est.setAdminResponsavelId(adm.getId());
+        estacionamentoRepository.save(est);
 
         // 4. Cria o operador inicial do kiosk (obrigatório) na mesma transação.
         //    Reutiliza OperadorService.criar(...) para não duplicar validação de

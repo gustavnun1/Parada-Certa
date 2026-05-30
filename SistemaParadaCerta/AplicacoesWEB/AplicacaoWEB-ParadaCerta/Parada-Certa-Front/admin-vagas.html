@@ -247,7 +247,7 @@
         <h4 class="text-lg font-bold text-slate-900 mb-1">Endereço</h4>
         <p class="text-sm text-slate-500 mb-5">
           Informe o CEP para que logradouro, bairro, cidade e UF sejam preenchidos automaticamente.
-          Latitude e longitude são calculadas a partir do logradouro e do número.
+          Ao inserir um novo estacionamento, esses campos vêm do CEP; informe apenas número e complemento.
         </p>
 
         <div class="grid md:grid-cols-6 gap-5">
@@ -318,7 +318,7 @@
 
       <div id="formErro" class="hidden mt-4 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm"></div>
 
-      <!-- Bloco: fotos (Item 3 + Item 5) — visível apenas em edição -->
+      <!-- Bloco: fotos (Item 3 + Item 5) -->
       <div id="blocoFotos" class="hidden mt-8 border-t border-slate-200 pt-6">
         <div class="flex items-end justify-between gap-4 mb-3">
           <div>
@@ -328,7 +328,7 @@
           <div class="flex items-center gap-3">
             <label class="text-sm text-slate-600 font-medium">Adicionar foto</label>
             <input id="inputFoto" type="file" accept="image/jpeg,image/png,image/webp"
-                   onchange="enviarFoto(event)" class="text-sm" />
+                   multiple onchange="enviarFoto(event)" class="text-sm" />
           </div>
         </div>
         <p class="text-xs text-slate-500 mb-4">
@@ -542,6 +542,7 @@
     // ── Formulario novo/editar ────────────────────────────────────────────
 
     let formModo = "novo"; // "novo" | "editar"
+    let _fotosNovasSelecionadas = [];
 
     function limparFormulario() {
       ["formNome","formCnpj","formRazaoSocial","formNomeFantasia","formEndereco","formPreco","formVagasTotais","formHorarioAbertura",
@@ -555,6 +556,8 @@
       document.getElementById("formErro").classList.add("hidden");
       document.getElementById("formCepStatus").innerText = "";
       document.getElementById("formGeoStatus").innerText = "";
+      const inputFoto = document.getElementById("inputFoto");
+      if (inputFoto) inputFoto.value = "";
     }
 
     function atualizarCamposReserva() {
@@ -570,14 +573,33 @@
       if (total > 0) input.max = String(total);
     }
 
+    function atualizarBloqueioEnderecoPorModo() {
+      const novo = formModo === "novo";
+      ["formLogradouro", "formBairro", "formCidade", "formUf", "formEndereco"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.readOnly = novo;
+        el.classList.toggle("bg-slate-100", novo);
+        el.classList.toggle("text-slate-700", novo);
+        el.classList.toggle("cursor-not-allowed", novo);
+        el.classList.toggle("bg-white", !novo);
+        el.classList.toggle("text-slate-900", !novo);
+      });
+    }
+
     function abrirNovoEstacionamento() {
       formModo = "novo";
       document.getElementById("formTitulo").innerText = "Novo estacionamento";
       document.getElementById("formId").value = "";
       limparFormulario();
+      _fotosAtuais = [];
+      _fotosNovasSelecionadas = [];
+      _limiteFotos = 3;
+      _planoAtualUpload = { plano: "BASIC", limiteFotos: 3, expirado: false };
+      atualizarBloqueioEnderecoPorModo();
 
-      // Fotos só aparecem depois que o estacionamento existir (precisa de id).
-      document.getElementById("blocoFotos").classList.add("hidden");
+      document.getElementById("blocoFotos").classList.remove("hidden");
+      renderizarFotos();
 
       document.getElementById("formBox").classList.remove("hidden");
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -590,6 +612,8 @@
       document.getElementById("formTitulo").innerText = "Editar estacionamento (#" + e.id + ")";
       document.getElementById("formId").value = e.id;
       limparFormulario();
+      _fotosNovasSelecionadas = [];
+      atualizarBloqueioEnderecoPorModo();
       document.getElementById("formNome").value = e.nome || "";
       document.getElementById("formCnpj").value = formatarCnpjInput(somenteDigitos(e.cnpj));
       document.getElementById("formRazaoSocial").value = e.razaoSocial || "";
@@ -624,6 +648,8 @@
 
     // ── Fotos (Item 3 + Item 5) ───────────────────────────────────────────────
     const PC_API_HOST = PC_API_BASE.replace(/\/+$/, "");
+    const FOTO_TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
+    const FOTO_TAMANHO_MAX = 5 * 1024 * 1024;
     let _fotosAtuais = [];
     let _limiteFotos = 3;
     let _planoAtualUpload = null;
@@ -653,20 +679,26 @@
 
       grid.innerHTML = "";
       const total = _fotosAtuais.length;
-      const cheio = total >= _limiteFotos;
+      const totalNovo = _fotosNovasSelecionadas.length;
+      const totalEmTela = total + totalNovo;
+      const cheio = totalEmTela >= _limiteFotos;
       const planoNome = _planoAtualUpload ? (_planoAtualUpload.plano || "—") : "—";
       const expirado = _planoAtualUpload && _planoAtualUpload.expirado;
 
       if (expirado) {
         status.innerHTML = `<span class="text-red-700 font-semibold">Plano ${planoNome} expirado.</span> Renove para enviar fotos.`;
         input.disabled = true;
+      } else if (formModo === "novo") {
+        status.innerHTML = `Plano <strong>BASIC trial</strong> · ${totalNovo} de ${_limiteFotos} fotos selecionadas.`
+            + (cheio ? ` <span class="text-yellow-700 font-semibold">Limite atingido.</span>` : "");
+        input.disabled = cheio;
       } else {
         status.innerHTML = `Plano <strong>${planoNome}</strong> · ${total} de ${_limiteFotos} fotos usadas.`
             + (cheio ? ` <span class="text-yellow-700 font-semibold">Limite atingido.</span>` : "");
         input.disabled = cheio;
       }
 
-      if (total === 0) {
+      if (totalEmTela === 0) {
         vazio.classList.remove("hidden");
         return;
       }
@@ -695,6 +727,27 @@
         `;
         grid.appendChild(div);
       });
+
+      _fotosNovasSelecionadas.forEach((file, index) => {
+        const url = URL.createObjectURL(file);
+        const div = document.createElement("div");
+        div.className = "border border-slate-200 rounded-xl overflow-hidden bg-white";
+        div.innerHTML = `
+          <div class="aspect-video bg-slate-100">
+            <img src="${url}" alt="Preview da foto" class="w-full h-full object-cover" />
+          </div>
+          <div class="p-3 flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs text-slate-500 truncate">${file.name}</span>
+              <span class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Nova</span>
+            </div>
+            <button onclick="removerFotoNova(${index})" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl text-xs">
+              Remover
+            </button>
+          </div>
+        `;
+        grid.appendChild(div);
+      });
     }
 
     function formatarKb(bytes) {
@@ -704,27 +757,59 @@
       return (v / 1024 / 1024).toFixed(2) + " MB";
     }
 
+    function validarArquivoFoto(file) {
+      if (!file) return "Selecione uma imagem.";
+      if (file.size > FOTO_TAMANHO_MAX || !FOTO_TIPOS_PERMITIDOS.includes(file.type)) {
+        return "Selecione apenas imagens JPG, PNG ou WEBP ate 5 MB.";
+      }
+      return "";
+    }
+
+    function removerFotoNova(index) {
+      _fotosNovasSelecionadas.splice(index, 1);
+      const input = document.getElementById("inputFoto");
+      if (input) input.value = "";
+      renderizarFotos();
+    }
+
     async function enviarFoto(ev) {
       const input = ev.target;
-      const file = input.files && input.files[0];
+      const files = Array.from(input.files || []);
       const estId = document.getElementById("formId").value;
-      if (!file || !estId) return;
+      if (!files.length) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        pcErro("A imagem é muito grande. O limite é de 5 MB.");
+      const erroArquivo = files.map(validarArquivoFoto).find(Boolean);
+      if (erroArquivo) {
+        pcErro(erroArquivo);
         input.value = "";
         return;
       }
 
-      // Marca a primeira foto enviada como principal automaticamente.
-      const fd = new FormData();
-      fd.append("file", file);
-      const ehPrimeira = _fotosAtuais.length === 0;
-      const url = "/api/estacionamentos/" + estId + "/fotos" + (ehPrimeira ? "?principal=true" : "");
+      if (formModo === "novo" || !estId) {
+        if (_fotosNovasSelecionadas.length + files.length > _limiteFotos) {
+          pcErro("O plano BASIC trial permite ate 3 fotos no cadastro inicial.");
+          input.value = "";
+          return;
+        }
+        _fotosNovasSelecionadas = _fotosNovasSelecionadas.concat(files);
+        input.value = "";
+        renderizarFotos();
+        return;
+      }
 
+      // Marca a primeira foto enviada como principal automaticamente.
       try {
-        await pcFetch(url, { method: "POST", body: fd });
-        pcSucesso("Foto enviada com sucesso.");
+        if (_fotosAtuais.length + files.length > _limiteFotos) {
+          throw new Error("Limite de fotos do plano atingido (" + _limiteFotos + ").");
+        }
+        for (let i = 0; i < files.length; i++) {
+          const fd = new FormData();
+          fd.append("file", files[i]);
+          const ehPrimeira = _fotosAtuais.length === 0 && i === 0;
+          const url = "/api/estacionamentos/" + estId + "/fotos" + (ehPrimeira ? "?principal=true" : "");
+          await pcFetch(url, { method: "POST", body: fd });
+        }
+        pcSucesso(files.length > 1 ? "Fotos enviadas com sucesso." : "Foto enviada com sucesso.");
         carregarFotos(estId);
       } catch (e) {
         console.error("Erro ao enviar foto:", e);
@@ -1052,6 +1137,7 @@
       }
 
       const corpo = {
+        adminId: ADMIN_ID,
         nome: document.getElementById("formNome").value.trim(),
         cnpj: cnpjDigits,
         razaoSocial: razaoSocial,
@@ -1093,7 +1179,20 @@
       try {
         let salvo;
         if (formModo === "novo") {
-          salvo = await pcFetch("/api/estacionamentos", { method: "POST", body: JSON.stringify(corpo) });
+          const erroArquivo = _fotosNovasSelecionadas.map(validarArquivoFoto).find(Boolean);
+          if (erroArquivo) throw new Error(erroArquivo);
+          if (_fotosNovasSelecionadas.length > _limiteFotos) {
+            throw new Error("O plano BASIC trial permite ate 3 fotos no cadastro inicial.");
+          }
+
+          if (_fotosNovasSelecionadas.length) {
+            const fd = new FormData();
+            fd.append("dados", new Blob([JSON.stringify(corpo)], { type: "application/json" }));
+            _fotosNovasSelecionadas.forEach(file => fd.append("fotos", file));
+            salvo = await pcFetch("/api/estacionamentos", { method: "POST", body: fd });
+          } else {
+            salvo = await pcFetch("/api/estacionamentos", { method: "POST", body: JSON.stringify(corpo) });
+          }
         } else {
           // Atualiza dados cadastrais e, em uma segunda chamada, a capacidade de vagas.
           salvo = await pcFetch("/api/estacionamentos/" + id, {
@@ -1132,6 +1231,7 @@
         }
 
         pcSucesso("Estacionamento salvo com sucesso.");
+        _fotosNovasSelecionadas = [];
         fecharForm();
         carregar();
 

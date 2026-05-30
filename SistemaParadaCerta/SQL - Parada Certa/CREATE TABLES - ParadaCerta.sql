@@ -114,6 +114,7 @@
       [cnpj]                [nvarchar](14)   NOT NULL,
       [razaoSocial]         [nvarchar](200)  NOT NULL,
       [nomeFantasia]        [nvarchar](200)  NULL,
+      [adminResponsavelId]  [int]            NULL,
       [avaliacaoMedia]      [decimal](3,2)   NOT NULL DEFAULT 0.0,
       [latitude]            [decimal](10,8)  NOT NULL,
       [longitude]           [decimal](11,8)  NOT NULL,
@@ -720,6 +721,11 @@
 
   -- Operador de KIOSK de exemplo (senha: admin123) — ALTER 05 + 06 (dados pessoais LGPD).
   -- CPF ficticio valido (algoritmo verifica), TCC apenas — substituir em producao.
+  UPDATE [dbo].[Estacionamento]
+     SET [adminResponsavelId] = 1
+   WHERE [id] = 1;
+  GO
+
   INSERT INTO [dbo].[OperadorEstacionamento]
   ([estacionamentoId], [nome], [usuario], [senhaHash], [ativo],
    [cpf], [email], [telefone],
@@ -794,6 +800,15 @@
   (6, 'admin_faria',      @senhaAdminDemo, 'Camila Rocha',   1, 'admin.faria@paradacerta.com',      '11970000006', '26875543006', '1987-09-14'),
   (7, 'admin_pinheiros',  @senhaAdminDemo, 'Paulo Nogueira', 1, 'admin.pinheiros@paradacerta.com',  '11970000007', '09798765432', '1991-03-25'),
   (8, 'admin_republica',  @senhaAdminDemo, 'Ana Ribeiro',    1, 'admin.republica@paradacerta.com',  '11970000008', '27865743085', '1989-12-01');
+  GO
+
+  UPDATE e
+     SET e.[adminResponsavelId] = a.[id]
+    FROM [dbo].[Estacionamento] e
+    JOIN [dbo].[AdmEstacionamento] a
+      ON a.[estacionamentoId] = e.[id]
+   WHERE e.[id] BETWEEN 1 AND 8
+     AND e.[adminResponsavelId] IS NULL;
   GO
 
   DECLARE @senhaAdminDemo NVARCHAR(255) = '$2a$10$DKMYxpVv5HBAAcgFC74Vs.fp/6JCphSRrTciClrXpYNsNL1ZmuDUC';

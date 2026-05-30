@@ -6,11 +6,13 @@ import com.paradacerta.api.exception.ConflictException;
 import com.paradacerta.api.exception.RequisicaoInvalidaException;
 import com.paradacerta.api.exception.UsuarioNaoEncontradoException;
 import com.paradacerta.api.model.*;
+import com.paradacerta.api.repository.AdmEstacionamentoRepository;
 import com.paradacerta.api.repository.EstacionamentoRepository;
 import com.paradacerta.api.repository.VagasEstacionamentoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.text.Normalizer;
@@ -28,6 +30,8 @@ public class EstacionamentoService {
 
     private final EstacionamentoRepository estacionamentoRepository;
     private final VagasEstacionamentoRepository vagasRepository;
+    private final AdmEstacionamentoRepository admRepository;
+    private final FotoService fotoService;
     private final ObjectMapper objectMapper;
 
     public List<Estacionamento> buscarTodos() {
@@ -69,6 +73,12 @@ public class EstacionamentoService {
 
     @Transactional
     public Estacionamento criar(EstacionamentoRequest req) {
+        AdmEstacionamento admin = admRepository.findById(req.getAdminId())
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Administrador responsavel nao encontrado"));
+        if (Boolean.FALSE.equals(admin.getAtivo())) {
+            throw new RequisicaoInvalidaException("Administrador responsavel desativado");
+        }
+
         Integer reservaveis = req.getQtdVagasReservaveis() == null ? 0 : req.getQtdVagasReservaveis();
         boolean permiteReserva = Boolean.TRUE.equals(req.getPermiteReserva());
         if (!permiteReserva) reservaveis = 0;
@@ -86,6 +96,7 @@ public class EstacionamentoService {
             throw new ConflictException("Ja existe um estacionamento cadastrado com este CNPJ");
         }
 
+        est.setAdminResponsavelId(admin.getId());
         est.setCnpj(cnpj);
         est.setRazaoSocial(req.getRazaoSocial().trim());
         est.setNomeFantasia(trimOuNull(req.getNomeFantasia()));
@@ -136,6 +147,22 @@ public class EstacionamentoService {
 
         popularVagas(List.of(est));
         return est;
+    }
+
+    @Transactional
+    public Estacionamento criarComFotos(EstacionamentoRequest req, List<MultipartFile> fotos) {
+        List<MultipartFile> fotosValidas = fotos == null ? List.of() : fotos.stream()
+                .filter(f -> f != null && !f.isEmpty())
+                .toList();
+        if (fotosValidas.size() > 3) {
+            throw new RequisicaoInvalidaException("O plano BASIC trial permite ate 3 fotos no cadastro inicial.");
+        }
+
+        Estacionamento est = criar(req);
+        for (int i = 0; i < fotosValidas.size(); i++) {
+            fotoService.upload(est.getId(), fotosValidas.get(i), i == 0);
+        }
+        return buscarPorId(est.getId()).orElse(est);
     }
 
     @Transactional

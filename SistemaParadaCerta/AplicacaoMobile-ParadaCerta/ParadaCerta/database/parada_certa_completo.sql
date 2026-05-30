@@ -100,6 +100,7 @@ GO
 CREATE TABLE [dbo].[Estacionamento] (
     [id]                  [int]            IDENTITY(1,1) NOT NULL,
     [nome]                [nvarchar](100)  NOT NULL,
+    [adminResponsavelId]  [int]            NULL,
     [qtdVagasTotais]      [int]            NOT NULL,
     [qtdVagasDisponiveis] [int]            NOT NULL DEFAULT 0,
     [avaliacaoMedia]      [decimal](3,2)   NOT NULL DEFAULT 0.0,

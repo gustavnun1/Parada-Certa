@@ -5,8 +5,10 @@ import com.paradacerta.api.service.EstacionamentoService;
 import com.paradacerta.api.service.PlanoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -83,9 +85,18 @@ public class EstacionamentoController {
     // ── CRUD admin web ───────────────────────────────────────────────────────
 
     /** POST /api/estacionamentos — cria estacionamento + linha de VagasEstacionamento */
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Estacionamento> criar(@Valid @RequestBody EstacionamentoRequest req) {
         return ResponseEntity.ok(estacionamentoService.criar(req));
+    }
+
+    /** POST /api/estacionamentos multipart - cria estacionamento e fotos iniciais. */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Estacionamento> criarComFotos(
+            @Valid @RequestPart("dados") EstacionamentoRequest req,
+            @RequestPart(name = "fotos", required = false) List<MultipartFile> fotos
+    ) {
+        return ResponseEntity.ok(estacionamentoService.criarComFotos(req, fotos));
     }
 
     /** PUT /api/estacionamentos/{id} — atualiza dados cadastrais */
