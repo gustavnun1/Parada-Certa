@@ -456,6 +456,10 @@ public class ReservaService {
         }
 
         LocalTime horario = inicioReservaPrevisto.toLocalTime();
+        if (abertura.equals(fechamento)) {
+            return;
+        }
+
         boolean dentroFuncionamento = !abertura.isAfter(fechamento)
                 ? !horario.isBefore(abertura) && horario.isBefore(fechamento)
                 : !horario.isBefore(abertura) || horario.isBefore(fechamento);

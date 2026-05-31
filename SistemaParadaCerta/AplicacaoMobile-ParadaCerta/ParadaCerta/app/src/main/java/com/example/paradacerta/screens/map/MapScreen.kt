@@ -67,17 +67,22 @@ private const val SAO_PAULO_LNG = -46.633308
 
 // ---------- Ícones customizados de estacionamento ----------
 
-private fun criarBitmapEstacionamento(context: Context, isQualidade: Boolean = false): Bitmap {
+private fun criarBitmapEstacionamento(
+    context: Context,
+    isQualidade: Boolean = false,
+    isSelecionado: Boolean = false
+): Bitmap {
     val density = context.resources.displayMetrics.density
     val sizePx = (44 * density).toInt()
 
     val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
     val canvas = android.graphics.Canvas(bitmap)
 
-    val corFundo = if (isQualidade)
-        android.graphics.Color.parseColor("#FF8F00")
-    else
-        android.graphics.Color.parseColor("#1565C0")
+    val corFundo = when {
+        isSelecionado -> android.graphics.Color.parseColor("#2E7D32")
+        isQualidade -> android.graphics.Color.parseColor("#FF8F00")
+        else -> android.graphics.Color.parseColor("#1565C0")
+    }
 
     val paintFundo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = corFundo
@@ -152,7 +157,7 @@ fun MapScreen(
     viewModel: MapViewModel = viewModel()
 ) {
     val mapState by viewModel.mapState.collectAsState()
-    var selectedEstacionamento by remember { mutableStateOf<Estacionamento?>(null) }
+    val selectedEstacionamento = mapState.selectedEstacionamento
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val placesClient = remember { Places.createClient(context) }
@@ -168,8 +173,10 @@ fun MapScreen(
 
     val parkingBitmap = remember { criarBitmapEstacionamento(context) }
     val parkingBitmapQualidade = remember { criarBitmapEstacionamento(context, isQualidade = true) }
+    val parkingBitmapSelecionado = remember { criarBitmapEstacionamento(context, isSelecionado = true) }
     var iconeEstacionamento by remember { mutableStateOf<BitmapDescriptor?>(null) }
     var iconeEstacionamentoQualidade by remember { mutableStateOf<BitmapDescriptor?>(null) }
+    var iconeEstacionamentoSelecionado by remember { mutableStateOf<BitmapDescriptor?>(null) }
 
     val locationPermissions = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -181,11 +188,26 @@ fun MapScreen(
     val permissaoConcedida = locationPermissions.permissions.any { it.status.isGranted }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(-15.7801, -47.9292), 4f)
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(
+                mapState.cameraLatitude ?: -15.7801,
+                mapState.cameraLongitude ?: -47.9292
+            ),
+            mapState.cameraZoom ?: 4f
+        )
     }
 
-    LaunchedEffect(permissaoConcedida) {
+    DisposableEffect(cameraPositionState) {
+        onDispose {
+            val posicao = cameraPositionState.position
+            viewModel.salvarCamera(posicao.target.latitude, posicao.target.longitude, posicao.zoom)
+        }
+    }
+
+    LaunchedEffect(permissaoConcedida, mapState.localizacaoInicialCarregada) {
+        if (mapState.localizacaoInicialCarregada) return@LaunchedEffect
         if (permissaoConcedida) {
+            viewModel.marcarLocalizacaoInicialCarregada()
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
             try {
                 val cts = CancellationTokenSource()
@@ -195,6 +217,7 @@ fun MapScreen(
                         val lat = location?.latitude ?: SAO_PAULO_LAT
                         val lng = location?.longitude ?: SAO_PAULO_LNG
                         viewModel.carregarEstacionamentosProximos(lat, lng, raioKm = 5.0)
+                        viewModel.salvarCamera(lat, lng, 15f)
                         scope.launch {
                             cameraPositionState.animate(
                                 update = CameraUpdateFactory.newCameraPosition(
@@ -205,11 +228,13 @@ fun MapScreen(
                         }
                     }
             } catch (_: SecurityException) {
+                viewModel.marcarLocalizacaoInicialCarregada()
                 viewModel.carregarEstacionamentosProximos(SAO_PAULO_LAT, SAO_PAULO_LNG)
             }
         } else {
             locationPermissions.launchMultiplePermissionRequest()
             viewModel.carregarEstacionamentosProximos(SAO_PAULO_LAT, SAO_PAULO_LNG, raioKm = 10.0)
+            viewModel.salvarCamera(SAO_PAULO_LAT, SAO_PAULO_LNG, 15f)
         }
     }
 
@@ -241,6 +266,7 @@ fun MapScreen(
                 MapEffect(Unit) { _ ->
                     iconeEstacionamento = BitmapDescriptorFactory.fromBitmap(parkingBitmap)
                     iconeEstacionamentoQualidade = BitmapDescriptorFactory.fromBitmap(parkingBitmapQualidade)
+                    iconeEstacionamentoSelecionado = BitmapDescriptorFactory.fromBitmap(parkingBitmapSelecionado)
                 }
 
                 val bounds = cameraPositionState.projection?.visibleRegion?.latLngBounds
@@ -251,15 +277,22 @@ fun MapScreen(
                     }
                     .take(MAX_RENDERED_MARKERS)
                     .toList()
-                val estacionamentosParaMarcadores = estacionamentosVisiveis.ifEmpty {
+                val marcadoresBase = estacionamentosVisiveis.ifEmpty {
                     mapState.estacionamentos.take(MAX_RENDERED_MARKERS)
                 }
+                val estacionamentosParaMarcadores = selectedEstacionamento
+                    ?.let { selecionado ->
+                        marcadoresBase.filterNot { it.id == selecionado.id } + selecionado
+                    }
+                    ?: marcadoresBase
 
                 estacionamentosParaMarcadores.forEach { estacionamento ->
-                    val icone = if (estacionamento.avaliacaoMedia > 4.5)
-                        iconeEstacionamentoQualidade
-                    else
-                        iconeEstacionamento
+                    val isSelectedMarker = selectedEstacionamento?.id == estacionamento.id
+                    val icone = when {
+                        isSelectedMarker -> iconeEstacionamentoSelecionado
+                        estacionamento.avaliacaoMedia > 4.5 -> iconeEstacionamentoQualidade
+                        else -> iconeEstacionamento
+                    }
                     Marker(
                         state = MarkerState(
                             position = LatLng(estacionamento.latitude, estacionamento.longitude)
@@ -267,8 +300,9 @@ fun MapScreen(
                         title = estacionamento.nome,
                         snippet = "R$ ${String.format("%.2f", estacionamento.precoHora)}/hora · ${estacionamento.qtdVagasDisponiveis} vagas",
                         icon = icone,
+                        zIndex = if (isSelectedMarker) 1f else 0f,
                         onClick = {
-                            selectedEstacionamento = estacionamento
+                            viewModel.selecionarEstacionamento(estacionamento)
                             false
                         }
                     )
@@ -306,12 +340,13 @@ fun MapScreen(
                                 .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.token)
                                 .addOnSuccessListener { location ->
                                     if (location != null) {
-                                        selectedEstacionamento = null
+                                        viewModel.limparSelecao()
                                         viewModel.carregarEstacionamentosProximos(
                                             location.latitude,
                                             location.longitude,
                                             raioKm = 5.0
                                         )
+                                        viewModel.salvarCamera(location.latitude, location.longitude, 15f)
                                         scope.launch {
                                             cameraPositionState.animate(
                                                 update = CameraUpdateFactory.newCameraPosition(
@@ -345,12 +380,13 @@ fun MapScreen(
             PlaceSearchBar(
                 placesClient = placesClient,
                 onPlaceSelected = { latLng ->
-                    selectedEstacionamento = null
+                    viewModel.limparSelecao()
                     viewModel.carregarEstacionamentosProximos(
                         latLng.latitude,
                         latLng.longitude,
                         raioKm = 5.0
                     )
+                    viewModel.salvarCamera(latLng.latitude, latLng.longitude, 16f)
                     scope.launch {
                         cameraPositionState.animate(
                             update = CameraUpdateFactory.newCameraPosition(
@@ -430,7 +466,7 @@ fun MapScreen(
                                         estacionamento = estacionamento,
                                         isSelected = selectedEstacionamento?.id == estacionamento.id,
                                         onClick = {
-                                            selectedEstacionamento = estacionamento
+                                            viewModel.selecionarEstacionamento(estacionamento)
                                             scope.launch {
                                                 cameraPositionState.animate(
                                                     update = CameraUpdateFactory.newCameraPosition(
@@ -443,7 +479,15 @@ fun MapScreen(
                                                 )
                                             }
                                         },
-                                        onDetailsClick = { onParkingClick(estacionamento.id) }
+                                        onDetailsClick = {
+                                            val posicao = cameraPositionState.position
+                                            viewModel.salvarCamera(
+                                                posicao.target.latitude,
+                                                posicao.target.longitude,
+                                                posicao.zoom
+                                            )
+                                            onParkingClick(estacionamento.id)
+                                        }
                                     )
                                 }
                             }

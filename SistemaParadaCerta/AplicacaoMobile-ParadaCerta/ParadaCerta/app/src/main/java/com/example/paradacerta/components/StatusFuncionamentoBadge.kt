@@ -32,6 +32,11 @@ fun StatusFuncionamentoBadge(
             if (isOnPrimary) Color.White else Color(0xFFD1FADF),
             if (isOnPrimary) Color(0xFF15803D) else Color(0xFF15803D)
         )
+        EstacionamentoStatus.Aberto24Horas -> Triple(
+            "24 horas",
+            if (isOnPrimary) Color.White else Color(0xFFD1FADF),
+            if (isOnPrimary) Color(0xFF15803D) else Color(0xFF15803D)
+        )
         EstacionamentoStatus.Fechado -> Triple(
             "Fechado",
             if (isOnPrimary) Color.White else Color(0xFFFEE2E2),

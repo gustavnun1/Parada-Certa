@@ -18,7 +18,12 @@ data class MapState(
     val estacionamentos: List<Estacionamento> = emptyList(),
     val errorMessage: String? = null,
     val userLatitude: Double = -23.550520,  // São Paulo (padrão)
-    val userLongitude: Double = -46.633308
+    val userLongitude: Double = -46.633308,
+    val selectedEstacionamento: Estacionamento? = null,
+    val cameraLatitude: Double? = null,
+    val cameraLongitude: Double? = null,
+    val cameraZoom: Float? = null,
+    val localizacaoInicialCarregada: Boolean = false
 )
 
 class MapViewModel : ViewModel() {
@@ -49,6 +54,31 @@ class MapViewModel : ViewModel() {
     private fun priorizarPremiumAtivos(estacionamentos: List<Estacionamento>): List<Estacionamento> {
         val (premium, demais) = estacionamentos.partition { it.temPremiumAtivo() }
         return premium + demais
+    }
+
+    fun selecionarEstacionamento(estacionamento: Estacionamento) {
+        _mapState.value = _mapState.value.copy(
+            selectedEstacionamento = estacionamento,
+            cameraLatitude = estacionamento.latitude,
+            cameraLongitude = estacionamento.longitude,
+            cameraZoom = 16f
+        )
+    }
+
+    fun limparSelecao() {
+        _mapState.value = _mapState.value.copy(selectedEstacionamento = null)
+    }
+
+    fun salvarCamera(latitude: Double, longitude: Double, zoom: Float) {
+        _mapState.value = _mapState.value.copy(
+            cameraLatitude = latitude,
+            cameraLongitude = longitude,
+            cameraZoom = zoom
+        )
+    }
+
+    fun marcarLocalizacaoInicialCarregada() {
+        _mapState.value = _mapState.value.copy(localizacaoInicialCarregada = true)
     }
 
     fun carregarEstacionamentosProximos(latitude: Double, longitude: Double, raioKm: Double = 5.0) {
@@ -89,12 +119,17 @@ class MapViewModel : ViewModel() {
                             _mapState.value = _mapState.value.copy(
                                 isLoading = false,
                                 estacionamentos = emptyList(),
+                                selectedEstacionamento = null,
                                 errorMessage = "Nenhum estacionamento encontrado em um raio de ${raioKm.toInt()}km da sua localização"
                             )
                         } else {
                             _mapState.value = _mapState.value.copy(
                                 isLoading = false,
                                 estacionamentos = estacionamentos,
+                                selectedEstacionamento = _mapState.value.selectedEstacionamento
+                                    ?.let { selecionado ->
+                                        estacionamentos.firstOrNull { it.id == selecionado.id } ?: selecionado
+                                    },
                                 errorMessage = null
                             )
                         }
@@ -197,12 +232,17 @@ class MapViewModel : ViewModel() {
                             _mapState.value = _mapState.value.copy(
                                 isLoading = false,
                                 estacionamentos = emptyList(),
+                                selectedEstacionamento = null,
                                 errorMessage = "Nenhum estacionamento cadastrado no sistema ainda"
                             )
                         } else {
                             _mapState.value = _mapState.value.copy(
                                 isLoading = false,
                                 estacionamentos = estacionamentos,
+                                selectedEstacionamento = _mapState.value.selectedEstacionamento
+                                    ?.let { selecionado ->
+                                        estacionamentos.firstOrNull { it.id == selecionado.id } ?: selecionado
+                                    },
                                 errorMessage = null
                             )
                         }

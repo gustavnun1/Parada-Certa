@@ -67,7 +67,7 @@ fun ParkingDetailsScreen(
 
     var showReservaDialog by remember { mutableStateOf(false) }
     var showAvaliacoes by remember { mutableStateOf(false) }
-    var horarioSelecionado by remember { mutableStateOf<String?>(null) }
+    var horarioSelecionado by remember { mutableStateOf<HorarioReservaOpcao?>(null) }
     var veiculoSelecionado by remember(veiculos) { mutableStateOf(veiculos.firstOrNull()) }
     var veiculoInvalidoDialog by remember { mutableStateOf(false) }
     var erroReservaLocal by remember { mutableStateOf<String?>(null) }
@@ -171,7 +171,7 @@ fun ParkingDetailsScreen(
                                         horarioSelecionado = horario
                                         erroReservaLocal = null
                                     },
-                                    label = { Text(horario) }
+                                    label = { Text(horario.label) }
                                 )
                             }
                         }
@@ -412,12 +412,12 @@ fun ParkingDetailsScreen(
                                 veiculoInvalidoDialog = true
                                 return@Button
                             }
-                            if (horario.isNullOrBlank()) {
+                            if (horario == null) {
                                 erroReservaLocal = "Selecione um horario valido para a reserva."
                                 return@Button
                             }
-                            val inicioReserva = montarInicioReservaPrevistoIso(horario)
-                            if (inicioReserva == null) {
+                            val inicioReserva = montarInicioReservaPrevistoIso(horario.inicioMillis)
+                            if (inicioReserva.isBlank()) {
                                 erroReservaLocal = "Horario selecionado esta no passado."
                                 return@Button
                             }
@@ -429,7 +429,7 @@ fun ParkingDetailsScreen(
                                 p.pixKey.orEmpty(),
                                 vPlaca,
                                 inicioReserva,
-                                horario
+                                horario.label
                             )
                         },
                         modifier = Modifier.weight(1f),
@@ -1163,42 +1163,86 @@ private fun montarUrlFoto(urlRetornada: String): String {
     }
 }
 
-private fun gerarHorarios(abertura: String?, fechamento: String?): List<String> {
-    if (abertura == null || fechamento == null) return emptyList()
-    return try {
-        val p1 = abertura.trim().split(":")
-        val p2 = fechamento.trim().split(":")
-        val inicioMin = p1[0].toInt() * 60 + p1[1].toInt()
-        val fimMin = p2[0].toInt() * 60 + p2[1].toInt() - 60
-        val slots = mutableListOf<String>()
-        var min = inicioMin
-        while (min <= fimMin) {
-            val horario = String.format("%02d:%02d", min / 60, min % 60)
-            if (montarInicioReservaPrevistoMillis(horario) != null) {
-                slots.add(horario)
-            }
-            min += 60
+private data class HorarioReservaOpcao(
+    val label: String,
+    val inicioMillis: Long
+)
+
+private fun gerarHorarios(abertura: String?, fechamento: String?): List<HorarioReservaOpcao> {
+    val inicioMin = parseHorarioMinutos(abertura) ?: return emptyList()
+    val fimMin = parseHorarioMinutos(fechamento) ?: return emptyList()
+    val agora = System.currentTimeMillis()
+    val slots = mutableListOf<HorarioReservaOpcao>()
+
+    fun adicionarJanela(diaOffset: Int, inicio: Int, duracao: Int) {
+        val base = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            add(Calendar.DAY_OF_YEAR, diaOffset)
         }
-        slots
-    } catch (e: Exception) {
-        emptyList()
+
+        var minutoJanela = 0
+        while (minutoJanela <= duracao - 60) {
+            val minutoAbsoluto = inicio + minutoJanela
+            val minutoDoDia = minutoAbsoluto.floorMod(24 * 60)
+            val cal = base.clone() as Calendar
+            cal.add(Calendar.DAY_OF_YEAR, minutoAbsoluto.floorDiv(24 * 60))
+            cal.set(Calendar.HOUR_OF_DAY, minutoDoDia / 60)
+            cal.set(Calendar.MINUTE, minutoDoDia % 60)
+
+            if (cal.timeInMillis > agora) {
+                slots.add(
+                    HorarioReservaOpcao(
+                        label = String.format("%02d:%02d", minutoDoDia / 60, minutoDoDia % 60),
+                        inicioMillis = cal.timeInMillis
+                    )
+                )
+            }
+            minutoJanela += 60
+        }
     }
+
+    val duracao = when {
+        inicioMin == fimMin -> 24 * 60
+        fimMin > inicioMin -> fimMin - inicioMin
+        else -> fimMin + 24 * 60 - inicioMin
+    }
+
+    if (duracao <= 0) return emptyList()
+
+    when {
+        inicioMin == fimMin -> {
+            adicionarJanela(0, inicioMin, duracao)
+            if (slots.size < 24) adicionarJanela(1, inicioMin, duracao)
+        }
+        fimMin < inicioMin -> {
+            adicionarJanela(-1, inicioMin, duracao)
+            adicionarJanela(0, inicioMin, duracao)
+        }
+        else -> adicionarJanela(0, inicioMin, duracao)
+    }
+
+    return slots
+        .distinctBy { it.inicioMillis }
+        .sortedBy { it.inicioMillis }
+        .take(24)
 }
 
-private fun montarInicioReservaPrevistoIso(horario: String): String? {
-    val millis = montarInicioReservaPrevistoMillis(horario) ?: return null
-    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(java.util.Date(millis))
+private fun montarInicioReservaPrevistoIso(inicioMillis: Long): String {
+    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(java.util.Date(inicioMillis))
 }
 
-private fun montarInicioReservaPrevistoMillis(horario: String): Long? {
-    val partes = horario.split(":").takeIf { it.size >= 2 } ?: return null
+private fun parseHorarioMinutos(valor: String?): Int? {
+    if (valor.isNullOrBlank()) return null
+    val partes = valor.trim().split(":").takeIf { it.size >= 2 } ?: return null
     val hora = partes[0].toIntOrNull() ?: return null
     val minuto = partes[1].toIntOrNull() ?: return null
-    val cal = Calendar.getInstance().apply {
-        set(Calendar.HOUR_OF_DAY, hora)
-        set(Calendar.MINUTE, minuto)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-    return cal.timeInMillis.takeIf { it > System.currentTimeMillis() }
+    if (hora !in 0..23 || minuto !in 0..59) return null
+    return hora * 60 + minuto
 }
+
+private fun Int.floorDiv(divisor: Int): Int = Math.floorDiv(this, divisor)
+
+private fun Int.floorMod(divisor: Int): Int = Math.floorMod(this, divisor)

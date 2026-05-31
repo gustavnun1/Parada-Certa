@@ -17,10 +17,11 @@ import kotlinx.coroutines.delay
  */
 sealed class EstacionamentoStatus {
     object Aberto : EstacionamentoStatus()
+    object Aberto24Horas : EstacionamentoStatus()
     object Fechado : EstacionamentoStatus()
     object SemHorario : EstacionamentoStatus()
 
-    val ehAberto: Boolean get() = this is Aberto
+    val ehAberto: Boolean get() = this is Aberto || this is Aberto24Horas
     val ehFechado: Boolean get() = this is Fechado
 
     companion object {
@@ -41,7 +42,7 @@ sealed class EstacionamentoStatus {
             val abertura = parse(horarioAbertura) ?: return SemHorario
             val fechamento = parse(horarioFechamento) ?: return SemHorario
 
-            if (abertura == fechamento) return Aberto // 24h
+            if (abertura == fechamento) return Aberto24Horas
 
             val cruzaMeiaNoite = fechamento.isBefore(abertura)
             val aberto = if (cruzaMeiaNoite) {
