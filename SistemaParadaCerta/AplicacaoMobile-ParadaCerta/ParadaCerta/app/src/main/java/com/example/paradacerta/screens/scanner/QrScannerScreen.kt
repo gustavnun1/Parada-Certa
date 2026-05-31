@@ -101,6 +101,9 @@ fun QrScannerScreen(
     // Diálogo: nenhum veículo válido selecionado / cadastrado
     var veiculoInvalidoDialog by remember { mutableStateOf(false) }
 
+    // Diálogo: QR lido em modo confirmação não é do tipo CONFIRMACAO_RESERVA
+    var qrIncompativelModoConfirmacao by remember { mutableStateOf<String?>(null) }
+
     // Estado para o diálogo de confirmação de saída de sessão reservada
     // Triple(estacionamentoId, estacionamentoNome, precoHora)
     var reservaExitDialog by remember { mutableStateOf<Triple<Int, String, Double>?>(null) }
@@ -327,6 +330,27 @@ fun QrScannerScreen(
         )
     }
 
+    // Diálogo: QR Code lido em modo confirmação não é de confirmação de reserva
+    qrIncompativelModoConfirmacao?.let { mensagem ->
+        AlertDialog(
+            onDismissRequest = {
+                qrIncompativelModoConfirmacao = null
+                jaProcessou.set(false)
+            },
+            icon = { Icon(Icons.Default.WarningAmber, contentDescription = null) },
+            title = { Text("QR Code incompatível") },
+            text = { Text(mensagem) },
+            confirmButton = {
+                Button(onClick = {
+                    qrIncompativelModoConfirmacao = null
+                    jaProcessou.set(false)
+                }) {
+                    Text("Entendido")
+                }
+            }
+        )
+    }
+
     // Diálogo: já possui sessão/reserva ativa — bloqueio de nova entrada
     if (sessaoAtivaDialog) {
         val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
@@ -486,23 +510,34 @@ fun QrScannerScreen(
                         onQrDetected = { payload ->
                             val tipo = (payload.tipo ?: payload.type ?: "").uppercase()
 
-                            // No modo "confirmar reserva", só aceita QR do tipo CONFIRMACAO_RESERVA
-                            if (ehModoConfirmacao) {
-                                if (tipo == "CONFIRMACAO_RESERVA" && !payload.qrCode.isNullOrBlank()) {
-                                    val cpfUsuario = cliente?.cpf
-                                    if (cpfUsuario.isNullOrBlank()) {
+                            // QR de CONFIRMACAO_RESERVA é tratado IGUAL em qualquer modo:
+                            // chama o endpoint de confirmação. Backend valida dono / status
+                            // e retorna mensagem específica em caso de erro. Isso evita o
+                            // bug "vaga já ocupada" quando o motorista lê o QR de sua
+                            // própria reserva pendente pelo scanner do app.
+                            if (tipo == "CONFIRMACAO_RESERVA") {
+                                val cpfUsuario = cliente?.cpf
+                                when {
+                                    payload.qrCode.isNullOrBlank() -> jaProcessou.set(false)
+                                    cpfUsuario.isNullOrBlank() -> {
                                         veiculoInvalidoDialog = true
                                         jaProcessou.set(false)
-                                    } else {
-                                        reservaViewModel.confirmarReserva(
-                                            qrCode = payload.qrCode,
-                                            cpf = cpfUsuario
-                                        )
-                                        // Estado de carregamento/erro/sucesso é exibido via dialogs abaixo
                                     }
-                                } else {
-                                    // QR inválido para este modo
-                                    jaProcessou.set(false)
+                                    else -> reservaViewModel.confirmarReserva(
+                                        qrCode = payload.qrCode,
+                                        cpf = cpfUsuario
+                                    )
+                                }
+                                return@CameraPreviewWithScanner
+                            }
+
+                            // No modo "confirmar reserva", qualquer outro tipo é incompatível.
+                            // Mostramos diálogo claro para guiar o usuário.
+                            if (ehModoConfirmacao) {
+                                qrIncompativelModoConfirmacao = when (tipo) {
+                                    "ENTRADA" -> "Este QR Code é de check-in comum, não de confirmação de reserva. Use o QR Code fornecido na entrada do estacionamento."
+                                    "PAGAMENTO" -> "Este QR Code é de pagamento, não de confirmação de reserva."
+                                    else -> "Este QR Code não é válido para confirmar a reserva."
                                 }
                                 return@CameraPreviewWithScanner
                             }
@@ -523,10 +558,6 @@ fun QrScannerScreen(
                                             showVeiculoPicker = true
                                         }
                                     }
-                                }
-                                "CONFIRMACAO_RESERVA" -> {
-                                    // Modo padrão lendo QR de confirmação: orienta usar o botão certo
-                                    sessaoAtivaDialog = true
                                 }
                                 "PAGAMENTO" -> {
                                     val sessao = sessaoAtiva

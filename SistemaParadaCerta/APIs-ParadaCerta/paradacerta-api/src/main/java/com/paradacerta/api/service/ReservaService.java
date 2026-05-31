@@ -176,25 +176,44 @@ public class ReservaService {
 
         SessaoEstacionamento sessao = sessaoRepository.findByQrCode(qrCode)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException(
-                        "QR Code não corresponde a nenhuma reserva"));
+                        "QR Code inválido para esta reserva"));
 
+        // QR pertence a uma sessão de entrada comum (não-reservada): direcionar
+        // o motorista para o fluxo certo no mobile.
         if (!Boolean.TRUE.equals(sessao.getReservado())) {
             throw new RequisicaoInvalidaException(
-                "QR Code inválido para confirmação de reserva"
+                "Este QR Code é de check-in comum, não de confirmação de reserva"
             );
         }
 
+        // Reserva pertence a outro motorista — sem revelar dados.
         if (sessao.getClienteId() == null || !sessao.getClienteId().equals(cliente.getId())) {
-            throw new ConflictException("Esta reserva pertence a outro motorista");
+            throw new ConflictException(
+                "Este QR Code pertence a outra reserva. Use o QR Code da sua reserva."
+            );
         }
 
-        if (sessao.getStatus() == SessaoStatus.EM_USO) {
-            throw new ConflictException("Reserva já confirmada");
+        // Mensagens específicas por status para guiar o usuário corretamente.
+        switch (sessao.getStatus()) {
+            case EM_USO ->
+                throw new ConflictException("Esta reserva já foi confirmada anteriormente");
+            case ENCERRADA ->
+                throw new ConflictException("Esta reserva já foi finalizada");
+            case CANCELADA ->
+                throw new ConflictException("Esta reserva foi cancelada");
+            case AGUARDANDO_CONFIRMACAO, ATIVA -> { /* segue a confirmação */ }
         }
 
-        if (sessao.getStatus() != SessaoStatus.AGUARDANDO_CONFIRMACAO) {
-            throw new ConflictException("Reserva não está aguardando confirmação");
-        }
+        // Defesa contra estado inconsistente: motorista com OUTRA sessão EM_USO
+        // em curso (a criação da reserva bloqueia isso, mas garantimos aqui também).
+        sessaoRepository.findSessaoVivaDoCliente(cliente.getId()).ifPresent(viva -> {
+            if (!viva.getId().equals(sessao.getId())
+                    && viva.getStatus() == SessaoStatus.EM_USO) {
+                throw new ConflictException(
+                    "Você já possui uma reserva em uso. Finalize antes de confirmar outra."
+                );
+            }
+        });
 
         LocalDateTime agora = nowSaoPaulo();
         sessao.setStatus(SessaoStatus.EM_USO);

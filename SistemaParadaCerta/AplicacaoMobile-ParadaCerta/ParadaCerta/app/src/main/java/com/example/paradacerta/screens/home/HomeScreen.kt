@@ -681,18 +681,23 @@ private fun ReservedSessionPanel(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                imageVector = Icons.Default.Bookmark,
+                imageVector = if (aguardandoConfirmacao) Icons.Default.QrCodeScanner else Icons.Default.Bookmark,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "VAGA RESERVADA",
+                text = when {
+                    aguardandoConfirmacao -> "RESERVA AGUARDANDO CONFIRMAÇÃO"
+                    emUso -> "RESERVA EM USO"
+                    else -> "VAGA RESERVADA"
+                },
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                letterSpacing = 1.sp
+                letterSpacing = 1.sp,
+                textAlign = TextAlign.Center
             )
         }
 
@@ -781,9 +786,9 @@ private fun ReservedSessionPanel(
         Text(
             text = when {
                 aguardandoConfirmacao ->
-                    "Ao chegar no estacionamento, escaneie o QR Code de confirmação fornecido na entrada para liberar sua vaga"
+                    "Escaneie o QR Code do estacionamento ao chegar para iniciar o uso da vaga."
                 emUso ->
-                    "Sua reserva está ativa. Use o botão abaixo para finalizar e liberar a vaga ao sair"
+                    "Sua reserva está em uso. Toque em \"Finalizar uso da vaga\" ao sair do estacionamento."
                 else ->
                     "Dirija-se ao estacionamento para iniciar o uso da vaga reservada"
             },
@@ -808,7 +813,7 @@ private fun ReservedSessionPanel(
 
         when {
             aguardandoConfirmacao -> {
-                // Botão primário: Confirmar reserva (vai para scanner em modo confirmação)
+                // Botão primário: Escanear QR Code da reserva (vai para scanner em modo confirmação)
                 Button(
                     onClick = onConfirmarReservaClick,
                     modifier = Modifier.fillMaxWidth(),
@@ -820,7 +825,7 @@ private fun ReservedSessionPanel(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Confirmar reserva")
+                    Text("Escanear QR Code da reserva")
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
