@@ -10,4 +10,5 @@ public interface VeiculoRepository extends JpaRepository<Veiculo, String> {
     Veiculo findByPlaca(String placa);
     java.util.List<Veiculo> findAllByClienteId(Long clienteId);
     int countByClienteId(Long clienteId);
+    void deleteByClienteId(Long clienteId);
 }

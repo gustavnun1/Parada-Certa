@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface FormaPagamentoRepository extends JpaRepository<FormaPagamento, Integer> {
     List<FormaPagamento> findByClienteId(Long clienteId);
+    void deleteByClienteId(Long clienteId);
 }

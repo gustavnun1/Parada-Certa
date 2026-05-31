@@ -3,6 +3,7 @@ package com.paradacerta.api.repository;
 import com.paradacerta.api.model.SessaoEstacionamento;
 import com.paradacerta.api.model.SessaoStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -45,6 +46,10 @@ public interface SessaoRepository extends JpaRepository<SessaoEstacionamento, Lo
           )
     """)
     boolean existsSessaoVivaDoCliente(@Param("clienteId") Long clienteId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE SessaoEstacionamento s SET s.clienteId = null WHERE s.clienteId = :clienteId")
+    int desassociarCliente(@Param("clienteId") Long clienteId);
 
     // ── Queries operacionais (admin web) ───────────────────────────────────────
 

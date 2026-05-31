@@ -2,6 +2,7 @@ package com.example.paradacerta.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.paradacerta.models.ApiResponse
 import com.example.paradacerta.network.ParadaCertaClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,15 +27,16 @@ class DeleteViewModel : ViewModel() {
 
                 val response = ParadaCertaClient.service.deletarConta(cpf)
                 val body = response.body()
+                val mensagemErro = if (response.isSuccessful) body?.mensagem else lerErro(response)
 
                 when {
                     response.isSuccessful && body?.sucesso == true -> {
                         _deleteState.value = DeleteState(isSuccess = true)
                     }
 
-                    response.code() == 400 && body != null -> {
+                    response.code() == 400 -> {
                         _deleteState.value = DeleteState(
-                            errorMessage = "CPF inválido ou dados incorretos: ${body.mensagem}"
+                            errorMessage = "CPF invalido ou dados incorretos: ${mensagemErro ?: "Verifique os dados informados"}"
                         )
                     }
 
@@ -46,13 +48,13 @@ class DeleteViewModel : ViewModel() {
 
                     response.code() == 409 -> {
                         _deleteState.value = DeleteState(
-                            errorMessage = "Conflito ao excluir conta: ${body?.mensagem ?: "Existem dados relacionados que impedem a exclusão"}"
+                            errorMessage = "Conflito ao excluir conta: ${mensagemErro ?: "Existem dados relacionados que impedem a exclusao"}"
                         )
                     }
 
                     response.code() == 500 -> {
                         _deleteState.value = DeleteState(
-                            errorMessage = "Erro interno no servidor ao excluir conta: ${body?.mensagem ?: "Tente novamente mais tarde"}"
+                            errorMessage = "Erro interno no servidor ao excluir conta: ${mensagemErro ?: "Tente novamente mais tarde"}"
                         )
                     }
 
@@ -70,7 +72,7 @@ class DeleteViewModel : ViewModel() {
 
                     else -> {
                         _deleteState.value = DeleteState(
-                            errorMessage = "Erro HTTP ${response.code()}: Falha desconhecida ao excluir conta"
+                            errorMessage = "Erro HTTP ${response.code()}: ${mensagemErro ?: "Falha desconhecida ao excluir conta"}"
                         )
                     }
                 }
@@ -105,5 +107,19 @@ class DeleteViewModel : ViewModel() {
 
     fun resetDeleteState() {
         _deleteState.value = DeleteState()
+    }
+
+    private fun lerErro(response: retrofit2.Response<ApiResponse>): String? {
+        response.body()?.mensagem?.let { return it }
+        return try {
+            val json = response.errorBody()?.string()
+            if (!json.isNullOrBlank()) {
+                com.google.gson.Gson().fromJson(json, ApiResponse::class.java)?.mensagem
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 }
