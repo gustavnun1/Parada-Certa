@@ -41,6 +41,12 @@ data class FinalizarUsoState(
     val errorMessage: String? = null
 )
 
+data class CalcularFinalizacaoState(
+    val isLoading: Boolean = false,
+    val resposta: FinalizacaoUsoResponse? = null,
+    val errorMessage: String? = null
+)
+
 class ReservaViewModel : ViewModel() {
 
     private val _reservaState = MutableStateFlow(ReservaState())
@@ -54,6 +60,9 @@ class ReservaViewModel : ViewModel() {
 
     private val _finalizarUsoState = MutableStateFlow(FinalizarUsoState())
     val finalizarUsoState: StateFlow<FinalizarUsoState> = _finalizarUsoState.asStateFlow()
+
+    private val _calcularFinalizacaoState = MutableStateFlow(CalcularFinalizacaoState())
+    val calcularFinalizacaoState: StateFlow<CalcularFinalizacaoState> = _calcularFinalizacaoState.asStateFlow()
 
     fun reservar(cpf: String, estacionamentoId: Int, placa: String, inicioReservaPrevisto: String) {
         if (cpf.isBlank() || estacionamentoId <= 0 || placa.isBlank() || inicioReservaPrevisto.isBlank()) return
@@ -153,13 +162,31 @@ class ReservaViewModel : ViewModel() {
      * o resumo de valor antes de confirmar.
      */
     fun calcularFinalizacao(sessaoId: String, cpf: String, onResult: (FinalizacaoUsoResponse) -> Unit) {
-        if (sessaoId.isBlank() || cpf.isBlank()) return
+        if (sessaoId.isBlank() || cpf.isBlank()) {
+            _calcularFinalizacaoState.value = CalcularFinalizacaoState(
+                errorMessage = "Nao foi possivel identificar a reserva ou o usuario."
+            )
+            return
+        }
         viewModelScope.launch {
-            runCatching {
+            _calcularFinalizacaoState.value = CalcularFinalizacaoState(isLoading = true)
+            try {
                 val response = ParadaCertaClient.service.calcularFinalizacaoUso(sessaoId, cpf)
                 if (response.isSuccessful && response.body() != null) {
-                    onResult(response.body()!!)
+                    val body = response.body()!!
+                    _calcularFinalizacaoState.value = CalcularFinalizacaoState(resposta = body)
+                    onResult(body)
+                } else {
+                    _calcularFinalizacaoState.value = CalcularFinalizacaoState(
+                        errorMessage = extrairMensagem(response, "Erro ao calcular finalizacao da reserva")
+                    )
                 }
+            } catch (e: java.net.UnknownHostException) {
+                _calcularFinalizacaoState.value = CalcularFinalizacaoState(errorMessage = "Sem conexao com o servidor")
+            } catch (e: java.net.SocketTimeoutException) {
+                _calcularFinalizacaoState.value = CalcularFinalizacaoState(errorMessage = "Tempo de resposta esgotado")
+            } catch (e: Exception) {
+                _calcularFinalizacaoState.value = CalcularFinalizacaoState(errorMessage = "Erro: ${e.message ?: "Motivo desconhecido"}")
             }
         }
     }
@@ -204,8 +231,8 @@ class ReservaViewModel : ViewModel() {
     private fun <T> extrairMensagem(response: retrofit2.Response<T>, fallback: String): String {
         return try {
             val body = response.errorBody()?.string()
-            org.json.JSONObject(body ?: "").optString("mensagem", null)
-                ?: "$fallback (${response.code()})"
+            val mensagem = org.json.JSONObject(body ?: "").optString("mensagem", "")
+            mensagem.ifBlank { "$fallback (${response.code()})" }
         } catch (e: Exception) {
             "$fallback (${response.code()})"
         }
@@ -214,5 +241,6 @@ class ReservaViewModel : ViewModel() {
     fun resetReservaState() { _reservaState.value = ReservaState() }
     fun resetCancelState() { _cancelState.value = CancelReservaState() }
     fun resetConfirmarState() { _confirmarState.value = ConfirmarReservaState() }
+    fun resetCalcularFinalizacaoState() { _calcularFinalizacaoState.value = CalcularFinalizacaoState() }
     fun resetFinalizarUsoState() { _finalizarUsoState.value = FinalizarUsoState() }
 }

@@ -70,8 +70,11 @@ fun HomeScreen(
     } ?: veiculos.firstOrNull()
     val reservaViewModel: ReservaViewModel = viewModel()
     val cancelState by reservaViewModel.cancelState.collectAsState()
+    val calcularFinalizacaoState by reservaViewModel.calcularFinalizacaoState.collectAsState()
+    val finalizarUsoState by reservaViewModel.finalizarUsoState.collectAsState()
     val cobrancaViewModel: CobrancaEstadiaViewModel = viewModel()
     val cobrancaState by cobrancaViewModel.state.collectAsState()
+    val isFinalizacaoReservaLoading = calcularFinalizacaoState.isLoading || finalizarUsoState.isLoading
 
     var showCancelReservaDialog by remember { mutableStateOf(false) }
     var showFinalizarReservaDialog by remember { mutableStateOf(false) }
@@ -94,6 +97,24 @@ fun HomeScreen(
             text = { Text(erro) },
             confirmButton = {
                 TextButton(onClick = { cobrancaViewModel.limpar() }) { Text("OK") }
+            }
+        )
+    }
+
+    (calcularFinalizacaoState.errorMessage ?: finalizarUsoState.errorMessage)?.let { erro ->
+        AlertDialog(
+            onDismissRequest = {
+                reservaViewModel.resetCalcularFinalizacaoState()
+                reservaViewModel.resetFinalizarUsoState()
+            },
+            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
+            title = { Text("Nao foi possivel finalizar") },
+            text = { Text(erro) },
+            confirmButton = {
+                TextButton(onClick = {
+                    reservaViewModel.resetCalcularFinalizacaoState()
+                    reservaViewModel.resetFinalizarUsoState()
+                }) { Text("OK") }
             }
         )
     }
@@ -194,12 +215,12 @@ fun HomeScreen(
                 Button(onClick = {
                     showFinalizarReservaDialog = false
                     val sessao = sessaoAtiva
-                    val cpf = cliente?.cpf
-                    if (sessao != null && !cpf.isNullOrBlank()) {
-                        ReservationNotificationScheduler.cancel(context)
+                    val cpf = cliente?.cpf.orEmpty()
+                    if (sessao != null) {
                         // Backend é a fonte da verdade do cálculo. Pedimos o preview e
                         // decidimos: cobrança extra → fluxo Pix, sem extra → encerra direto.
                         reservaViewModel.calcularFinalizacao(sessao.sessaoId, cpf) { calc ->
+                            ReservationNotificationScheduler.cancel(context)
                             if (calc.exigeCobrancaAdicional) {
                                 userViewModel.setDevidaReservaExtra(
                                     DevidaReservaExtra(
@@ -395,6 +416,7 @@ fun HomeScreen(
                         },
                         cancelState = cancelState,
                         devidaReservaExtra = devidaReservaExtra,
+                        isFinalizacaoLoading = isFinalizacaoReservaLoading,
                         onConfirmarReservaClick = onConfirmarReservaClick,
                         onFinalizarReservaClick = {
                             val divida = devidaReservaExtra
@@ -626,6 +648,7 @@ private fun ReservedSessionPanel(
     modeloVeiculo: String,
     cancelState: CancelReservaState,
     devidaReservaExtra: DevidaReservaExtra?,
+    isFinalizacaoLoading: Boolean = false,
     onConfirmarReservaClick: () -> Unit,
     onFinalizarReservaClick: () -> Unit,
     onCancelarReservaClick: () -> Unit,
@@ -856,20 +879,30 @@ private fun ReservedSessionPanel(
                 Button(
                     onClick = onFinalizarReservaClick,
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !cancelState.isLoading,
+                    enabled = !cancelState.isLoading && !isFinalizacaoLoading,
                     colors = if (devidaReservaExtra != null)
                         ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     else
                         ButtonDefaults.buttonColors()
                 ) {
-                    Icon(
-                        imageVector = if (devidaReservaExtra != null)
-                            Icons.Default.Warning else Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (devidaReservaExtra != null) "Pagar cobrança extra" else "Finalizar uso da vaga")
+                    if (isFinalizacaoLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Verificando...")
+                    } else {
+                        Icon(
+                            imageVector = if (devidaReservaExtra != null)
+                                Icons.Default.Warning else Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(if (devidaReservaExtra != null) "Pagar cobrança extra" else "Finalizar uso da vaga")
+                    }
                 }
             }
 

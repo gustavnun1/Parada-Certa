@@ -111,7 +111,8 @@ public class ReservaService {
                 inicioReservaPrevistoMs,
                 est.getPrecoHora(),
                 placa,
-                modeloVeiculo
+                modeloVeiculo,
+                sessao.getStatus()
         );
     }
 
@@ -294,16 +295,18 @@ public class ReservaService {
     private FinalizacaoUsoResponse montarFinalizacao(
             SessaoEstacionamento sessao, Estacionamento est, LocalDateTime fim) {
 
+        BigDecimal valorAntecipado = sessao.getValorPago() != null ? sessao.getValorPago() : BigDecimal.ZERO;
         LocalDateTime inicio = inicioDeUsoParaCalculo(sessao);
         long minutosUso = Math.max(0L, Duration.between(inicio, fim).toMinutes());
-        long minutosCobrados = arredondarMinutosCobrados(minutosUso);
-        BigDecimal valorFinal = calcularValorPorMinutos(est.getPrecoHora(), minutosCobrados);
-
-        BigDecimal valorAntecipado = sessao.getValorPago() != null ? sessao.getValorPago() : BigDecimal.ZERO;
-        BigDecimal restante = valorFinal.subtract(valorAntecipado).max(BigDecimal.ZERO)
-                .setScale(2, RoundingMode.HALF_UP);
-
-        boolean exigeCobranca = restante.compareTo(BigDecimal.ZERO) > 0;
+        long minutosExcedentes = minutosUso - 60;
+        boolean exigeCobranca = minutosExcedentes > 15;
+        BigDecimal restante = exigeCobranca
+                ? calcularValorExtra(minutosExcedentes, est.getPrecoHora())
+                : BigDecimal.ZERO;
+        long minutosCobrados = exigeCobranca
+                ? 60L + ((long) Math.ceil(minutosExcedentes / 60.0) * 60L)
+                : 60L;
+        BigDecimal valorFinal = valorAntecipado.add(restante).setScale(2, RoundingMode.HALF_UP);
 
         return new FinalizacaoUsoResponse(
                 String.valueOf(sessao.getId()),
@@ -352,16 +355,16 @@ public class ReservaService {
     }
 
     /**
-     * Para o fluxo novo (EM_USO), conta a partir de dataHoraConfirmacao.
-     * Para reservas legado (ATIVA) que vieram da versão anterior sem o campo,
-     * usa inicioReservaPrevisto ou horaEntrada como fallback.
+     * A cobranca da reserva sempre conta a partir do horario escolhido pelo
+     * motorista. dataHoraConfirmacao fica apenas como fallback para registros
+     * legados que ainda nao tenham inicioReservaPrevisto.
      */
     private LocalDateTime inicioDeUsoParaCalculo(SessaoEstacionamento sessao) {
-        if (sessao.getDataHoraConfirmacao() != null) {
-            return sessao.getDataHoraConfirmacao();
-        }
         if (sessao.getInicioReservaPrevisto() != null) {
             return sessao.getInicioReservaPrevisto();
+        }
+        if (sessao.getDataHoraConfirmacao() != null) {
+            return sessao.getDataHoraConfirmacao();
         }
         return sessao.getHoraEntrada();
     }

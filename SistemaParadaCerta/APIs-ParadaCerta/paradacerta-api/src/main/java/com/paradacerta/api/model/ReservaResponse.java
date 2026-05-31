@@ -17,4 +17,5 @@ public class ReservaResponse {
     private BigDecimal precoHora;
     private String placa;
     private String modeloVeiculo;
+    private SessaoStatus status;
 }

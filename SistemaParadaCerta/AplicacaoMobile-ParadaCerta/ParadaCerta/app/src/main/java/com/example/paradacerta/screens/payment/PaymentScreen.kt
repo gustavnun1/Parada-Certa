@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.paradacerta.models.FormaPagamento
 import com.example.paradacerta.models.FormaPagamentoRequest
 import com.example.paradacerta.models.SessaoAtiva
+import com.example.paradacerta.models.SessaoStatus
 import com.example.paradacerta.network.ParadaCertaClient
 import com.example.paradacerta.viewmodel.CobrancaEstadiaViewModel
 import com.example.paradacerta.viewmodel.PaymentMethodsViewModel
@@ -100,6 +101,7 @@ fun PaymentScreen(
     val savedMethodsState by paymentMethodsViewModel.state.collectAsState()
     val cobrancaState by cobrancaViewModel.state.collectAsState()
     val reservaState by reservaViewModel.reservaState.collectAsState()
+    val finalizarUsoState by reservaViewModel.finalizarUsoState.collectAsState()
 
     // Busca o detalhamento (preço/hora, tempo permanência, tempo cobrado)
     // apenas para sessões NÃO-reservadas; reservas mostram somente o total.
@@ -140,6 +142,9 @@ fun PaymentScreen(
     var estIdPosPagamento by remember { mutableStateOf(0) }
     var sessaoReservaCriada by remember { mutableStateOf<SessaoAtiva?>(null) }
     var salvarCartaoAposReserva by remember { mutableStateOf(false) }
+    var isEncerrandoSessao by remember { mutableStateOf(false) }
+    var pagamentoError by remember { mutableStateOf<String?>(null) }
+    val pagamentoEmAndamento = reservaState.isLoading || finalizarUsoState.isLoading || isEncerrandoSessao
 
     val botaoHabilitado = when {
         metodoPagamento == "PIX" -> pixKey.isNotBlank()
@@ -162,7 +167,9 @@ fun PaymentScreen(
                 sessaoId = r.sessaoId,
                 pixKey = r.pixKey ?: pixKey,
                 reservado = true,
-                horarioReserva = reservaHorarioLabel
+                horarioReserva = reservaHorarioLabel,
+                status = SessaoStatus.fromString(r.status ?: SessaoStatus.AGUARDANDO_CONFIRMACAO.name),
+                valorPagoAntecipado = r.precoHora
             )
             sessaoReservaCriada = sessao
             reservaViewModel.resetReservaState()
@@ -185,6 +192,7 @@ fun PaymentScreen(
                     showConfirmDialog = false
                     val estId = sessaoAtiva?.estacionamentoId ?: 0
                     estIdPosPagamento = estId
+                    pagamentoError = null
                     val pagouComCartaoNovo =
                         metodoPagamento == "CARTAO" && showNewCardForm && novoCartaoPronto
                     if (modoReserva) {
@@ -204,16 +212,6 @@ fun PaymentScreen(
                         return@Button
                     }
 
-                    scope.launch {
-                        runCatching {
-                            ParadaCertaClient.service.encerrarSessao(
-                                sessaoId = sessaoId,
-                                valorPago = valor
-                            )
-                        }
-                    }
-                    userViewModel.encerrarSessao()
-
                     val jaSalvo = pagouComCartaoNovo && cartaoJaSalvo(
                         cards = savedMethodsState.cards,
                         final4 = digitosCartao.takeLast(4),
@@ -221,13 +219,58 @@ fun PaymentScreen(
                         bandeira = selectedBandeira
                     )
 
-                    if (pagouComCartaoNovo && cpf.isNotBlank() && !jaSalvo) {
-                        // Pergunta se deseja salvar o cartão antes de navegar
-                        showSalvarCartaoDialog = true
-                    } else {
-                        // Cartão já estava salvo, pagou com PIX ou com cartão salvo: segue direto
-                        onSuccess(estId)
+                    val deveSalvarCartao = pagouComCartaoNovo && cpf.isNotBlank() && !jaSalvo
+
+                    if (sessaoAtiva?.reservado == true) {
+                        if (cpf.isBlank()) {
+                            pagamentoError = "Nao foi possivel identificar o usuario para finalizar a reserva."
+                            return@Button
+                        }
+                        reservaViewModel.finalizarUso(
+                            sessaoId = sessaoId,
+                            cpf = cpf,
+                            valorPagoAdicional = valor
+                        ) {
+                            reservaViewModel.resetFinalizarUsoState()
+                            userViewModel.encerrarSessao()
+                            if (deveSalvarCartao) {
+                                showSalvarCartaoDialog = true
+                            } else {
+                                onSuccess(estId)
+                            }
+                        }
+                        return@Button
                     }
+
+                    scope.launch {
+                        isEncerrandoSessao = true
+                        try {
+                            val response = ParadaCertaClient.service.encerrarSessao(
+                                sessaoId = sessaoId,
+                                valorPago = valor,
+                                cpf = cpf
+                            )
+                            if (response.isSuccessful) {
+                                userViewModel.encerrarSessao()
+                                if (deveSalvarCartao) {
+                                    showSalvarCartaoDialog = true
+                                } else {
+                                    onSuccess(estId)
+                                }
+                            } else {
+                                pagamentoError = extrairMensagem(response, "Erro ao encerrar sessao")
+                            }
+                        } catch (_: java.net.UnknownHostException) {
+                            pagamentoError = "Sem conexao com o servidor"
+                        } catch (_: java.net.SocketTimeoutException) {
+                            pagamentoError = "Tempo de resposta esgotado"
+                        } catch (e: Exception) {
+                            pagamentoError = "Erro ao encerrar sessao: ${e.message ?: "Motivo desconhecido"}"
+                        } finally {
+                            isEncerrandoSessao = false
+                        }
+                    }
+
                 }) { Text("Confirmar") }
             },
             dismissButton = {
@@ -709,7 +752,7 @@ fun PaymentScreen(
                 }
             }
 
-            reservaState.errorMessage?.let { erro ->
+            (reservaState.errorMessage ?: finalizarUsoState.errorMessage ?: pagamentoError)?.let { erro ->
                 Text(
                     text = erro,
                     color = MaterialTheme.colorScheme.error,
@@ -724,16 +767,16 @@ fun PaymentScreen(
                 onClick = { showConfirmDialog = true },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                enabled = botaoHabilitado && !reservaState.isLoading
+                enabled = botaoHabilitado && !pagamentoEmAndamento
             ) {
-                if (reservaState.isLoading) {
+                if (pagamentoEmAndamento) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Criando reserva...")
+                    Text(if (reservaState.isLoading) "Criando reserva..." else "Processando pagamento...")
                 } else {
                     Text(
                         text = "Confirmar pagamento",
@@ -743,8 +786,13 @@ fun PaymentScreen(
                 }
             }
 
+            val textoConfirmacao = when {
+                modoReserva -> "Ao confirmar, sua reserva sera criada apos a confirmacao do pagamento."
+                sessaoAtiva?.reservado == true -> "Ao confirmar, o uso da vaga reservada sera finalizado."
+                else -> "Ao confirmar, sua sessao de estacionamento sera encerrada."
+            }
             Text(
-                text = "Ao confirmar, sua sessão de estacionamento será encerrada.",
+                text = textoConfirmacao,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -752,6 +800,19 @@ fun PaymentScreen(
 
             Spacer(Modifier.height(16.dp))
         }
+    }
+}
+
+private fun <T> extrairMensagem(response: retrofit2.Response<T>, fallback: String): String {
+    return runCatching {
+        val body = response.errorBody()?.string().orEmpty()
+        val json = org.json.JSONObject(body)
+        json.optString("mensagem")
+            .takeIf { it.isNotBlank() }
+            ?: json.optString("message").takeIf { it.isNotBlank() }
+            ?: "$fallback (${response.code()})"
+    }.getOrElse {
+        "$fallback (${response.code()})"
     }
 }
 

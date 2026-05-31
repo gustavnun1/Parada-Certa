@@ -73,8 +73,9 @@ public class SessaoController {
     @PostMapping("/encerrar/{sessaoId}")
     public ResponseEntity<ApiResponse> encerrarSessao(
             @PathVariable String sessaoId,
-            @RequestParam(defaultValue = "0") double valorPago) {
-        sessaoService.encerrarSessao(sessaoId, BigDecimal.valueOf(valorPago));
+            @RequestParam(defaultValue = "0") double valorPago,
+            @RequestParam(required = false) String cpf) {
+        sessaoService.encerrarSessao(sessaoId, BigDecimal.valueOf(valorPago), cpf);
         return ResponseEntity.ok(ApiResponse.ok("Sessão encerrada com sucesso"));
     }
 

@@ -134,7 +134,8 @@ interface ParadaCertaService {
     @POST("api/sessao/encerrar/{sessaoId}")
     suspend fun encerrarSessao(
         @Path("sessaoId") sessaoId: String,
-        @Query("valorPago") valorPago: Double
+        @Query("valorPago") valorPago: Double,
+        @Query("cpf") cpf: String? = null
     ): Response<ApiResponse>
 
     @GET("api/sessao/{sessaoId}/calculo-cobranca")

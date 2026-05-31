@@ -282,8 +282,12 @@ public class SessaoService {
     // aceito para compatibilidade — apenas usado em reservas para acumular o
     // valor extra à 1ª hora já cobrada.
 
-    @Transactional
     public void encerrarSessao(String sessaoId, BigDecimal valorPago) {
+        encerrarSessao(sessaoId, valorPago, null);
+    }
+
+    @Transactional
+    public void encerrarSessao(String sessaoId, BigDecimal valorPago, String cpf) {
         Long id;
         try {
             id = Long.parseLong(sessaoId);
@@ -293,6 +297,14 @@ public class SessaoService {
 
         SessaoEstacionamento sessao = sessaoRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Sessão não encontrada: " + sessaoId));
+
+        if (cpf != null && !cpf.isBlank()) {
+            Cliente cliente = clienteRepository.findByCpf(cpf)
+                    .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario nao encontrado"));
+            if (sessao.getClienteId() == null || !sessao.getClienteId().equals(cliente.getId())) {
+                throw new ConflictException("Esta sessao pertence a outro motorista");
+            }
+        }
 
         if (sessao.getStatus() != SessaoStatus.ATIVA) {
             return; // idempotente

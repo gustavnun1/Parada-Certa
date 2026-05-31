@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.concurrent.Executors
+import com.example.paradacerta.BuildConfig
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -104,6 +105,9 @@ fun QrScannerScreen(
     // Diálogo: QR lido em modo confirmação não é do tipo CONFIRMACAO_RESERVA
     var qrIncompativelModoConfirmacao by remember { mutableStateOf<String?>(null) }
 
+    var entradaErrorMessage by remember { mutableStateOf<String?>(null) }
+    var qrPagamentoInvalidoMensagem by remember { mutableStateOf<String?>(null) }
+
     // Estado para o diálogo de confirmação de saída de sessão reservada
     // Triple(estacionamentoId, estacionamentoNome, precoHora)
     var reservaExitDialog by remember { mutableStateOf<Triple<Int, String, Double>?>(null) }
@@ -153,8 +157,15 @@ fun QrScannerScreen(
             precoHora = precoHora,
             pixKey = pixKey
         )
-        userViewModel.iniciarSessaoComBackend(sessao, veiculo.placa)
-        onEntrada()
+        userViewModel.iniciarSessaoComBackend(
+            sessao = sessao,
+            placa = veiculo.placa,
+            onSuccess = onEntrada,
+            onError = { mensagem ->
+                entradaErrorMessage = mensagem
+                jaProcessou.set(false)
+            }
+        )
     }
 
     fun iniciarEntradaKioskComVeiculo(
@@ -178,8 +189,16 @@ fun QrScannerScreen(
             precoHora = precoHora,
             pixKey = pixKey
         )
-        userViewModel.vincularSessaoKiosk(sessao, veiculo.placa, token)
-        onEntrada()
+        userViewModel.vincularSessaoKiosk(
+            sessao = sessao,
+            placa = veiculo.placa,
+            token = token,
+            onSuccess = onEntrada,
+            onError = { mensagem ->
+                entradaErrorMessage = mensagem
+                jaProcessou.set(false)
+            }
+        )
     }
 
     fun iniciarEntradaComPayload(veiculo: Veiculo, payload: QrCodePayload) {
@@ -351,6 +370,46 @@ fun QrScannerScreen(
         )
     }
 
+    entradaErrorMessage?.let { mensagem ->
+        AlertDialog(
+            onDismissRequest = {
+                entradaErrorMessage = null
+                jaProcessou.set(false)
+            },
+            icon = { Icon(Icons.Default.WarningAmber, contentDescription = null) },
+            title = { Text("Entrada nao confirmada") },
+            text = { Text(mensagem) },
+            confirmButton = {
+                Button(onClick = {
+                    entradaErrorMessage = null
+                    jaProcessou.set(false)
+                }) {
+                    Text("Tentar novamente")
+                }
+            }
+        )
+    }
+
+    qrPagamentoInvalidoMensagem?.let { mensagem ->
+        AlertDialog(
+            onDismissRequest = {
+                qrPagamentoInvalidoMensagem = null
+                jaProcessou.set(false)
+            },
+            icon = { Icon(Icons.Default.WarningAmber, contentDescription = null) },
+            title = { Text("QR Code de pagamento invalido") },
+            text = { Text(mensagem) },
+            confirmButton = {
+                Button(onClick = {
+                    qrPagamentoInvalidoMensagem = null
+                    jaProcessou.set(false)
+                }) {
+                    Text("Entendido")
+                }
+            }
+        )
+    }
+
     // Diálogo: já possui sessão/reserva ativa — bloqueio de nova entrada
     if (sessaoAtivaDialog) {
         val moeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
@@ -505,6 +564,7 @@ fun QrScannerScreen(
                     CameraPreviewWithScanner(
                         jaProcessou = jaProcessou,
                         modoConfirmacao = ehModoConfirmacao,
+                        mostrarDemo = BuildConfig.DEBUG,
                         onDemoEntrada = { simularEntradaAleatoria() },
                         isLoadingDemo = loadingEntradaDemo || mapState.isLoading,
                         onQrDetected = { payload ->
@@ -562,16 +622,27 @@ fun QrScannerScreen(
                                 "PAGAMENTO" -> {
                                     val sessao = sessaoAtiva
                                     val qrSessaoId = payload.sessaoId ?: ""
-                                    if (sessao?.reservado == true && qrSessaoId != sessao.sessaoId) {
-                                        // QR de outro estacionamento: bloqueia
-                                        sessaoAtivaDialog = true
-                                    } else {
-                                        onPagamento(
-                                            qrSessaoId,
-                                            payload.valor ?: 0.0,
-                                            payload.nome ?: "Estacionamento",
-                                            payload.pixKey ?: ""
-                                        )
+                                    when {
+                                        qrSessaoId.isBlank() -> {
+                                            qrPagamentoInvalidoMensagem = "Este QR Code de pagamento nao informa a sessao."
+                                            jaProcessou.set(false)
+                                        }
+                                        sessao == null -> {
+                                            qrPagamentoInvalidoMensagem = "Nenhuma sessao ativa foi encontrada para este pagamento."
+                                            jaProcessou.set(false)
+                                        }
+                                        sessao.sessaoId != qrSessaoId -> {
+                                            qrPagamentoInvalidoMensagem = "Este QR Code pertence a outra sessao."
+                                            jaProcessou.set(false)
+                                        }
+                                        else -> {
+                                            onPagamento(
+                                                qrSessaoId,
+                                                payload.valor ?: 0.0,
+                                                payload.nome ?: sessao.estacionamentoNome,
+                                                payload.pixKey ?: sessao.pixKey
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -597,6 +668,7 @@ fun QrScannerScreen(
 private fun CameraPreviewWithScanner(
     jaProcessou: java.util.concurrent.atomic.AtomicBoolean,
     modoConfirmacao: Boolean = false,
+    mostrarDemo: Boolean = false,
     onDemoEntrada: () -> Unit,
     isLoadingDemo: Boolean,
     onQrDetected: (QrCodePayload) -> Unit
@@ -743,39 +815,35 @@ private fun CameraPreviewWithScanner(
                 textAlign = TextAlign.Center
             )
 
-            if (modoConfirmacao) {
-                // Sem botão de demo no modo confirmação
-                return@Column
-            }
+            if (!modoConfirmacao && mostrarDemo) {
+                HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
 
-            HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
-
-            // Botão de demonstração de entrada
-            OutlinedButton(
-                onClick = onDemoEntrada,
-                enabled = !isLoadingDemo,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.White,
-                    containerColor = Color.White.copy(alpha = 0.15f)
-                )
-            ) {
-                if (isLoadingDemo) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
+                OutlinedButton(
+                    onClick = onDemoEntrada,
+                    enabled = !isLoadingDemo,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White,
+                        containerColor = Color.White.copy(alpha = 0.15f)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Carregando...", color = Color.White)
-                } else {
-                    Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.QrCode,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Simular entrada (demo)", color = Color.White)
+                ) {
+                    if (isLoadingDemo) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Carregando...", color = Color.White)
+                    } else {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.QrCode,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Simular entrada (demo)", color = Color.White)
+                    }
                 }
             }
         }
